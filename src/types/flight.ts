@@ -12,6 +12,7 @@ export interface Flight {
   destination: string;
   departureDateTime: string;
   localDepartureDateTime: string;
+  durationMinutes: number;
   airplaneType: AirplaneType;
   status: string;
 }

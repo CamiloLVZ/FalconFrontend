@@ -1,7 +1,11 @@
 import { FlightsPage } from "./pages/FlightsPage";
 
 function App() {
-  return <FlightsPage />;
+  return (
+    <div>
+      <FlightsPage />
+    </div>
+  );
 }
 
 export default App;
