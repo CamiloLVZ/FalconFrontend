@@ -1,5 +1,5 @@
-import logo from "../../assets/logo/logo.jpg";
 import { useState } from 'react';
+import {Logo} from "../icons/Logo.tsx";
 
 export const Navbar = () => {
     const tabs = ['Reservar', 'Gestionar', 'Check-in', 'Estado del vuelo'];
@@ -9,16 +9,7 @@ export const Navbar = () => {
         <header className="bg-[#0B1C2C] text-white">
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-                {/* Logo */}
-                <div className="flex items-center cursor-pointer" onClick={()=> {}}>
-                    <p className="text-3xl font-bold tracking-[.5em]">FALCON</p>
-                    <img
-                        src={logo}
-                        alt="Falcon logo"
-                        className="h-10 w-auto rounded-xl ml-2"
-                    />
-
-                </div>
+                <Logo/>
 
                 {/* Navigation */}
                 <nav className="flex gap-8 text-sm font-medium cursor-pointer">
