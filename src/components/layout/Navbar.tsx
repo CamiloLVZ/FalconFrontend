@@ -6,7 +6,7 @@ export const Navbar = () => {
     const [activeTab, setActiveTab] = useState('Reservar');
 
     return (
-        <header className="bg-[#0B1C2C] text-white">
+        <header className="bg-[#0B1C2C] text-white sticky top-0 z-20">
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
                 <Logo/>
