@@ -1,11 +1,12 @@
-import { FlightsPage } from "./pages/FlightsPage";
+import {HomePage} from "./pages/Homepage.tsx";
+import {MainLayout} from "./layouts/MainLayout.tsx";
 
 function App() {
-  return (
-    <div>
-      <FlightsPage />
-    </div>
-  );
+    return (
+        <MainLayout>
+            <HomePage/>
+        </MainLayout>
+    );
 }
 
 export default App;
