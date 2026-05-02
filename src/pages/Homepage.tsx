@@ -1,7 +1,6 @@
 import {HeroSection} from "../components/home/HeroSection.tsx";
 import {ServicesSection} from "../components/home/ServicesSection.tsx";
-import {DestinationsSection} from "../components/DestinationsSection.tsx";
-import {NewsletterSection} from "../components/NewsletterSection.tsx";
+import {DestinationsSection} from "../components/home/DestinationsSection.tsx";
 
 export const HomePage = () => {
     return (
@@ -9,7 +8,6 @@ export const HomePage = () => {
             <HeroSection />
             <ServicesSection />
             <DestinationsSection />
-            <NewsletterSection />
         </div>
     );
 };
