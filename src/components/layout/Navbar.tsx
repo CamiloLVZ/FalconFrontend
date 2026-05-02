@@ -2,8 +2,8 @@ import logo from "../../assets/logo/logo.jpg";
 import { useState } from 'react';
 
 export const Navbar = () => {
-    const tabs = ['Book', 'Manage', 'Check-in', 'Status'];
-    const [activeTab, setActiveTab] = useState('Book');
+    const tabs = ['Reservar', 'Gestionar', 'Check-in', 'Estado del vuelo'];
+    const [activeTab, setActiveTab] = useState('Reservar');
 
     return (
         <header className="bg-[#0B1C2C] text-white">

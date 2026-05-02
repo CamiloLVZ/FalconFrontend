@@ -22,13 +22,12 @@ export const HeroSection = () => {
             <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 gap-8">
                 <div>
                     <h1 className="text-8xl font-bold text-white">
-                        Fly whithout{" "}
-                        <span className="text-yellow-400">limits</span>
+                        Vuela sin{" "}
+                        <span className="text-yellow-400">limites</span>
                     </h1>
 
                     <p className=" mt-4 text-gray-200 mx-auto text-lg">
-                        Experience the art of flight. Redefining luxury travel with precision,
-                        elegance, and infinite clarity.
+                        Más que un vuelo, un viaje. Eleva tus expectativas con nuestra experiencia de vuelo sin igual.
                     </p>
                 </div>
                 {/* Search bar */}
