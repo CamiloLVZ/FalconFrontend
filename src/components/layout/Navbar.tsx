@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Logo } from "../icons/Logo.tsx";
+import { NavLink } from "react-router-dom";
 
 export const Navbar = () => {
-  const tabs = ["Reservar", "Gestionar", "Check-in", "Estado del vuelo"];
-  const [activeTab, setActiveTab] = useState("Reservar");
+  const tabs = [
+    { label: "Reservar", path: "/" },
+    { label: "Gestionar", path: "/booking" },
+    { label: "Check-in", path: "/check-in" },
+    { label: "Estado del vuelo", path: "/status" },
+  ];
 
   return (
     <header className="bg-[#0B1C2C] text-white sticky top-0 z-20">
@@ -11,19 +16,20 @@ export const Navbar = () => {
         <Logo />
 
         {/* Navigation */}
-        <nav className="flex gap-8 text-sm font-medium cursor-pointer">
+        <nav className="flex gap-8 text-sm font-medium">
           {tabs.map((tab) => (
-            <a
-              key={tab}
-              className={
-                activeTab === tab
-                  ? "text-yellow-400 border-b-2 border-yellow-400 pb-1 text-lg"
+            <NavLink
+              key={tab.path}
+              to={tab.path}
+              end={tab.path === "/"}
+              className={({ isActive }) =>
+                isActive
+                  ? "text-yellow-400 border-b-2 border-yellow-400 pb-1 text-lg transition-all duration-200"
                   : "hover:text-yellow-400 transition text-lg"
               }
-              onClick={() => setActiveTab(tab)}
             >
-              {tab}
-            </a>
+              {tab.label}
+            </NavLink>
           ))}
         </nav>
 
