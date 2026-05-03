@@ -22,7 +22,7 @@ export const FlightCard = ({ flight }: Props) => {
   );
 
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition">
+    <div className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition cursor-pointer h-35 flex flex-col justify-center">
       {/* Main row */}
       <div className="flex items-center justify-between">
         {/* Departure */}
@@ -31,12 +31,12 @@ export const FlightCard = ({ flight }: Props) => {
             <AirplaneDepartureIcon />
           </div>
           <p className="text-xl font-semibold">{departureTime}</p>
-          <p className="text-xs text-gray-500">{flight.origin}</p>
+          <p className="text-base text-gray-800 bold">{flight.origin}</p>
         </div>
 
         {/* Middle */}
         <div className="flex-1 mx-6 text-center">
-          <p className="text-xs text-gray-500 mb-1">
+          <p className="text-xs text-gray-700 mb-1">
             {formatDuration(flight.durationMinutes)}
           </p>
 
@@ -50,7 +50,7 @@ export const FlightCard = ({ flight }: Props) => {
             <div className="h-[2px] bg-gray-300 flex-1"></div>
           </div>
 
-          <p className="text-xs text-gray-400 mt-1">Directo</p>
+          <p className="text-xs text-gray-700 mt-1">Directo</p>
         </div>
 
         {/* Arrival */}
@@ -59,7 +59,7 @@ export const FlightCard = ({ flight }: Props) => {
             <AirplaneArrivalIcon />
           </div>
           <p className="text-xl font-semibold">{arrivalTime}</p>
-          <p className="text-xs text-gray-500">{flight.destination}</p>
+          <p className="text-base text-gray-800 bold">{flight.destination}</p>
         </div>
       </div>
     </div>

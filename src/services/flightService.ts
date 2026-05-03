@@ -1,8 +1,8 @@
 import { apiClient } from "../api/axios";
-import type { FlightResponse, FlightSearchParams } from "../types/flight";
+import type { CleanFilters, FlightResponse } from "../types/flight";
 
 export const searchFlights = async (
-  params: FlightSearchParams,
+  params: CleanFilters,
 ): Promise<FlightResponse> => {
   const response = await apiClient.get<FlightResponse>("/v1/flights/search", {
     params,

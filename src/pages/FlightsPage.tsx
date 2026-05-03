@@ -1,35 +1,37 @@
 import { useEffect, useState } from "react";
 import { searchFlights } from "../services/flightService";
-import type { Flight } from "../types/flight";
+import type { CleanFilters, Flight, FlightSearchParams } from "../types/flight";
 import { FlightCard } from "../components/FlightCard";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { SearchBar } from "../components/search/SearchBar";
+import { LoadingScreen } from "../components/LoadingScreen";
+import { ErrorScreen } from "../components/ErrorScreen";
 
 export const FlightsPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [filters, setFilters] = useState<FlightSearchParams>({
     origin: "",
     destination: "",
     date: "",
     status: "",
   });
 
-  const handleSearch = async () => {
+  const handleSearch = async (customFilters: FlightSearchParams) => {
     try {
-      console.log("Buscando vuelos con filtros:", filters);
-
       setLoading(true);
       setError(null);
 
-      const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== ""),
+      const cleanFilters: CleanFilters = Object.fromEntries(
+        Object.entries(customFilters).filter(([_, value]) => value !== ""),
       );
-
       const data = await searchFlights(cleanFilters);
-
-      console.log("Vuelos encontrados:", data);
-
       setFlights(data.data);
+      setHasSearched(true);
     } catch (err) {
       setError("Error buscando vuelos");
     } finally {
@@ -37,49 +39,69 @@ export const FlightsPage = () => {
     }
   };
 
+  useEffect(() => {
+    const origin = searchParams.get("origin") || "";
+    const destination = searchParams.get("destination") || "";
+    const date = searchParams.get("date") || "";
+
+    const initialFilters = {
+      origin,
+      destination,
+      date,
+    };
+
+    setFilters(initialFilters);
+
+    if (origin && destination && date) {
+      handleSearch(initialFilters);
+    } else {
+      setLoading(false);
+      setHasSearched(false);
+    }
+  }, [searchParams]);
+
   return (
-    <div>
-      <div className="mb-6 grid grid-cols-4 gap-4">
-        <input
-          placeholder="Origen"
-          className="border p-2 rounded"
-          value={filters.origin}
-          onChange={(e) => setFilters({ ...filters, origin: e.target.value })}
-        />
+    <div className="flex flex-col items-center bg-blue-50 px-30 pb-20 pt-15">
+      <div className="w-full max-w-4xl sticky top-16 z-20 mb-10">
+        <SearchBar
+          filters={filters}
+          onChange={setFilters}
+          onSearch={() => {
+            const cleanFilters: Record<string, string> = Object.fromEntries(
+              Object.entries(filters).filter(([_, v]) => v !== ""),
+            );
 
-        <input
-          placeholder="Destino"
-          className="border p-2 rounded"
-          value={filters.destination}
-          onChange={(e) =>
-            setFilters({ ...filters, destination: e.target.value })
-          }
-        />
+            const params = new URLSearchParams(cleanFilters).toString();
 
-        <input
-          type="date"
-          className="border p-2 rounded"
-          value={filters.date}
-          onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+            navigate(`/flights?${params}`);
+          }}
         />
-
-        <button
-          className="bg-blue-500 text-white rounded"
-          onClick={() => handleSearch()}
-        >
-          Buscar
-        </button>
       </div>
+      <div className="mb-6 flex items-center p-5 gap-2 self-start">
+        <h1 className="text-[25px] font-bold ">
+          Vuelos disponibles {filters.origin} → {filters.destination}
+        </h1>
+        <p className="text-xl text-gray-400">|</p>
+        <p className="text-lg text-gray-500 opacity-75">{filters.date}</p>
+      </div>
+      {loading && <LoadingScreen />}
+      {error && <ErrorScreen message={error} />}
+      {!loading && !error && !hasSearched && (
+        <div className="w-full text-center py-10">
+          <p className="text-gray-500 text-lg">
+            Realiza una búsqueda para ver los vuelos disponibles
+          </p>
+        </div>
+      )}
+      {!loading && !error && hasSearched && flights.length === 0 && (
+        <ErrorScreen message="No se encontraron vuelos con los criterios seleccionados" />
+      )}
 
-      <h1 className="text-2xl font-bold mb-6">Resultados de vuelos</h1>
-
-      {loading && <p>Cargando...</p>}
-      {error && <p>{error}</p>}
-      {!loading && flights.length === 0 && <p>No hay resultados</p>}
-
-      {flights.map((flight) => (
-        <FlightCard key={flight.id} flight={flight} />
-      ))}
+      <div className=" w-full flex flex-col gap-5">
+        {flights.map((flight) => (
+          <FlightCard key={flight.id} flight={flight} />
+        ))}
+      </div>
     </div>
   );
 };

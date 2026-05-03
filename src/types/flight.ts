@@ -24,8 +24,10 @@ export interface FlightResponse {
 }
 
 export interface FlightSearchParams {
-  origin?: string;
-  destination?: string;
-  date?: string;
-  status: string;
+  origin: string;
+  destination: string;
+  date: string;
+  status?: string;
 }
+
+export type CleanFilters = Partial<FlightSearchParams>;
