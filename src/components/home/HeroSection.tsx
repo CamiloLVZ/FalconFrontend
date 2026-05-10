@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import bgImage from "../../assets/backgrounds/sky-background.png";
-import { SearchBar } from "../search/SearchBar.tsx";
 import { useNavigate } from "react-router-dom";
+
+import bgImage from "../../assets/backgrounds/sky-background.png";
+
+import { SearchBar } from "../search/SearchBar.tsx";
+
 import type { FlightSearchParams } from "../../types/flight.ts";
 import type { AirportSearchOption } from "../../types/airport.ts";
+
 import {
   getAvailableDestinations,
   getAvailableOrigins,
@@ -11,6 +15,7 @@ import {
 
 export const HeroSection = () => {
   const navigate = useNavigate();
+
   const [filters, setFilters] = useState<FlightSearchParams>({
     origin: "",
     destination: "",
@@ -19,7 +24,12 @@ export const HeroSection = () => {
   });
 
   const [origins, setOrigins] = useState<AirportSearchOption[]>([]);
+
   const [destinations, setDestinations] = useState<AirportSearchOption[]>([]);
+
+  const [originInput, setOriginInput] = useState("");
+
+  const [destinationInput, setDestinationInput] = useState("");
 
   const loadOrigins = async () => {
     try {
@@ -35,8 +45,10 @@ export const HeroSection = () => {
     try {
       const data = await getAvailableDestinations(originCode);
       setDestinations(data);
+      return data;
     } catch (error) {
       console.error(error);
+      return [];
     }
   };
 
@@ -66,26 +78,33 @@ export const HeroSection = () => {
             Vuela sin <span className="text-yellow-400">limites</span>
           </h1>
 
-          <p className=" mt-4 text-gray-200 mx-auto text-lg">
+          <p className="mt-4 text-gray-200 mx-auto text-lg">
             Más que un vuelo, un viaje. Eleva tus expectativas con nuestra
             experiencia de vuelo sin igual.
           </p>
         </div>
+
         {/* Search bar */}
         <div className="w-full max-w-4xl mt-6">
           <SearchBar
             filters={filters}
             origins={origins}
+            destinations={destinations}
+            originInput={originInput}
+            destinationInput={destinationInput}
+            setOriginInput={setOriginInput}
+            setDestinationInput={setDestinationInput}
             onChange={setFilters}
+            loadDestinations={loadDestinations}
             onSearch={() => {
               const cleanFilters: Record<string, string> = Object.fromEntries(
-                Object.entries(filters).filter(([_, v]) => v !== ""),
+                Object.entries(filters).filter(([_, value]) => value !== ""),
               );
+
               const params = new URLSearchParams(cleanFilters).toString();
+
               navigate(`/flights?${params}`);
             }}
-            destinations={destinations}
-            loadDestinations={loadDestinations}
           />
         </div>
       </div>

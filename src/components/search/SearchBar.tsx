@@ -1,16 +1,20 @@
+import type React from "react";
 import { AirplaneDepartureIcon } from "../icons/AirplaneDepartureIcon.tsx";
 import { AirplaneArrivalIcon } from "../icons/AirplaneArrivalIcon.tsx";
 import type { FlightSearchParams } from "../../types/flight.ts";
 import type { AirportSearchOption } from "../../types/airport.ts";
 import { AirportSelect } from "./AirportSelect.tsx";
-import { useState } from "react";
 
 interface Props {
   filters: FlightSearchParams;
   origins: AirportSearchOption[];
   destinations: AirportSearchOption[];
+  originInput: string;
+  destinationInput: string;
+  setOriginInput: React.Dispatch<React.SetStateAction<string>>;
+  setDestinationInput: React.Dispatch<React.SetStateAction<string>>;
   onChange: (filters: FlightSearchParams) => void;
-  loadDestinations: (originCode: string) => Promise<void>;
+  loadDestinations: (originCode: string) => Promise<AirportSearchOption[]>;
   onSearch: () => void;
 }
 
@@ -18,14 +22,19 @@ export const SearchBar = ({
   filters,
   origins,
   destinations,
+
+  originInput,
+  destinationInput,
+
+  setOriginInput,
+  setDestinationInput,
+
   onChange,
   loadDestinations,
   onSearch,
 }: Props) => {
   const isSearchDisabled =
     !filters.origin.trim() || !filters.destination.trim() || !filters.date;
-  const [originInput, setOriginInput] = useState("");
-  const [destinationInput, setDestinationInput] = useState("");
 
   return (
     <div className="bg-gray-50 rounded-2xl shadow-lg p-5 flex flex-col md:flex-row gap-4 items-stretch">
@@ -38,7 +47,9 @@ export const SearchBar = ({
             icon={<AirplaneDepartureIcon />}
             onSelect={async (airport) => {
               setOriginInput(`${airport.city} (${airport.iataCode})`);
+
               setDestinationInput("");
+
               onChange({
                 ...filters,
                 origin: airport.iataCode,
@@ -59,6 +70,7 @@ export const SearchBar = ({
             disabled={!filters.origin}
             onSelect={(airport) => {
               setDestinationInput(`${airport.city} (${airport.iataCode})`);
+
               onChange({
                 ...filters,
                 destination: airport.iataCode,

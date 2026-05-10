@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
 import { searchFlights } from "../services/flightService";
 import {
-  getAvailableDestinations,
   getAvailableOrigins,
+  getAvailableDestinations,
 } from "../services/airportService";
-
 import type { CleanFilters, Flight, FlightSearchParams } from "../types/flight";
-
 import type { AirportSearchOption } from "../types/airport";
-
 import { FlightCard } from "../components/FlightCard";
 import { SearchBar } from "../components/search/SearchBar";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -19,17 +15,14 @@ import { ErrorScreen } from "../components/ErrorScreen";
 export const FlightsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
   const [flights, setFlights] = useState<Flight[]>([]);
   const [origins, setOrigins] = useState<AirportSearchOption[]>([]);
   const [destinations, setDestinations] = useState<AirportSearchOption[]>([]);
-
   const [originInput, setOriginInput] = useState("");
   const [destinationInput, setDestinationInput] = useState("");
-
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const [filters, setFilters] = useState<FlightSearchParams>({
     origin: "",
@@ -53,14 +46,23 @@ export const FlightsPage = () => {
       const data = await getAvailableDestinations(originCode);
 
       setDestinations(data);
+
+      return data;
     } catch (error) {
       console.error(error);
+
+      return [];
     }
+  };
+
+  const formatAirportLabel = (airport: AirportSearchOption) => {
+    return `${airport.city} (${airport.iataCode})`;
   };
 
   const handleSearch = async (customFilters: FlightSearchParams) => {
     try {
       setLoading(true);
+
       setError(null);
 
       const cleanFilters: CleanFilters = Object.fromEntries(
@@ -70,6 +72,7 @@ export const FlightsPage = () => {
       const data = await searchFlights(cleanFilters);
 
       setFlights(data.data);
+
       setHasSearched(true);
     } catch (err) {
       setError("Error buscando vuelos");
@@ -86,7 +89,6 @@ export const FlightsPage = () => {
     const origin = searchParams.get("origin") || "";
     const destination = searchParams.get("destination") || "";
     const date = searchParams.get("date") || "";
-
     const initialFilters: FlightSearchParams = {
       origin,
       destination,
@@ -96,20 +98,34 @@ export const FlightsPage = () => {
 
     setFilters(initialFilters);
 
-    setOriginInput(origin);
-    setDestinationInput(destination);
+    const originAirport = origins.find(
+      (airport) => airport.iataCode === origin,
+    );
+
+    if (originAirport) {
+      setOriginInput(formatAirportLabel(originAirport));
+    }
 
     if (origin) {
-      loadDestinations(origin);
+      loadDestinations(origin).then((loadedDestinations) => {
+        const destinationAirport = loadedDestinations.find(
+          (airport) => airport.iataCode === destination,
+        );
+
+        if (destinationAirport) {
+          setDestinationInput(formatAirportLabel(destinationAirport));
+        }
+      });
     }
 
     if (origin && destination && date) {
       handleSearch(initialFilters);
     } else {
       setLoading(false);
+
       setHasSearched(false);
     }
-  }, [searchParams]);
+  }, [searchParams, origins]);
 
   return (
     <div className="flex flex-col items-center bg-blue-50 px-30 pb-20 pt-15">
@@ -137,8 +153,11 @@ export const FlightsPage = () => {
       </div>
 
       <div className="mb-6 flex items-center p-5 gap-2 self-start">
-        <h1 className="text-[25px] font-bold">
-          Vuelos disponibles {filters.origin} → {filters.destination}
+        <h1 className="text-[25px] flex gap-2">
+          <p className="font-bold">Vuelos disponibles: </p>{" "}
+          <p>
+            {originInput} → {destinationInput}
+          </p>
         </h1>
 
         <p className="text-xl text-gray-400">|</p>
