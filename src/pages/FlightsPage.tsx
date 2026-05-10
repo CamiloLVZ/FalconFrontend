@@ -18,18 +18,29 @@ export const FlightsPage = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [origins, setOrigins] = useState<AirportSearchOption[]>([]);
   const [destinations, setDestinations] = useState<AirportSearchOption[]>([]);
+
+  const [searchFilters, setSearchFilters] = useState<FlightSearchParams>({
+    origin: "",
+    destination: "",
+    date: "",
+    status: "",
+  });
+
+  const [appliedDisplay, setAppliedDisplay] = useState({
+    origin: "",
+    destination: "",
+    date: "",
+  });
+
   const [originInput, setOriginInput] = useState("");
   const [destinationInput, setDestinationInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const [filters, setFilters] = useState<FlightSearchParams>({
-    origin: "",
-    destination: "",
-    date: "",
-    status: "",
-  });
+  const formatAirportLabel = (airport: AirportSearchOption) => {
+    return `${airport.city} (${airport.iataCode})`;
+  };
 
   const loadOrigins = async () => {
     try {
@@ -44,7 +55,6 @@ export const FlightsPage = () => {
   const loadDestinations = async (originCode: string) => {
     try {
       const data = await getAvailableDestinations(originCode);
-
       setDestinations(data);
 
       return data;
@@ -55,14 +65,16 @@ export const FlightsPage = () => {
     }
   };
 
-  const formatAirportLabel = (airport: AirportSearchOption) => {
-    return `${airport.city} (${airport.iataCode})`;
-  };
-
-  const handleSearch = async (customFilters: FlightSearchParams) => {
+  const handleSearch = async (
+    customFilters: FlightSearchParams,
+    displayData?: {
+      origin: string;
+      destination: string;
+      date: string;
+    },
+  ) => {
     try {
       setLoading(true);
-
       setError(null);
 
       const cleanFilters: CleanFilters = Object.fromEntries(
@@ -70,8 +82,11 @@ export const FlightsPage = () => {
       );
 
       const data = await searchFlights(cleanFilters);
-
       setFlights(data.data);
+
+      if (displayData) {
+        setAppliedDisplay(displayData);
+      }
 
       setHasSearched(true);
     } catch (err) {
@@ -86,6 +101,10 @@ export const FlightsPage = () => {
   }, []);
 
   useEffect(() => {
+    if (origins.length === 0) {
+      return;
+    }
+
     const origin = searchParams.get("origin") || "";
     const destination = searchParams.get("destination") || "";
     const date = searchParams.get("date") || "";
@@ -96,53 +115,73 @@ export const FlightsPage = () => {
       status: "",
     };
 
-    setFilters(initialFilters);
+    setSearchFilters(initialFilters);
+
+    if (!origin || !destination || !date) {
+      setLoading(false);
+
+      setHasSearched(false);
+
+      return;
+    }
 
     const originAirport = origins.find(
       (airport) => airport.iataCode === origin,
     );
 
-    if (originAirport) {
-      setOriginInput(formatAirportLabel(originAirport));
+    if (!originAirport) {
+      return;
     }
 
-    if (origin) {
-      loadDestinations(origin).then((loadedDestinations) => {
-        const destinationAirport = loadedDestinations.find(
-          (airport) => airport.iataCode === destination,
-        );
+    const formattedOrigin = formatAirportLabel(originAirport);
 
-        if (destinationAirport) {
-          setDestinationInput(formatAirportLabel(destinationAirport));
-        }
+    setOriginInput(formattedOrigin);
+
+    loadDestinations(origin).then((loadedDestinations) => {
+      const destinationAirport = loadedDestinations.find(
+        (airport) => airport.iataCode === destination,
+      );
+
+      if (!destinationAirport) {
+        return;
+      }
+
+      const formattedDestination = formatAirportLabel(destinationAirport);
+
+      setDestinationInput(formattedDestination);
+
+      handleSearch(initialFilters, {
+        origin: formattedOrigin,
+        destination: formattedDestination,
+        date,
       });
-    }
-
-    if (origin && destination && date) {
-      handleSearch(initialFilters);
-    } else {
-      setLoading(false);
-
-      setHasSearched(false);
-    }
+    });
   }, [searchParams, origins]);
 
   return (
     <div className="flex flex-col items-center bg-blue-50 px-30 pb-20 pt-15">
       <div className="w-full max-w-4xl sticky top-16 z-20 mb-10">
         <SearchBar
-          filters={filters}
+          filters={searchFilters}
           origins={origins}
           destinations={destinations}
           originInput={originInput}
           destinationInput={destinationInput}
           setOriginInput={setOriginInput}
           setDestinationInput={setDestinationInput}
-          onChange={setFilters}
+          onChange={setSearchFilters}
           loadDestinations={loadDestinations}
           onSearch={() => {
+            setAppliedDisplay({
+              origin: originInput,
+              destination: destinationInput,
+              date: searchFilters.date,
+            });
+
             const cleanFilters: Record<string, string> = Object.fromEntries(
-              Object.entries(filters).filter(([_, value]) => value !== ""),
+              Object.entries(searchFilters).filter(
+                ([_, value]) => value !== "",
+              ),
             );
 
             const params = new URLSearchParams(cleanFilters).toString();
@@ -154,15 +193,18 @@ export const FlightsPage = () => {
 
       <div className="mb-6 flex items-center p-5 gap-2 self-start">
         <h1 className="text-[25px] flex gap-2">
-          <p className="font-bold">Vuelos disponibles: </p>{" "}
-          <p>
-            {originInput} → {destinationInput}
-          </p>
+          <span className="font-bold">Vuelos disponibles:</span>
+
+          <span>
+            {appliedDisplay.origin} → {appliedDisplay.destination}
+          </span>
         </h1>
 
         <p className="text-xl text-gray-400">|</p>
 
-        <p className="text-lg text-gray-500 opacity-75">{filters.date}</p>
+        <p className="text-lg text-gray-500 opacity-75">
+          {appliedDisplay.date}
+        </p>
       </div>
 
       {loading && <LoadingScreen />}
