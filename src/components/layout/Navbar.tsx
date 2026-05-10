@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Logo } from "../icons/Logo.tsx";
 import { NavLink } from "react-router-dom";
 

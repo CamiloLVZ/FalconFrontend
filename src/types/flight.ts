@@ -1,9 +1,4 @@
-export interface AirplaneType {
-  producer: string;
-  model: string;
-  economySeats: number;
-  firstClassSeats: number;
-}
+import type { AirplaneType } from "./airplaneType";
 
 export interface Flight {
   id: number;

@@ -6,6 +6,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { SearchBar } from "../components/search/SearchBar";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { ErrorScreen } from "../components/ErrorScreen";
+import { getAvailableOrigins } from "../services/airportService";
+import type { AirportSearchOption } from "../types/airport";
 
 export const FlightsPage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,20 @@ export const FlightsPage = () => {
     date: "",
     status: "",
   });
+  const loadOrigins = async () => {
+    try {
+      const data = await getAvailableOrigins();
+
+      setOrigins(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const [origins, setOrigins] = useState<AirportSearchOption[]>([]);
+  useEffect(() => {
+    loadOrigins();
+  }, []);
 
   const handleSearch = async (customFilters: FlightSearchParams) => {
     try {
@@ -66,6 +82,7 @@ export const FlightsPage = () => {
         <SearchBar
           filters={filters}
           onChange={setFilters}
+          origins={origins}
           onSearch={() => {
             const cleanFilters: Record<string, string> = Object.fromEntries(
               Object.entries(filters).filter(([_, v]) => v !== ""),
