@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import bgImage from "../../assets/backgrounds/sky-background.png";
+import bgImage from "../../../assets/backgrounds/sky-background.png";
 
 import { SearchBar } from "../search/SearchBar.tsx";
 
-import type { FlightSearchParams } from "../../types/flight.ts";
-import type { AirportSearchOption } from "../../types/airport.ts";
+import type { FlightSearchParams } from "../../../types/flight.ts";
+import type { AirportSearchOption } from "../../../types/airport.ts";
 
 import {
   getAvailableDestinations,
   getAvailableOrigins,
-} from "../../services/airportService.ts";
+} from "../../../services/airportService.ts";
 
 export const HeroSection = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import {ServiceCard} from "./ServiceCard";
+import {ServiceCard} from "./ServiceCard.tsx";
 
 export const ServicesSection = () => {
     return (

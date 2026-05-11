@@ -1,8 +1,8 @@
-import type { Flight } from "../types/flight";
-import { formatDuration, getArrivalTime } from "../utils/date-times";
-import { AirplaneIcon } from "../components/icons/AirplaneIcon";
-import { AirplaneDepartureIcon } from "./icons/AirplaneDepartureIcon";
-import { AirplaneArrivalIcon } from "./icons/AirplaneArrivalIcon";
+import type { Flight } from "../../../types/flight.ts";
+import { formatDuration, getArrivalTime } from "../../../utils/date-times.ts";
+import { AirplaneIcon } from "../../icons/AirplaneIcon.tsx";
+import { AirplaneDepartureIcon } from "../../icons/AirplaneDepartureIcon.tsx";
+import { AirplaneArrivalIcon } from "../../icons/AirplaneArrivalIcon.tsx";
 
 interface Props {
   flight: Flight;

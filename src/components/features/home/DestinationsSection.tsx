@@ -1,8 +1,8 @@
-import { DestinationCard } from "./DestinationCard";
+import { DestinationCard } from "./DestinationCard.tsx";
 
-import cartagena from "../../assets/destinations/cartagena.jpg";
-import medellin from "../../assets/destinations/medellin.jpg";
-import sanAndres from "../../assets/destinations/san-andres.jpg";
+import cartagena from "../../../assets/destinations/cartagena.jpg";
+import medellin from "../../../assets/destinations/medellin.jpg";
+import sanAndres from "../../../assets/destinations/san-andres.jpg";
 
 export const DestinationsSection = () => {
   return (

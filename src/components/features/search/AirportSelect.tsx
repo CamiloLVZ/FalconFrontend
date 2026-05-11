@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import type { AirportSearchOption } from "../../types/airport.ts";
+import type { AirportSearchOption } from "../../../types/airport.ts";
 
 interface Props {
   options: AirportSearchOption[];

@@ -7,10 +7,10 @@ import {
 } from "../services/airportService";
 import type { CleanFilters, Flight, FlightSearchParams } from "../types/flight";
 import type { AirportSearchOption } from "../types/airport";
-import { FlightCard } from "../components/FlightCard";
-import { SearchBar } from "../components/search/SearchBar";
-import { LoadingScreen } from "../components/LoadingScreen";
-import { ErrorScreen } from "../components/ErrorScreen";
+import { FlightCard } from "../components/features/flights/FlightCard.tsx";
+import { SearchBar } from "../components/features/search/SearchBar";
+import { LoadingScreen } from "../components/common/LoadingScreen.tsx";
+import { ErrorScreen } from "../components/common/ErrorScreen.tsx";
 
 export const FlightsPage = () => {
   const navigate = useNavigate();
