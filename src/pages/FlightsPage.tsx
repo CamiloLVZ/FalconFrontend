@@ -78,7 +78,7 @@ export const FlightsPage = () => {
       setError(null);
 
       const cleanFilters: CleanFilters = Object.fromEntries(
-        Object.entries(customFilters).filter(([_, value]) => value !== ""),
+        Object.entries(customFilters).filter(([, value]) => value !== ""),
       );
 
       const data = await searchFlights(cleanFilters);
@@ -89,7 +89,7 @@ export const FlightsPage = () => {
       }
 
       setHasSearched(true);
-    } catch (err) {
+    } catch {
       setError("Error buscando vuelos");
     } finally {
       setLoading(false);
@@ -179,9 +179,7 @@ export const FlightsPage = () => {
             });
 
             const cleanFilters: Record<string, string> = Object.fromEntries(
-              Object.entries(searchFilters).filter(
-                ([_, value]) => value !== "",
-              ),
+              Object.entries(searchFilters).filter(([, value]) => value !== ""),
             );
 
             const params = new URLSearchParams(cleanFilters).toString();
