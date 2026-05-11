@@ -98,7 +98,7 @@ export const HeroSection = () => {
             loadDestinations={loadDestinations}
             onSearch={() => {
               const cleanFilters: Record<string, string> = Object.fromEntries(
-                Object.entries(filters).filter(([_, value]) => value !== ""),
+                Object.entries(filters).filter(([, value]) => value !== ""),
               );
 
               const params = new URLSearchParams(cleanFilters).toString();
