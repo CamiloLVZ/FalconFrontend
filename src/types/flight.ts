@@ -1,4 +1,4 @@
-import type { AirplaneType } from "./airplaneType";
+import type { AircraftType } from "./aircraftType";
 
 export interface Flight {
   id: number;
@@ -8,7 +8,7 @@ export interface Flight {
   departureDateTime: string;
   localDepartureDateTime: string;
   durationMinutes: number;
-  airplaneType: AirplaneType;
+  airplaneType: AircraftType;
   status: string;
 }
 

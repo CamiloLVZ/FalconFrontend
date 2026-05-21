@@ -1,17 +1,14 @@
-import { Navbar } from "../components/layout/Navbar";
-import { Footer } from "../components/layout/Footer";
+import { Navbar } from "../components/common/Navbar.tsx";
+import { Footer } from "../components/common/Footer.tsx";
+import {Outlet} from "react-router-dom";
 
-interface Props {
-    children: React.ReactNode;
-}
-
-export const MainLayout = ({ children }: Props) => {
+export const MainLayout = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />
 
             <main className="flex-1">
-                {children}
+                <Outlet />
             </main>
 
             <Footer />

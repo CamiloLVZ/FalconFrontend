@@ -1,8 +1,10 @@
 interface ErrorScreenProps {
+  messageTitle?: string;
   message?: string;
 }
 
 export const ErrorScreen = ({
+  messageTitle = "Error",
   message = "No hay resultados",
 }: ErrorScreenProps) => {
   return (
@@ -31,11 +33,10 @@ export const ErrorScreen = ({
 
       {/* Error message */}
       <div className="text-center flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">{message}</h2>
-        <p className="text-gray-500 max-w-md">
-          Parece que no encontramos lo que buscas. Intenta ajustar tus criterios
-          de búsqueda.
-        </p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          {messageTitle}
+        </h2>
+        <p className="text-gray-500 max-w-md">{message}</p>
       </div>
 
       {/* Decorative elements */}
