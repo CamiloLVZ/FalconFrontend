@@ -32,7 +32,7 @@ export const updateAircraftCapacity = async (
   id: number,
   capacityData: UpdateAircraftCapacityDTO,
 ): Promise<AircraftType> => {
-  const response = await apiClient.put<AircraftType>(
+  const response = await apiClient.patch<AircraftType>(
     `/v1/airplane-types/${id}`,
     capacityData,
   );
@@ -43,7 +43,7 @@ export const updateAircraftIdentity = async (
   id: number,
   identityData: CorrectIdentityAircraftDTO,
 ): Promise<AircraftType> => {
-  const response = await apiClient.put<AircraftType>(
+  const response = await apiClient.patch<AircraftType>(
     `/v1/airplane-types/${id}/correct-identity`,
     identityData,
   );
@@ -51,21 +51,21 @@ export const updateAircraftIdentity = async (
 };
 
 export const activateAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.put<AircraftType>(
+  const response = await apiClient.patch<AircraftType>(
     `/v1/airplane-types/${id}/activate`,
   );
   return response.data;
 };
 
 export const deactivateAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.put<AircraftType>(
+  const response = await apiClient.patch<AircraftType>(
     `/v1/airplane-types/${id}/deactivate`,
   );
   return response.data;
 };
 
 export const retireAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.put<AircraftType>(
+  const response = await apiClient.patch<AircraftType>(
     `/v1/airplane-types/${id}/retire`,
   );
   return response.data;
