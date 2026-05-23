@@ -1,10 +1,53 @@
 import axios from "axios";
 
+import { AUTH_TOKEN_KEY } from "../auth/constants/auth.constants";
+
+let isRedirecting = false;
+
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+
   headers: {
     "Content-Type": "application/json",
-    Authorization:
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwicm9sZXMiOlsiQURNSU4iXSwiZW1haWwiOiJhZG1pbkBmYWxjb24uY29tIiwiaXNzIjoiRmFsY29uQm9va2luZ1N5c3RlbSIsImlhdCI6MTc3OTU3MzE0MSwiZXhwIjoxNzc5NTc2NzQxfQ.zQ2joArYPA5bEYPP1X4V48D_vdgPXApeFv_BpmvtwLM",
   },
 });
+
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+
+  (error) => {
+    return Promise.reject(error);
+  },
+);
+
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+
+  (error) => {
+    const status = error.response?.status;
+
+    const requestUrl = error.config?.url ?? "";
+
+    const isLoginRequest = requestUrl.includes("/auth/login");
+
+    if (status === 401 && !isLoginRequest && !isRedirecting) {
+      isRedirecting = true;
+
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
+  },
+);

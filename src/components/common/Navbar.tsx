@@ -34,9 +34,12 @@ export const Navbar = () => {
 
         {/* Right side */}
         <div>
-          <button className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-300 transition cursor-pointer text-lg">
+          <NavLink
+            to="/login"
+            className="block rounded-lg bg-yellow-400 px-4 py-2 text-lg font-medium text-black transition hover:bg-yellow-300"
+          >
             Login
-          </button>
+          </NavLink>
         </div>
       </div>
     </header>

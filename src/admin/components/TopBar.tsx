@@ -1,4 +1,15 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/hooks/useAuth";
+
 export const TopBar = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className="sticky top-0 z-20 h-[72px] border-b border-white/5 bg-[#21324a] text-slate-200">
       <div className="flex h-full items-center justify-between gap-5 px-5 sm:px-8 lg:pl-[350px] lg:pr-10">
@@ -17,10 +28,14 @@ export const TopBar = () => {
             </svg>
           </button>
 
-          <button className="grid h-11 w-11 place-items-center rounded-lg text-slate-300 transition hover:bg-white/8 hover:text-white">
-            <span className="sr-only">Data center</span>
+          <button
+            className="grid h-11 w-11 place-items-center rounded-lg text-slate-300 transition hover:bg-white/8 hover:text-white"
+            onClick={handleLogout}
+            type="button"
+          >
+            <span className="sr-only">Cerrar sesión</span>
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 4h16v6H4V4Zm2 2v2h2V6H6Zm-2 8h16v6H4v-6Zm2 2v2h2v-2H6Z" />
+              <path d="M5.5 3.5h8A1.5 1.5 0 0 1 15 5v3h-2V5.5H6v13h7V16h2v3a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 4 19V5a1.5 1.5 0 0 1 1.5-1.5Zm11.6 5.2 3.8 3.8-3.8 3.8-1.4-1.4 1.4-1.4H9.5v-2h7.6l-1.4-1.4 1.4-1.4Z" />
             </svg>
           </button>
 
