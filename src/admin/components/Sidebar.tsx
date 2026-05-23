@@ -36,7 +36,15 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-
+  {
+    label: "VUELOS",
+    path: "/admin/flights",
+    icon: (
+        <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 16.4v2.1L13.5 15v4.4l2 1.5v1.6L12 21.4l-3.5 1.1v-1.6l2-1.5V15L3 18.5v-2.1l7.5-5V6a1.5 1.5 0 0 1 3 0v5.4l7.5 5Z" />
+        </svg>
+    ),
+  },
   {
     label: "GENERACIÓN DE VUELOS",
     path: "/admin/flight-generation",
@@ -55,6 +63,15 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "PASAJEROS",
+    path: "/admin/passengers",
+    icon: (
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8.8 11.2a4.1 4.1 0 1 1 0-8.2 4.1 4.1 0 0 1 0 8.2Zm0 2c3.3 0 6.3 1.7 6.3 4.4v1.9H2.5v-1.9c0-2.7 3-4.4 6.3-4.4Zm7.4-1.5a3.4 3.4 0 1 1 0-6.8 3.4 3.4 0 0 1 0 6.8Zm0 1.8c2.8 0 5.3 1.4 5.3 3.7v2.3h-4.4v-1.9c0-1.7-.9-3.1-2.4-4.1.5-.1 1-.1 1.5-.1Z" />
+        </svg>
+    ),
+  }
 ];
 
 export const Sidebar = () => {
