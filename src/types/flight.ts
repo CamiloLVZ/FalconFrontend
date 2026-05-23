@@ -1,4 +1,4 @@
-import type { AircraftType } from "./aircraftType";
+import type { AircraftType } from "../admin/features/aircraft/types/aircraftType.ts";
 
 export interface Flight {
   id: number;

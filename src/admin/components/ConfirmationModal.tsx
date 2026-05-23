@@ -1,3 +1,6 @@
+import { AdminModal } from "./AdminModal";
+import { FormError } from "./FormError";
+
 interface ConfirmationModalProps {
   title: string;
   message: string;
@@ -16,32 +19,25 @@ export const ConfirmationModal = ({
   isSubmitting,
 }: ConfirmationModalProps) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="w-96 rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 className="text-xl font-bold mb-4">{title}</h2>
-        <p className="mb-6">{message}</p>
-        {error && (
-          <div className="mt-4 rounded-md bg-red-100 border border-red-300 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        <div className="flex justify-end space-x-2">
-          <button
-            onClick={onConfirm}
-            className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Procesando..." : "Confirmar"}
-          </button>
-          <button
-            onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded"
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </button>
-        </div>
+    <AdminModal title={title}>
+      <p className="mb-6">{message}</p>
+      <FormError error={error} />
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={onConfirm}
+          className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Procesando..." : "Confirmar"}
+        </button>
+        <button
+          onClick={onCancel}
+          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </button>
       </div>
-    </div>
+    </AdminModal>
   );
 };

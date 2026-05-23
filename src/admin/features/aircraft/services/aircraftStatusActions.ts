@@ -1,0 +1,18 @@
+import type {
+  AircraftStatusAction,
+  AircraftType,
+} from "../types/aircraftType";
+import {
+  activateAircraft,
+  deactivateAircraft,
+  retireAircraft,
+} from "./aircraftService";
+
+export const STATUS_ACTION_SERVICES: Record<
+  AircraftStatusAction,
+  (id: number) => Promise<AircraftType>
+> = {
+  ACTIVATE: activateAircraft,
+  DEACTIVATE: deactivateAircraft,
+  RETIRE: retireAircraft,
+};

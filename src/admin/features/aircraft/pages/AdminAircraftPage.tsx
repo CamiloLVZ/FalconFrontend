@@ -1,26 +1,25 @@
 import { useEffect, useState } from "react";
-import type {
-  AircraftType,
-  AircraftStatusAction,
-} from "../../../../types/aircraftType";
+import axios from "axios";
+import { ErrorScreen } from "../../../../components/common/ErrorScreen";
+import { LoadingScreen } from "../../../../components/common/LoadingScreen";
+import type { ApiErrorResponse } from "../../../../types/ApiError";
+import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { AircraftTable } from "../components/AircraftTable";
-import { EditAircraftIdentityModal } from "../components/EditAircraftIdentityModal";
-import { EditAircraftCapacityModal } from "../components/EditAircraftCapacityModal";
+import { EditAircraftCapacityModal } from "../components/modals/EditAircraftCapacityModal";
+import { EditAircraftIdentityModal } from "../components/modals/EditAircraftIdentityModal";
+import { ACTION_LABELS } from "../constants/aircraft.constants";
 import {
   getAircrafts,
   updateAircraftCapacity,
   updateAircraftIdentity,
 } from "../services/aircraftService";
-import { ErrorScreen } from "../../../../components/common/ErrorScreen";
-import { LoadingScreen } from "../../../../components/common/LoadingScreen";
-import { ConfirmationModal } from "../../../components/ConfirmationModal";
-import {
-  ACTION_LABELS,
-  STATUS_ACTION_SERVICES,
-} from "../constants/aircraft.constants";
+import { STATUS_ACTION_SERVICES } from "../services/aircraftStatusActions";
+import type {
+  AircraftStatusAction,
+  AircraftType,
+} from "../types/aircraftType";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
-import type { ApiErrorResponse } from "../../../../types/ApiError";
-import axios from "axios";
+
 export const AdminAircraftPage = () => {
   const [aircrafts, setAircrafts] = useState<AircraftType[]>([]);
   const sortedAircrafts = [...aircrafts].sort((a, b) => a.id - b.id);
@@ -44,6 +43,14 @@ export const AdminAircraftPage = () => {
   const [isEditIdentityOpen, setIsEditIdentityOpen] = useState(false);
   const [isEditCapacityOpen, setIsEditCapacityOpen] = useState(false);
 
+  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+      return unknownError.response?.data.message ?? fallback;
+    }
+
+    return "Ha ocurrido un error inesperado.";
+  };
+
   const loadAircrafts = async () => {
     try {
       setLoading(true);
@@ -58,6 +65,7 @@ export const AdminAircraftPage = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadAircrafts();
   }, []);
@@ -91,7 +99,6 @@ export const AdminAircraftPage = () => {
     if (!pendingStatusAction) return;
 
     const { aircraft, action } = pendingStatusAction;
-
     const updateService = STATUS_ACTION_SERVICES[action];
 
     try {
@@ -101,16 +108,11 @@ export const AdminAircraftPage = () => {
       const updatedAircraft = await updateService(aircraft.id);
 
       setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
-
       setPendingStatusAction(null);
     } catch (error) {
-      if (axios.isAxiosError<ApiErrorResponse>(error)) {
-        setIdentityError(
-          error.response?.data.message ?? "No se pudo actualizar la aeronave.",
-        );
-      } else {
-        setIdentityError("Ha ocurrido un error inesperado.");
-      }
+      setActionError(
+        getApiErrorMessage(error, "No se pudo actualizar la aeronave."),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -118,6 +120,7 @@ export const AdminAircraftPage = () => {
 
   const handleEditIdentity = (aircraft: AircraftType) => {
     setSelectedAircraft(aircraft);
+    setIdentityError(null);
     setIsEditIdentityOpen(true);
   };
 
@@ -136,15 +139,10 @@ export const AdminAircraftPage = () => {
       });
       setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
       setIsEditIdentityOpen(false);
-      setIdentitySubmitting(false);
     } catch (error) {
-      if (axios.isAxiosError<ApiErrorResponse>(error)) {
-        setIdentityError(
-          error.response?.data.message ?? "No se pudo actualizar la aeronave.",
-        );
-      } else {
-        setIdentityError("Ha ocurrido un error inesperado.");
-      }
+      setIdentityError(
+        getApiErrorMessage(error, "No se pudo actualizar la aeronave."),
+      );
     } finally {
       setIdentitySubmitting(false);
     }
@@ -152,6 +150,7 @@ export const AdminAircraftPage = () => {
 
   const handleEditCapacity = (aircraft: AircraftType) => {
     setSelectedAircraft(aircraft);
+    setCapacityError(null);
     setIsEditCapacityOpen(true);
   };
 
@@ -168,20 +167,18 @@ export const AdminAircraftPage = () => {
         firstClassSeats,
       });
       setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
+      setIsEditCapacityOpen(false);
     } catch (error) {
-      if (axios.isAxiosError<ApiErrorResponse>(error)) {
-        setCapacityError(
-          error.response?.data.message ??
-            "No se pudo actualizar la capacidad de la aeronave.",
-        );
-      } else {
-        setCapacityError("Ha ocurrido un error inesperado.");
-      }
+      setCapacityError(
+        getApiErrorMessage(
+          error,
+          "No se pudo actualizar la capacidad de la aeronave.",
+        ),
+      );
       console.error("Error updating aircraft capacity:", error);
     } finally {
       setCapacitySubmitting(false);
     }
-    setIsEditCapacityOpen(false);
   };
 
   if (loading) {
@@ -196,7 +193,7 @@ export const AdminAircraftPage = () => {
 
   return (
     <section className="min-h-[calc(100vh-136px)]">
-      <h1 className="text-2xl font-bold">Aircrafts</h1>
+      <h1 className="text-2xl font-bold">Aeronaves</h1>
       <div className="mt-4 overflow-x-auto">
         <AircraftTable
           aircrafts={sortedAircrafts}
@@ -227,7 +224,7 @@ export const AdminAircraftPage = () => {
 
         {isConfirmationOpen && pendingStatusAction ? (
           <ConfirmationModal
-            title="Confirmar Acción"
+            title="Confirmar acción"
             message={`¿Desea ${ACTION_LABELS[pendingStatusAction.action].toLowerCase()} la aeronave ${pendingStatusAction.aircraft.producer} ${pendingStatusAction.aircraft.model}?`}
             onConfirm={executePendingAction}
             onCancel={closeConfirmationModal}

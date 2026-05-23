@@ -1,4 +1,4 @@
-import type { AircraftType } from "../../../../types/aircraftType";
+import type { AircraftType } from "../types/aircraftType";
 
 export const replaceAircraftInList = (
   aircrafts: AircraftType[],

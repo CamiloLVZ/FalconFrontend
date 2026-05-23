@@ -1,13 +1,7 @@
 import type {
   AircraftStatus,
   AircraftStatusAction,
-  AircraftType,
-} from "../../../../types/aircraftType";
-import {
-  activateAircraft,
-  deactivateAircraft,
-  retireAircraft,
-} from "../services/aircraftService";
+} from "../types/aircraftType";
 
 export const STATUS_STYLES: Record<AircraftStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-600",
@@ -41,13 +35,4 @@ export const ACTION_TO_STATUS: Record<AircraftStatusAction, AircraftStatus> = {
   ACTIVATE: "ACTIVE",
   DEACTIVATE: "INACTIVE",
   RETIRE: "RETIRED",
-};
-
-export const STATUS_ACTION_SERVICES: Record<
-  AircraftStatusAction,
-  (id: number) => Promise<AircraftType>
-> = {
-  ACTIVATE: activateAircraft,
-  DEACTIVATE: deactivateAircraft,
-  RETIRE: retireAircraft,
 };

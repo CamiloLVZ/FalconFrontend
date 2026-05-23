@@ -1,13 +1,9 @@
 import type {
   AircraftStatusAction,
   AircraftType,
-} from "../../../../types/aircraftType";
-import {
-  ACTION_LABELS,
-  STATUS_LABELS,
-  AVAILABLE_ACTIONS,
-  STATUS_STYLES,
-} from "../constants/aircraft.constants";
+} from "../types/aircraftType";
+import { AircraftRowActions } from "./AircraftRowActions";
+import { AircraftStatusBadge } from "./AircraftStatusBadge";
 
 interface AircraftsTableProps {
   aircrafts: AircraftType[];
@@ -18,86 +14,65 @@ interface AircraftsTableProps {
 
 export const AircraftTable = ({
   aircrafts,
-  onStatusAction: onAction,
+  onStatusAction,
   onEditIdentity,
   onEditCapacity,
 }: AircraftsTableProps) => {
   return (
-    <table className="min-w-full divide-y divide-gray-200 bg-white shadow-sm rounded-lg">
+    <table className="min-w-full divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
       <thead className="bg-gray-50">
         <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             ID
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Producer
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Fabricante
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Model
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Modelo
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Economy Seats
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Asientos económica
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            First Class Seats
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Asientos primera clase
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Status
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Estado
           </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Actions
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Acciones
           </th>
         </tr>
       </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
+      <tbody className="divide-y divide-gray-200 bg-white">
         {aircrafts.map((aircraft) => (
           <tr key={aircraft.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
               {aircraft.id}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {aircraft.producer}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {aircraft.model}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {aircraft.economySeats}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {aircraft.firstClassSeats}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[aircraft.status]}`}
-              >
-                {STATUS_LABELS[aircraft.status]}
-              </span>
+            <td className="whitespace-nowrap px-6 py-4 text-sm">
+              <AircraftStatusBadge status={aircraft.status} />
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm">
-              <div className="flex space-x-2">
-                {AVAILABLE_ACTIONS[aircraft.status].map((action) => (
-                  <button
-                    key={action}
-                    className="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded"
-                    onClick={() => onAction(aircraft.id, action)}
-                  >
-                    {ACTION_LABELS[action]}
-                  </button>
-                ))}
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded"
-                  onClick={() => onEditIdentity && onEditIdentity(aircraft)}
-                >
-                  Edit Identity
-                </button>
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded"
-                  onClick={() => onEditCapacity && onEditCapacity(aircraft)}
-                >
-                  Edit Capacity
-                </button>
-              </div>
+            <td className="whitespace-nowrap px-6 py-4 text-sm">
+              <AircraftRowActions
+                aircraft={aircraft}
+                onStatusAction={onStatusAction}
+                onEditIdentity={onEditIdentity}
+                onEditCapacity={onEditCapacity}
+              />
             </td>
           </tr>
         ))}

@@ -4,7 +4,7 @@ import type {
   UpdateAircraftCapacityDTO,
   CorrectIdentityAircraftDTO,
   AircraftType,
-} from "../../../../types/aircraftType";
+} from "../types/aircraftType";
 
 export const getAircrafts = async (): Promise<AircraftType[]> => {
   const response = await apiClient.get<AircraftType[]>("/v1/airplane-types");
