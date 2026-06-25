@@ -6,7 +6,7 @@ import {
   getAvailableDestinations,
 } from "../services/airportService";
 import type { CleanFilters, Flight, FlightSearchParams } from "../types/flight";
-import type { AirportSearchOption } from "../types/airport";
+import type { AirportSearchOption } from "../types/airportSearch.ts";
 import { FlightCard } from "../components/features/flights/FlightCard.tsx";
 import { SearchBar } from "../components/features/search/SearchBar";
 import { LoadingScreen } from "../components/common/LoadingScreen.tsx";
