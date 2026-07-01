@@ -6,7 +6,7 @@ import type { ResponseRoute } from "../../types/routeTypes";
 import { getAllAirports } from "../../../airports/services/airportService";
 import { getAircrafts } from "../../../aircraft/services/aircraftService";
 import type { Airport } from "../../../airports/types/AirportTypes";
-import type { AircraftType } from "../../../aircraft/types/aircraftType";
+import type { AircraftType } from "../../../aircraft/types/aircraftTypes";
 
 interface EditRouteModalProps {
   route: ResponseRoute;

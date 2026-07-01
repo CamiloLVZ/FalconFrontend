@@ -1,21 +1,43 @@
-import type { AircraftType } from "../admin/features/aircraft/types/aircraftType.ts";
+import type { AirplaneTypeSummary } from "../admin/features/aircraft/types/airplaneTypeTypes";
+
+export type FlightStatus =
+  | "SCHEDULED"
+  | "CHECK_IN_AVAILABLE"
+  | "BOARDING"
+  | "COMPLETED"
+  | "CANCELED"
+  | "CANCELLED"
+  | "DELAYED";
 
 export interface Flight {
   id: number;
   flightNumber: string;
   origin: string;
   destination: string;
-  departureDateTime: string;
-  localDepartureDateTime: string;
+  departureDateTime: string; // OffsetDateTime → ISO 8601 string
+  localDepartureDateTime: string; // LocalDateTime → ISO string
   durationMinutes: number;
-  airplaneType: AircraftType;
-  status: string;
+  airplaneType: AirplaneTypeSummary;
+  status: FlightStatus;
 }
 
-export interface FlightResponse {
+export interface FlightSearchResult {
   data: Flight[];
   total: number;
-  date: string;
+  date: string; // LocalDate → "YYYY-MM-DD"
+}
+
+export interface CreateFlightRequest {
+  routeFlightNumber: string;
+  departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
+}
+
+export interface RescheduleFlightRequest {
+  departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
+}
+
+export interface ChangeAirplaneTypeRequest {
+  idAirplaneType: number;
 }
 
 export interface FlightSearchParams {

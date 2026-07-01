@@ -17,7 +17,7 @@ import { STATUS_ACTION_SERVICES } from "../services/aircraftStatusActions";
 import type {
   AircraftStatusAction,
   AircraftType,
-} from "../types/aircraftType";
+} from "../types/aircraftTypes";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
 
 export const AdminAircraftPage = () => {

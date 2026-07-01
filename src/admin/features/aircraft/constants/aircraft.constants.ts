@@ -1,7 +1,7 @@
 import type {
   AircraftStatus,
   AircraftStatusAction,
-} from "../types/aircraftType";
+} from "../types/aircraftTypes";
 
 export const STATUS_STYLES: Record<AircraftStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-600",

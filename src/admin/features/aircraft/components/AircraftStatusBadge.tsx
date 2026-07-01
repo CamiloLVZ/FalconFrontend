@@ -1,8 +1,5 @@
-import {
-  STATUS_LABELS,
-  STATUS_STYLES,
-} from "../constants/aircraft.constants";
-import type { AircraftStatus } from "../types/aircraftType";
+import { STATUS_LABELS, STATUS_STYLES } from "../constants/aircraft.constants";
+import type { AircraftStatus } from "../types/aircraftTypes";
 
 interface AircraftStatusBadgeProps {
   status: AircraftStatus;

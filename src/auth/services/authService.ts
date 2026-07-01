@@ -1,14 +1,15 @@
 import { apiClient } from "../../api/axios";
+import type { LoginRequest, LoginResponse, RegisterRequest } from "../types/auth";
 
-import type { LoginRequestDTO, LoginResponseDTO } from "../types/auth";
-
-export const loginUser = async (
-  credentials: LoginRequestDTO,
-): Promise<LoginResponseDTO> => {
-  const response = await apiClient.post<LoginResponseDTO>(
-    "/v1/auth/login",
-    credentials,
-  );
-
+export const loginUser = async (credentials: LoginRequest): Promise<LoginResponse> => {
+  const response = await apiClient.post<LoginResponse>("/v1/auth/login", credentials);
   return response.data;
+};
+
+export const registerUser = async (data: RegisterRequest): Promise<void> => {
+  await apiClient.post("/v1/auth/register", data);
+};
+
+export const registerAdmin = async (data: RegisterRequest): Promise<void> => {
+  await apiClient.post("/v1/auth/register-admin", data);
 };

@@ -1,7 +1,7 @@
 import type {
   AircraftStatusAction,
   AircraftType,
-} from "../types/aircraftType";
+} from "../types/aircraftTypes";
 import { AircraftRowActions } from "./AircraftRowActions";
 import { AircraftStatusBadge } from "./AircraftStatusBadge";
 

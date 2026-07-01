@@ -1,85 +1,70 @@
 import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
 import type {
-  ResponseRoute,
+  Route,
   CreateRouteRequest,
   UpdateRouteRequest,
-  AddRouteScheduleRequest,
-  RouteWithSchedules,
+  SetRouteScheduleRequest,
+  RouteSchedule,
 } from "../types/routeTypes";
 
 export const getAllRoutes = async (
   size: number,
   page: number,
-): Promise<PagedResponse<ResponseRoute>> => {
-  const response = await apiClient.get<PagedResponse<ResponseRoute>>(
-    "/v1/routes",
-    { params: { size, page } },
-  );
+): Promise<PagedResponse<Route>> => {
+  const response = await apiClient.get<PagedResponse<Route>>("/v1/routes", {
+    params: { size, page },
+  });
   return response.data;
 };
 
-export const getRouteByFlightNumber = async (
-  flightNumber: string,
-): Promise<ResponseRoute> => {
-  const response = await apiClient.get<ResponseRoute>(
-    `/v1/routes/${flightNumber}`,
-  );
+export const getRouteByFlightNumber = async (flightNumber: string): Promise<Route> => {
+  const response = await apiClient.get<Route>(`/v1/routes/${flightNumber}`);
   return response.data;
 };
 
-export const addRoute = async (
-  route: CreateRouteRequest,
-): Promise<ResponseRoute> => {
-  const response = await apiClient.post<ResponseRoute>("/v1/routes", route);
+export const createRoute = async (data: CreateRouteRequest): Promise<Route> => {
+  const response = await apiClient.post<Route>("/v1/routes", data);
   return response.data;
 };
 
 export const updateRoute = async (
   flightNumber: string,
-  updateRequest: UpdateRouteRequest,
-): Promise<ResponseRoute> => {
-  const response = await apiClient.put<ResponseRoute>(
-    `/v1/routes/${flightNumber}`,
-    updateRequest,
-  );
+  data: UpdateRouteRequest,
+): Promise<Route> => {
+  const response = await apiClient.put<Route>(`/v1/routes/${flightNumber}`, data);
   return response.data;
 };
 
-export const activateRoute = async (
-  flightNumber: string,
-): Promise<ResponseRoute> => {
-  const response = await apiClient.patch<ResponseRoute>(
-    `/v1/routes/${flightNumber}/activate`,
-  );
+export const activateRoute = async (flightNumber: string): Promise<Route> => {
+  const response = await apiClient.patch<Route>(`/v1/routes/${flightNumber}/activate`);
   return response.data;
 };
 
-export const deactivateRoute = async (
-  flightNumber: string,
-): Promise<ResponseRoute> => {
-  const response = await apiClient.patch<ResponseRoute>(
-    `/v1/routes/${flightNumber}/deactivate`,
-  );
+export const deactivateRoute = async (flightNumber: string): Promise<Route> => {
+  const response = await apiClient.patch<Route>(`/v1/routes/${flightNumber}/deactivate`);
   return response.data;
 };
 
-export const setRouteOperatingSchedules = async (
+export const setRouteSchedule = async (
   flightNumber: string,
-  schedules: AddRouteScheduleRequest,
-): Promise<RouteWithSchedules> => {
-  const response = await apiClient.patch<RouteWithSchedules>(
+  data: SetRouteScheduleRequest,
+): Promise<RouteSchedule> => {
+  const response = await apiClient.patch<RouteSchedule>(
     `/v1/routes/${flightNumber}/schedules`,
-    schedules,
+    data,
   );
   return response.data;
 };
 
-export const getRouteOperatingSchedules = async (
-  flightNumber: string,
-): Promise<RouteWithSchedules> => {
-  const response = await apiClient.get<RouteWithSchedules>(
-    `/v1/routes/${flightNumber}/schedules`,
-  );
+export const getRouteSchedule = async (flightNumber: string): Promise<RouteSchedule> => {
+  const response = await apiClient.get<RouteSchedule>(`/v1/routes/${flightNumber}/schedules`);
   return response.data;
 };
+
+// ─── Backward-compat aliases ─────────────────────────────────────
+/** @deprecated Use setRouteSchedule instead */
+export const setRouteOperatingSchedules = setRouteSchedule;
+
+/** @deprecated Use getRouteSchedule instead */
+export const getRouteOperatingSchedules = getRouteSchedule;

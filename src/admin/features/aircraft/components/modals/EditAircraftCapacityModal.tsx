@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AdminModal } from "../../../../components/AdminModal";
 import { FormActions } from "../../../../components/FormActions";
 import { FormError } from "../../../../components/FormError";
-import type { AircraftType } from "../../types/aircraftType";
+import type { AircraftType } from "../../types/aircraftTypes";
 
 interface EditAircraftCapacityModalProps {
   aircraft: AircraftType;

@@ -6,7 +6,7 @@ import {
 import type {
   AircraftStatusAction,
   AircraftType,
-} from "../types/aircraftType";
+} from "../types/aircraftTypes";
 
 interface AircraftRowActionsProps {
   aircraft: AircraftType;
