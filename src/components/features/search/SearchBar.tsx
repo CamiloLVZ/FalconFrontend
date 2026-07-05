@@ -2,7 +2,7 @@ import type React from "react";
 import { AirplaneDepartureIcon } from "../../icons/AirplaneDepartureIcon.tsx";
 import { AirplaneArrivalIcon } from "../../icons/AirplaneArrivalIcon.tsx";
 import type { FlightSearchParams } from "../../../types/flight.ts";
-import type { AirportSearchOption } from "../../../types/airport.ts";
+import type { AirportSearchOption } from "../../../types/airportSearch.ts";
 import { AirportSelect } from "./AirportSelect.tsx";
 
 interface Props {

@@ -6,7 +6,7 @@ import bgImage from "../../../assets/backgrounds/sky-background.png";
 import { SearchBar } from "../search/SearchBar.tsx";
 
 import type { FlightSearchParams } from "../../../types/flight.ts";
-import type { AirportSearchOption } from "../../../types/airport.ts";
+import type { AirportSearchOption } from "../../../types/airportSearch.ts";
 
 import {
   getAvailableDestinations,

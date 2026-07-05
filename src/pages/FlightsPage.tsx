@@ -6,7 +6,7 @@ import {
   getAvailableDestinations,
 } from "../services/airportService";
 import type { CleanFilters, Flight, FlightSearchParams } from "../types/flight";
-import type { AirportSearchOption } from "../types/airport";
+import type { AirportSearchOption } from "../types/airportSearch.ts";
 import { FlightCard } from "../components/features/flights/FlightCard.tsx";
 import { SearchBar } from "../components/features/search/SearchBar";
 import { LoadingScreen } from "../components/common/LoadingScreen.tsx";
@@ -207,7 +207,7 @@ export const FlightsPage = () => {
 
       {loading && <LoadingScreen />}
 
-      {error && <ErrorScreen message={error} />}
+      {error && <ErrorScreen messageTitle="Error" message={error} />}
 
       {!loading && !error && !hasSearched && (
         <div className="w-full text-center py-10">
@@ -218,7 +218,11 @@ export const FlightsPage = () => {
       )}
 
       {!loading && !error && hasSearched && flights.length === 0 && (
-        <ErrorScreen message="No se encontraron vuelos con los criterios seleccionados" />
+        <ErrorScreen
+          messageTitle="No se encontraron vuelos con los criterios seleccionados"
+          message="Parece que no encontramos lo que buscas. Intenta ajustar tus criterios
+          de búsqueda."
+        />
       )}
 
       <div className="w-full flex flex-col gap-5">
