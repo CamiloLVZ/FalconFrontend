@@ -48,3 +48,6 @@ export interface FlightSearchParams {
 }
 
 export type CleanFilters = Partial<FlightSearchParams>;
+
+/** Alias for backward compatibility */
+export type FlightResponse = FlightSearchResult;

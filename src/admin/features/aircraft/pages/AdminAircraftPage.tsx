@@ -4,9 +4,8 @@ import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
+import { AdminDrawer } from "../../../components/AdminDrawer";
 import { AircraftTable } from "../components/AircraftTable";
-import { EditAircraftCapacityModal } from "../components/modals/EditAircraftCapacityModal";
-import { EditAircraftIdentityModal } from "../components/modals/EditAircraftIdentityModal";
 import { ACTION_LABELS } from "../constants/aircraft.constants";
 import {
   getAircrafts,
@@ -40,8 +39,7 @@ export const AdminAircraftPage = () => {
     action: AircraftStatusAction;
   } | null>(null);
   const isConfirmationOpen = pendingStatusAction !== null;
-  const [isEditIdentityOpen, setIsEditIdentityOpen] = useState(false);
-  const [isEditCapacityOpen, setIsEditCapacityOpen] = useState(false);
+  const [isIdentityDrawerOpen, setIsIdentityDrawerOpen] = useState(false);
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
     if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -70,13 +68,7 @@ export const AdminAircraftPage = () => {
     loadAircrafts();
   }, []);
 
-  const closeIdentityModal = () => {
-    setIsEditIdentityOpen(false);
-  };
-
-  const closeCapacityModal = () => {
-    setIsEditCapacityOpen(false);
-  };
+  // Drawer close handler is implemented inline where needed.
 
   const closeConfirmationModal = () => {
     setPendingStatusAction(null);
@@ -118,68 +110,7 @@ export const AdminAircraftPage = () => {
     }
   };
 
-  const handleEditIdentity = (aircraft: AircraftType) => {
-    setSelectedAircraft(aircraft);
-    setIdentityError(null);
-    setIsEditIdentityOpen(true);
-  };
-
-  const saveEditedIdentity = async (
-    id: number,
-    producer: string,
-    model: string,
-  ) => {
-    try {
-      setIdentitySubmitting(true);
-      setIdentityError(null);
-
-      const updatedAircraft = await updateAircraftIdentity(id, {
-        producer,
-        model,
-      });
-      setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
-      setIsEditIdentityOpen(false);
-    } catch (error) {
-      setIdentityError(
-        getApiErrorMessage(error, "No se pudo actualizar la aeronave."),
-      );
-    } finally {
-      setIdentitySubmitting(false);
-    }
-  };
-
-  const handleEditCapacity = (aircraft: AircraftType) => {
-    setSelectedAircraft(aircraft);
-    setCapacityError(null);
-    setIsEditCapacityOpen(true);
-  };
-
-  const saveEditedCapacity = async (
-    id: number,
-    economySeats: number,
-    firstClassSeats: number,
-  ) => {
-    try {
-      setCapacitySubmitting(true);
-      setCapacityError(null);
-      const updatedAircraft = await updateAircraftCapacity(id, {
-        economySeats,
-        firstClassSeats,
-      });
-      setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
-      setIsEditCapacityOpen(false);
-    } catch (error) {
-      setCapacityError(
-        getApiErrorMessage(
-          error,
-          "No se pudo actualizar la capacidad de la aeronave.",
-        ),
-      );
-      console.error("Error updating aircraft capacity:", error);
-    } finally {
-      setCapacitySubmitting(false);
-    }
-  };
+  // Unified edit flow uses a single drawer and combined save logic in the form submit handler.
 
   if (loading) {
     return <LoadingScreen />;
@@ -198,29 +129,164 @@ export const AdminAircraftPage = () => {
         <AircraftTable
           aircrafts={sortedAircrafts}
           onStatusAction={handleStatusAction}
-          onEditIdentity={handleEditIdentity}
-          onEditCapacity={handleEditCapacity}
+          onEdit={(a) => {
+            setSelectedAircraft(a);
+            setIdentityError(null);
+            setCapacityError(null);
+            setIsIdentityDrawerOpen(true);
+          }}
         />
 
-        {isEditIdentityOpen && selectedAircraft ? (
-          <EditAircraftIdentityModal
-            aircraft={selectedAircraft}
-            onCancel={closeIdentityModal}
-            onSave={saveEditedIdentity}
-            isSubmitting={identitySubmitting}
-            error={identityError}
-          />
-        ) : null}
+        <AdminDrawer
+          title={
+            selectedAircraft
+              ? `Editar ${selectedAircraft.producer} ${selectedAircraft.model}`
+              : "Editar aeronave"
+          }
+          isOpen={isIdentityDrawerOpen}
+          onClose={() => setIsIdentityDrawerOpen(false)}
+        >
+          {selectedAircraft && (
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const producer = (
+                  form.elements.namedItem("producer") as HTMLInputElement
+                ).value.toUpperCase();
+                const model = (
+                  form.elements.namedItem("model") as HTMLInputElement
+                ).value.toUpperCase();
+                const economySeats = parseInt(
+                  (form.elements.namedItem("economySeats") as HTMLInputElement)
+                    .value,
+                );
+                const firstClassSeats = parseInt(
+                  (
+                    form.elements.namedItem(
+                      "firstClassSeats",
+                    ) as HTMLInputElement
+                  ).value,
+                );
 
-        {isEditCapacityOpen && selectedAircraft ? (
-          <EditAircraftCapacityModal
-            aircraft={selectedAircraft}
-            onCancel={closeCapacityModal}
-            onSave={saveEditedCapacity}
-            isSubmitting={capacitySubmitting}
-            error={capacityError}
-          />
-        ) : null}
+                // Call both services in sequence
+                (async () => {
+                  try {
+                    setIdentitySubmitting(true);
+                    setCapacitySubmitting(true);
+                    setIdentityError(null);
+                    setCapacityError(null);
+
+                    const updatedIdentity = await updateAircraftIdentity(
+                      selectedAircraft.id,
+                      { producer, model },
+                    );
+                    setAircrafts((prev) =>
+                      replaceAircraftInList(prev, updatedIdentity),
+                    );
+
+                    const updatedCapacity = await updateAircraftCapacity(
+                      selectedAircraft.id,
+                      { economySeats, firstClassSeats },
+                    );
+                    setAircrafts((prev) =>
+                      replaceAircraftInList(prev, updatedCapacity),
+                    );
+
+                    setIsIdentityDrawerOpen(false);
+                  } catch (err) {
+                    const msg = getApiErrorMessage(
+                      err,
+                      "No se pudo actualizar la aeronave.",
+                    );
+                    setIdentityError(msg);
+                    setCapacityError(msg);
+                  } finally {
+                    setIdentitySubmitting(false);
+                    setCapacitySubmitting(false);
+                  }
+                })();
+              }}
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Fabricante
+                </label>
+                <input
+                  name="producer"
+                  defaultValue={selectedAircraft.producer}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Modelo
+                </label>
+                <input
+                  name="model"
+                  defaultValue={selectedAircraft.model}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Asientos clase económica
+                </label>
+                <input
+                  name="economySeats"
+                  type="number"
+                  min={1}
+                  defaultValue={selectedAircraft.economySeats}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Asientos primera clase
+                </label>
+                <input
+                  name="firstClassSeats"
+                  type="number"
+                  defaultValue={selectedAircraft.firstClassSeats}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsIdentityDrawerOpen(false)}
+                  className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={identitySubmitting || capacitySubmitting}
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
+                >
+                  {identitySubmitting || capacitySubmitting
+                    ? "Guardando..."
+                    : "Guardar cambios"}
+                </button>
+              </div>
+
+              {(identityError || capacityError) && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">
+                  {identityError || capacityError}
+                </div>
+              )}
+            </form>
+          )}
+        </AdminDrawer>
 
         {isConfirmationOpen && pendingStatusAction ? (
           <ConfirmationModal

@@ -1,7 +1,342 @@
+import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
+import { LoadingScreen } from "../../../../components/common/LoadingScreen";
+import { Pagination } from "../../../components/Pagination";
+import { AdminDrawer } from "../../../components/AdminDrawer";
+import type { ApiErrorResponse } from "../../../../types/ApiError";
+import { FlightTable } from "../components/FlightTable";
+import {
+  getAllFlights,
+  rescheduleFlight,
+  changeAirplaneType,
+  cancelFlight,
+} from "../services/flightAdminService";
+import type { ResponseFlightDto } from "../types/flightTypes";
+
+const FLIGHT_STATUSES = [
+  "SCHEDULED",
+  "CHECK_IN_AVAILABLE",
+  "BOARDING",
+  "COMPLETED",
+  "CANCELED",
+];
+
 export const AdminFlightsPage = () => {
+  const [flights, setFlights] = useState<ResponseFlightDto[]>([]);
+  const [selectedFlight, setSelectedFlight] =
+    useState<ResponseFlightDto | null>(null);
+
+  const [flightNumberInput, setFlightNumberInput] = useState("");
+  const [statusInput, setStatusInput] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [newDepartureDate, setNewDepartureDate] = useState("");
+  const [newAirplaneTypeId, setNewAirplaneTypeId] = useState("");
+
+  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+      return unknownError.response?.data.message ?? fallback;
+    }
+    return "Ha ocurrido un error inesperado.";
+  };
+
+  const loadFlights = useCallback(
+    async (
+      page: number,
+      size: number,
+      flightNumber: string,
+      status: string,
+    ) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getAllFlights(
+          flightNumber.trim() || null,
+          status || null,
+          page,
+          size,
+        );
+        setFlights(data.content);
+        setCurrentPage(data.page);
+        setTotalPages(data.totalPages);
+        setTotalElements(data.totalElements);
+      } catch (err) {
+        console.error(err);
+        setError("No se han podido cargar los vuelos.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize]);
+
+  const handleSearch = () => {
+    setCurrentPage(0);
+    loadFlights(0, pageSize, flightNumberInput, statusInput);
+  };
+
+  const handleClearFilters = () => {
+    setFlightNumberInput("");
+    setStatusInput("");
+    setCurrentPage(0);
+    loadFlights(0, pageSize, "", "");
+  };
+
+  const handleEditClick = (flight: ResponseFlightDto) => {
+    setSelectedFlight(flight);
+    setNewDepartureDate(flight.departureDateTime.substring(0, 16));
+    setNewAirplaneTypeId("");
+    setActionError(null);
+    setIsDrawerOpen(true);
+  };
+
+  const handleReschedule = async () => {
+    if (!selectedFlight || !newDepartureDate) return;
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+
+      const isoDate = new Date(newDepartureDate).toISOString();
+      await rescheduleFlight(selectedFlight.id, isoDate);
+
+      setIsDrawerOpen(false);
+      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+    } catch (err) {
+      setActionError(
+        getApiErrorMessage(err, "No se pudo reprogramar el vuelo."),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChangeAirplane = async () => {
+    if (!selectedFlight || !newAirplaneTypeId) return;
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+
+      await changeAirplaneType(
+        selectedFlight.id,
+        parseInt(newAirplaneTypeId, 10),
+      );
+
+      setIsDrawerOpen(false);
+      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+    } catch (err) {
+      setActionError(getApiErrorMessage(err, "No se pudo cambiar el avión."));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelFlight = async () => {
+    if (!selectedFlight) return;
+
+    if (
+      !window.confirm(
+        `¿Estás seguro de que deseas cancelar el vuelo ${selectedFlight.flightNumber}?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+      await cancelFlight(selectedFlight.id);
+      setIsDrawerOpen(false);
+      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+    } catch (err) {
+      setActionError(getApiErrorMessage(err, "No se pudo cancelar el vuelo."));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section className="min-h-[calc(100vh-136px)]">
-      <h1 className="text-2xl font-bold">Vuelos</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Gestión de Vuelos</h1>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">
+            Número de Vuelo (Ruta)
+          </label>
+          <input
+            type="text"
+            placeholder="Ej: AV1234"
+            value={flightNumberInput}
+            onChange={(e) => setFlightNumberInput(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">Estado</label>
+          <select
+            value={statusInput}
+            onChange={(e) => setStatusInput(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+          >
+            <option value="">Todos los estados</option>
+            {FLIGHT_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Buscar
+          </button>
+          <button
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mb-4">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-4 overflow-x-auto">
+        {loading ? (
+          <LoadingScreen />
+        ) : (
+          <FlightTable flights={flights} onEdit={handleEditClick} />
+        )}
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(0);
+        }}
+      />
+
+      <AdminDrawer
+        title={
+          selectedFlight
+            ? `Editar Vuelo ${selectedFlight.flightNumber}`
+            : "Editar Vuelo"
+        }
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      >
+        {selectedFlight && (
+          <div className="space-y-8">
+            {actionError && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+                {actionError}
+              </div>
+            )}
+
+            {/* Seccion 1: Reprogramar */}
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <h3 className="font-semibold text-gray-800 mb-3">
+                Reprogramar Salida
+              </h3>
+              <div className="space-y-3">
+                <input
+                  type="datetime-local"
+                  value={newDepartureDate}
+                  onChange={(e) => setNewDepartureDate(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
+                />
+                <button
+                  onClick={handleReschedule}
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
+                >
+                  Confirmar Nueva Fecha
+                </button>
+              </div>
+            </div>
+
+            {/* Seccion 2: Cambiar Avión */}
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <h3 className="font-semibold text-gray-800 mb-3">
+                Cambiar Aeronave
+              </h3>
+              <div className="space-y-3">
+                <input
+                  type="number"
+                  placeholder="ID del Tipo de Aeronave"
+                  value={newAirplaneTypeId}
+                  onChange={(e) => setNewAirplaneTypeId(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
+                />
+                <button
+                  onClick={handleChangeAirplane}
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium disabled:opacity-50"
+                >
+                  Asignar Aeronave
+                </button>
+              </div>
+            </div>
+
+            {/* Seccion 3: Danger Zone */}
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+              <h3 className="font-semibold text-red-800 mb-2">
+                Zona de Peligro
+              </h3>
+              <p className="text-xs text-red-600 mb-3">
+                La cancelación de un vuelo es irreversible y afectará a los
+                pasajeros.
+              </p>
+              <button
+                onClick={handleCancelFlight}
+                disabled={
+                  isSubmitting ||
+                  selectedFlight.status === "CANCELLED" ||
+                  selectedFlight.status === "CANCELED"
+                }
+                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50"
+              >
+                Cancelar Vuelo
+              </button>
+            </div>
+          </div>
+        )}
+      </AdminDrawer>
     </section>
   );
 };

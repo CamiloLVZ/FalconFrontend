@@ -8,15 +8,13 @@ import { AircraftStatusBadge } from "./AircraftStatusBadge";
 interface AircraftsTableProps {
   aircrafts: AircraftType[];
   onStatusAction: (id: number, action: AircraftStatusAction) => void;
-  onEditIdentity?: (aircraft: AircraftType) => void;
-  onEditCapacity?: (aircraft: AircraftType) => void;
+  onEdit?: (aircraft: AircraftType) => void;
 }
 
 export const AircraftTable = ({
   aircrafts,
   onStatusAction,
-  onEditIdentity,
-  onEditCapacity,
+  onEdit,
 }: AircraftsTableProps) => {
   return (
     <table className="min-w-full divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
@@ -70,8 +68,7 @@ export const AircraftTable = ({
               <AircraftRowActions
                 aircraft={aircraft}
                 onStatusAction={onStatusAction}
-                onEditIdentity={onEditIdentity}
-                onEditCapacity={onEditCapacity}
+                onEdit={onEdit}
               />
             </td>
           </tr>

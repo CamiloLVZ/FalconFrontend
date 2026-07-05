@@ -7,15 +7,13 @@ import { formatFlightDuration } from "../utils/routes.utils";
 interface RouteTableProps {
   routes: ResponseRoute[];
   onStatusAction: (flightNumber: string, action: RouteStatusAction) => void;
-  onEditRoute?: (route: ResponseRoute) => void;
-  onEditSchedule?: (route: ResponseRoute) => void;
+  onEdit?: (route: ResponseRoute) => void;
 }
 
 export const RouteTable = ({
   routes,
   onStatusAction,
-  onEditRoute,
-  onEditSchedule,
+  onEdit,
 }: RouteTableProps) => {
   return (
     <table className="min-w-full divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
@@ -79,8 +77,7 @@ export const RouteTable = ({
               <RouteRowActions
                 route={route}
                 onStatusAction={onStatusAction}
-                onEditRoute={onEditRoute}
-                onEditSchedule={onEditSchedule}
+                onEdit={onEdit}
               />
             </td>
           </tr>

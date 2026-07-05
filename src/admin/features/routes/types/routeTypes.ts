@@ -23,6 +23,11 @@ export interface Route {
   airportDestination: Airport;
   defaultAirplaneType: AirplaneType;
   durationMinutes: number;
+  // Optional schedule augmentation applied locally when schedules are fetched
+  daysOfWeek?: DayOfWeek[];
+  schedules?: LocalTime[];
+  // Backwards-compatible alias used in some API responses
+  lengthMinutes?: number;
   status: RouteStatus;
 }
 
@@ -57,6 +62,8 @@ export interface UpdateRouteRequest {
   airportDestinationIataCode?: string;
   idDefaultAirplaneType?: number;
   durationMinutes?: number;
+  // Backwards-compatible alias
+  lengthMinutes?: number;
 }
 
 /** AddRouteScheduleRequestDto */
@@ -73,4 +80,3 @@ export type ResponseRoute = Route;
 export type AddRouteScheduleRequest = SetRouteScheduleRequest;
 
 export type RouteStatusAction = "ACTIVATE" | "DEACTIVATE";
-

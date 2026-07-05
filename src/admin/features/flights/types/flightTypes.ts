@@ -1,20 +1,24 @@
-/**
- * @deprecated Use global flight types instead.
- * This file is kept for backward compatibility with existing components.
- */
-import type {
-  FlightStatus,
-  Flight,
-  CreateFlightRequest,
-  RescheduleFlightRequest,
-  ChangeAirplaneTypeRequest,
-} from "../../../../../types/flight";
+// Re-export from shared types and add admin-specific types
+export type { Flight, FlightStatus, CreateFlightRequest, RescheduleFlightRequest, ChangeAirplaneTypeRequest } from "../../../../types/flight";
 
-export type {
-  FlightStatus,
-  Flight,
-  CreateFlightRequest as CreateFlightDto,
-  Flight as ResponseFlightDto,
-  RescheduleFlightRequest,
-  ChangeAirplaneTypeRequest,
-};
+export interface ResponseFlightDto {
+  id: number;
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  departureDateTime: string;
+  localDepartureDateTime: string;
+  durationMinutes: number;
+  airplaneType: {
+    producer: string;
+    model: string;
+    economySeats: number;
+    firstClassSeats: number;
+  } | null;
+  status: string;
+}
+
+export interface CreateFlightDto {
+  routeFlightNumber: string;
+  departureDateTime: string;
+}

@@ -1,4 +1,4 @@
-import type { Airport } from "../types/AirportTypes";
+import type { Airport } from "../types/airportTypes";
 
 export type FilterField = "iataCode" | "name" | "city" | "country";
 export const getAirportFieldValue = (

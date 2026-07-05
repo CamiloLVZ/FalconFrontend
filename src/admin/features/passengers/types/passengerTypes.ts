@@ -1,4 +1,4 @@
-export type PassengerGender = "MALE" | "FEMALE" | "OTHER";
+export type PassengerGender = "M" | "F";
 
 export interface Passenger {
   id: number;
@@ -24,3 +24,9 @@ export interface CreatePassengerRequest {
 export interface UpdatePassportRequest {
   passportNumber: string;
 }
+
+export type PassengerSearchMode =
+  | "all"
+  | "by-flight"
+  | "by-passport"
+  | "by-identification";

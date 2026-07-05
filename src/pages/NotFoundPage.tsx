@@ -9,9 +9,12 @@ export const NotFoundPage = () => {
         La página que buscas no existe
       </p>
 
-      <a className="bg-yellow-400 px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition">
-        <Link to="/">Volver al inicio</Link>
-      </a>
+      <Link
+        to="/"
+        className="bg-yellow-400 px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition"
+      >
+        Volver al inicio
+      </Link>
     </div>
   );
 };

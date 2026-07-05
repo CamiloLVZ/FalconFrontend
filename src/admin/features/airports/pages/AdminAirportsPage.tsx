@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AirportTable } from "../components/AirportTable";
-import type { Airport } from "../types/AirportTypes";
+import { AdminDrawer } from "../../../components/AdminDrawer";
+import type { Airport } from "../types/airportTypes";
 import { getAllAirports } from "../services/airportService";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
@@ -10,6 +11,8 @@ import { Pagination } from "../../../components/Pagination";
 
 export const AdminAirportsPage = () => {
   const [airports, setAirports] = useState<Airport[]>([]);
+  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterField, setFilterField] = useState<FilterField>("iataCode");
 
@@ -57,7 +60,8 @@ export const AdminAirportsPage = () => {
   // El filtro se aplica sobre los registros de la página actual
   const filteredAirports = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
-    if (!search) return [...airports].sort((a, b) => a.iataCode.localeCompare(b.iataCode));
+    if (!search)
+      return [...airports].sort((a, b) => a.iataCode.localeCompare(b.iataCode));
 
     return airports
       .filter((airport) =>
@@ -104,7 +108,8 @@ export const AdminAirportsPage = () => {
 
       {searchTerm.trim() && (
         <p className="mt-1 text-xs text-amber-600">
-          ⚠ El filtro aplica sobre los {pageSize} registros de esta página. Cambia de página para buscar en otros registros.
+          ⚠ El filtro aplica sobre los {pageSize} registros de esta página.
+          Cambia de página para buscar en otros registros.
         </p>
       )}
 
@@ -116,9 +121,59 @@ export const AdminAirportsPage = () => {
         {loading ? (
           <LoadingScreen />
         ) : (
-          <AirportTable airports={filteredAirports} />
+          <AirportTable
+            airports={filteredAirports}
+            onEdit={(a) => {
+              setSelectedAirport(a);
+              setIsDrawerOpen(true);
+            }}
+          />
         )}
       </div>
+
+      <AdminDrawer
+        title={
+          selectedAirport
+            ? `Aeropuerto ${selectedAirport.iataCode}`
+            : "Aeropuerto"
+        }
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      >
+        {selectedAirport && (
+          <div className="space-y-4">
+            <div className="bg-white p-4 rounded-lg border shadow-sm">
+              <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
+                Detalles
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500 font-medium">IATA</p>
+                  <p className="text-gray-900">{selectedAirport.iataCode}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-medium">Nombre</p>
+                  <p className="text-gray-900">{selectedAirport.name}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-medium">Ciudad</p>
+                  <p className="text-gray-900">{selectedAirport.city}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-medium">País</p>
+                  <p className="text-gray-900">
+                    {selectedAirport.country.name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-medium">Timezone</p>
+                  <p className="text-gray-900">{selectedAirport.timezone}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </AdminDrawer>
 
       <Pagination
         currentPage={currentPage}

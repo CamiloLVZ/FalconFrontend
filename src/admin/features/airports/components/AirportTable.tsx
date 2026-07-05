@@ -1,10 +1,11 @@
-import type { Airport } from "../types/AirportTypes";
+import type { Airport } from "../types/airportTypes";
 
 interface AirportTableProps {
   airports: Airport[];
+  onEdit?: (airport: Airport) => void;
 }
 
-export const AirportTable = ({ airports }: AirportTableProps) => {
+export const AirportTable = ({ airports, onEdit }: AirportTableProps) => {
   return (
     <table className="min-w-full divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
       <thead className="bg-gray-50">
@@ -23,6 +24,9 @@ export const AirportTable = ({ airports }: AirportTableProps) => {
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             Timezone
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Acciones
           </th>
         </tr>
       </thead>
@@ -43,6 +47,14 @@ export const AirportTable = ({ airports }: AirportTableProps) => {
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {airport.timezone}
+            </td>
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-right">
+              <button
+                onClick={() => onEdit?.(airport)}
+                className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-200 text-sm font-medium"
+              >
+                Ver
+              </button>
             </td>
           </tr>
         ))}

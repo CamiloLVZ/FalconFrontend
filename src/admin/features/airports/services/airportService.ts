@@ -1,6 +1,6 @@
 import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
-import type { Airport } from "../types/AirportTypes";
+import type { Airport } from "../types/airportTypes";
 
 export const getAllAirports = async (
   size: number,

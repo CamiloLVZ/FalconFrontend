@@ -10,6 +10,10 @@ export interface LoginRequest {
   password: string;
 }
 
+/** Alias for backward compatibility */
+export type LoginRequestDTO = LoginRequest;
+
+
 /** LoginResponseDto */
 export interface LoginResponse {
   tokenType: string;

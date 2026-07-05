@@ -12,14 +12,20 @@ export const getFlightById = async (id: number): Promise<ResponseFlightDto> => {
 };
 
 export const getAllFlights = async (
-  flightNumber = null,
+  flightNumber: string | null = null,
+  status: string | null = null,
   page = 0,
   size = 10,
 ): Promise<PagedResponse<ResponseFlightDto>> => {
   const response = await apiClient.get<PagedResponse<ResponseFlightDto>>(
-    "/v1/flights",
+    "/v1/flights/all",
     {
-      params: { flightNumber: flightNumber || undefined, page, size },
+      params: {
+        flightNumber: flightNumber || undefined,
+        status: status || undefined,
+        page,
+        size,
+      },
     },
   );
   return response.data;
