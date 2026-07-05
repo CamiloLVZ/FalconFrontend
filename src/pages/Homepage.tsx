@@ -1,6 +1,6 @@
-import {HeroSection} from "../components/home/HeroSection.tsx";
-import {ServicesSection} from "../components/home/ServicesSection.tsx";
-import {DestinationsSection} from "../components/home/DestinationsSection.tsx";
+import {HeroSection} from "../components/features/home/HeroSection.tsx";
+import {ServicesSection} from "../components/features/home/ServicesSection.tsx";
+import {DestinationsSection} from "../components/features/home/DestinationsSection.tsx";
 
 export const HomePage = () => {
     return (
