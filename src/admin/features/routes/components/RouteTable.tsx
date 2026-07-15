@@ -32,6 +32,12 @@ export const RouteTable = ({
             Duración
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Precio Economy
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            Precio First
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             Tipo de aeronave
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -59,6 +65,12 @@ export const RouteTable = ({
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {formatFlightDuration(route.durationMinutes)}
+            </td>
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+              ${route.basePriceEconomy}
+            </td>
+            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+              ${route.basePriceFirstClass}
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {route.defaultAirplaneType.producer}{" "}

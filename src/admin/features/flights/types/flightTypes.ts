@@ -16,6 +16,8 @@ export interface ResponseFlightDto {
     firstClassSeats: number;
   } | null;
   status: string;
+  basePriceEconomy: number;
+  basePriceFirstClass: number;
 }
 
 export interface CreateFlightDto {

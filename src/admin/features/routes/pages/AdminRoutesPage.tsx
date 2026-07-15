@@ -175,6 +175,8 @@ export const AdminRoutesPage = () => {
     destinationIata: string,
     aircraftId: number,
     duration: number,
+    basePriceEconomy: number,
+    basePriceFirstClass: number,
   ) => {
     try {
       setEditSubmitting(true);
@@ -185,6 +187,8 @@ export const AdminRoutesPage = () => {
         airportDestinationIataCode: destinationIata,
         idDefaultAirplaneType: aircraftId,
         lengthMinutes: duration,
+        basePriceEconomy,
+        basePriceFirstClass,
       });
 
       setRoutes((prev) => replaceRouteInList(prev, updatedRoute));
@@ -301,12 +305,22 @@ export const AdminRoutesPage = () => {
                   (form.elements.namedItem("duration") as HTMLInputElement)
                     .value,
                 );
+                const basePriceEconomy = parseFloat(
+                  (form.elements.namedItem("basePriceEconomy") as HTMLInputElement)
+                    .value,
+                );
+                const basePriceFirstClass = parseFloat(
+                  (form.elements.namedItem("basePriceFirstClass") as HTMLInputElement)
+                    .value,
+                );
                 saveEditedRoute(
                   selectedRoute.flightNumber,
                   originIata,
                   destinationIata,
                   aircraftId,
                   duration,
+                  basePriceEconomy,
+                  basePriceFirstClass,
                 );
               }}
             >
@@ -396,6 +410,36 @@ export const AdminRoutesPage = () => {
                     selectedRoute.lengthMinutes ??
                     0
                   }
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Precio base (Economy)
+                </label>
+                <input
+                  name="basePriceEconomy"
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  defaultValue={selectedRoute.basePriceEconomy ?? 0}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Precio base (First Class)
+                </label>
+                <input
+                  name="basePriceFirstClass"
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  defaultValue={selectedRoute.basePriceFirstClass ?? 0}
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
                 />

@@ -19,6 +19,8 @@ export interface Flight {
   durationMinutes: number;
   airplaneType: AirplaneTypeSummary;
   status: FlightStatus;
+  basePriceEconomy: number;
+  basePriceFirstClass: number;
 }
 
 export type FlightSearchResult = Flight[];
