@@ -66,7 +66,7 @@ export const FlightsPage = () => {
   };
 
   const handleSearch = async (
-    customFilters: FlightSearchParams,
+    customFilters: CleanFilters,
     displayData?: {
       origin: string;
       destination: string;
