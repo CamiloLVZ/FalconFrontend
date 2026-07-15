@@ -21,11 +21,7 @@ export interface Flight {
   status: FlightStatus;
 }
 
-export interface FlightSearchResult {
-  data: Flight[];
-  total: number;
-  date: string; // LocalDate → "YYYY-MM-DD"
-}
+export type FlightSearchResult = Flight[];
 
 export interface CreateFlightRequest {
   routeFlightNumber: string;

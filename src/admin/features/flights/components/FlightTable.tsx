@@ -11,6 +11,7 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
       <table className="w-full text-left text-sm text-gray-600">
         <thead className="bg-gray-50 border-b text-gray-700">
           <tr>
+            <th className="px-6 py-4 font-semibold">ID</th>
             <th className="px-6 py-4 font-semibold">Vuelo</th>
             <th className="px-6 py-4 font-semibold">Ruta</th>
             <th className="px-6 py-4 font-semibold">Salida (Local)</th>
@@ -22,6 +23,9 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
         <tbody className="divide-y">
           {flights.map((flight) => (
             <tr key={flight.id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4 font-medium text-gray-900">
+                {flight.id}
+              </td>
               <td className="px-6 py-4 font-medium text-gray-900">
                 {flight.flightNumber}
               </td>
@@ -68,7 +72,7 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
           ))}
           {flights.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                 No hay vuelos registrados.
               </td>
             </tr>

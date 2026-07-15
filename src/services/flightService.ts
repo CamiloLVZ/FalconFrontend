@@ -1,12 +1,27 @@
 import { apiClient } from "../api/axios";
-import type { CleanFilters, FlightResponse } from "../types/flight";
+import type { CleanFilters, Flight } from "../types/flight";
+
+type FlightSearchResponse = Flight[] | { data: Flight[] };
 
 export const searchFlights = async (
   params: CleanFilters,
-): Promise<FlightResponse> => {
-  const response = await apiClient.get<FlightResponse>("/v1/flights/search", {
-    params,
-  });
+): Promise<Flight[]> => {
+  const response = await apiClient.get<FlightSearchResponse>(
+    "/v1/flights/search",
+    {
+      params,
+    },
+  );
 
-  return response.data;
+  const responseData = response.data;
+
+  if (Array.isArray(responseData)) {
+    return responseData;
+  }
+
+  if (Array.isArray(responseData.data)) {
+    return responseData.data;
+  }
+
+  return [];
 };

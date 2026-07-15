@@ -82,7 +82,7 @@ export const FlightsPage = () => {
       );
 
       const data = await searchFlights(cleanFilters);
-      setFlights(data.data);
+      setFlights(data);
 
       if (displayData) {
         setAppliedDisplay(displayData);
@@ -91,6 +91,7 @@ export const FlightsPage = () => {
       setHasSearched(true);
     } catch {
       setError("Error buscando vuelos");
+      setFlights([]);
     } finally {
       setLoading(false);
     }
@@ -171,16 +172,20 @@ export const FlightsPage = () => {
           setDestinationInput={setDestinationInput}
           onChange={setSearchFilters}
           loadDestinations={loadDestinations}
-          onSearch={() => {
-            setAppliedDisplay({
+          onSearch={async () => {
+            const displayData = {
               origin: originInput,
               destination: destinationInput,
               date: searchFilters.date,
-            });
+            };
 
-            const cleanFilters: Record<string, string> = Object.fromEntries(
+            setAppliedDisplay(displayData);
+
+            const cleanFilters: CleanFilters = Object.fromEntries(
               Object.entries(searchFilters).filter(([, value]) => value !== ""),
             );
+
+            await handleSearch(cleanFilters, displayData);
 
             const params = new URLSearchParams(cleanFilters).toString();
 

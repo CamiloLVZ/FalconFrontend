@@ -1,17 +1,41 @@
 import { apiClient } from "../../../../api/axios";
+import type { PagedResponse } from "../../../../types/pagedResponse";
 import type {
   Reservation,
   CreateReservationRequest,
 } from "../types/reservationTypes";
 
-export const getReservation = async (reservationNumber: string): Promise<Reservation> => {
-  const response = await apiClient.get<Reservation>(`/v1/reservations/${reservationNumber}`);
+export const getReservation = async (
+  reservationNumber: string,
+): Promise<Reservation> => {
+  const response = await apiClient.get<Reservation>(
+    `/v1/reservations/${reservationNumber}`,
+  );
   return response.data;
 };
 
-export const getReservationsByFlight = async (flightId: number): Promise<Reservation[]> => {
-  const response = await apiClient.get<Reservation[]>(`/v1/reservations/flight/${flightId}`);
-  return response.data;
+export const getReservationsByFlight = async (
+  flightId: number,
+  page = 0,
+  size = 10,
+): Promise<PagedResponse<Reservation>> => {
+  const response = await apiClient.get<
+    PagedResponse<Reservation> | Reservation[]
+  >(`/v1/reservations/flight/${flightId}`, { params: { page, size } });
+
+  const data = response.data;
+
+  if (Array.isArray(data)) {
+    return {
+      content: data,
+      page,
+      size,
+      totalElements: data.length,
+      totalPages: 1,
+    };
+  }
+
+  return data;
 };
 
 export const createReservation = async (
@@ -21,7 +45,9 @@ export const createReservation = async (
   return response.data;
 };
 
-export const cancelReservation = async (reservationNumber: string): Promise<Reservation> => {
+export const cancelReservation = async (
+  reservationNumber: string,
+): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/cancel`,
   );
@@ -47,14 +73,18 @@ export const cancelPassengerFromReservationByPassport = async (
   return response.data;
 };
 
-export const checkInReservation = async (reservationNumber: string): Promise<Reservation> => {
+export const checkInReservation = async (
+  reservationNumber: string,
+): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/check-in`,
   );
   return response.data;
 };
 
-export const boardReservation = async (reservationNumber: string): Promise<Reservation> => {
+export const boardReservation = async (
+  reservationNumber: string,
+): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/board`,
   );
