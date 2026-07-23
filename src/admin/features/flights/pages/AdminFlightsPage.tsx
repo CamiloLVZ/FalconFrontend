@@ -7,6 +7,7 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { FlightTable } from "../components/FlightTable";
 import {
   getAllFlights,
+  getFlightById,
   rescheduleFlight,
   changeAirplaneType,
   cancelFlight,
@@ -27,6 +28,7 @@ export const AdminFlightsPage = () => {
     useState<ResponseFlightDto | null>(null);
 
   const [flightNumberInput, setFlightNumberInput] = useState("");
+  const [flightIdInput, setFlightIdInput] = useState("");
   const [statusInput, setStatusInput] = useState("");
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -56,10 +58,31 @@ export const AdminFlightsPage = () => {
       size: number,
       flightNumber: string,
       status: string,
+      flightId: string,
     ) => {
       try {
         setLoading(true);
         setError(null);
+
+        if (flightId.trim()) {
+          const id = Number(flightId.trim());
+          if (Number.isNaN(id) || id <= 0) {
+            setFlights([]);
+            setCurrentPage(0);
+            setTotalPages(0);
+            setTotalElements(0);
+            setError("Ingresa un ID de vuelo válido.");
+            return;
+          }
+
+          const flight = await getFlightById(id);
+          setFlights([flight]);
+          setCurrentPage(0);
+          setTotalPages(1);
+          setTotalElements(1);
+          return;
+        }
+
         const data = await getAllFlights(
           flightNumber.trim() || null,
           status || null,
@@ -72,6 +95,10 @@ export const AdminFlightsPage = () => {
         setTotalElements(data.totalElements);
       } catch (err) {
         console.error(err);
+        setFlights([]);
+        setCurrentPage(0);
+        setTotalPages(0);
+        setTotalElements(0);
         setError("No se han podido cargar los vuelos.");
       } finally {
         setLoading(false);
@@ -81,20 +108,27 @@ export const AdminFlightsPage = () => {
   );
 
   useEffect(() => {
-    loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+    loadFlights(
+      currentPage,
+      pageSize,
+      flightNumberInput,
+      statusInput,
+      flightIdInput,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 
   const handleSearch = () => {
     setCurrentPage(0);
-    loadFlights(0, pageSize, flightNumberInput, statusInput);
+    loadFlights(0, pageSize, flightNumberInput, statusInput, flightIdInput);
   };
 
   const handleClearFilters = () => {
+    setFlightIdInput("");
     setFlightNumberInput("");
     setStatusInput("");
     setCurrentPage(0);
-    loadFlights(0, pageSize, "", "");
+    loadFlights(0, pageSize, "", "", "");
   };
 
   const handleEditClick = (flight: ResponseFlightDto) => {
@@ -115,7 +149,13 @@ export const AdminFlightsPage = () => {
       await rescheduleFlight(selectedFlight.id, isoDate);
 
       setIsDrawerOpen(false);
-      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+      loadFlights(
+        currentPage,
+        pageSize,
+        flightNumberInput,
+        statusInput,
+        flightIdInput,
+      );
     } catch (err) {
       setActionError(
         getApiErrorMessage(err, "No se pudo reprogramar el vuelo."),
@@ -137,7 +177,13 @@ export const AdminFlightsPage = () => {
       );
 
       setIsDrawerOpen(false);
-      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+      loadFlights(
+        currentPage,
+        pageSize,
+        flightNumberInput,
+        statusInput,
+        flightIdInput,
+      );
     } catch (err) {
       setActionError(getApiErrorMessage(err, "No se pudo cambiar el avión."));
     } finally {
@@ -161,7 +207,13 @@ export const AdminFlightsPage = () => {
       setActionError(null);
       await cancelFlight(selectedFlight.id);
       setIsDrawerOpen(false);
-      loadFlights(currentPage, pageSize, flightNumberInput, statusInput);
+      loadFlights(
+        currentPage,
+        pageSize,
+        flightNumberInput,
+        statusInput,
+        flightIdInput,
+      );
     } catch (err) {
       setActionError(getApiErrorMessage(err, "No se pudo cancelar el vuelo."));
     } finally {
@@ -177,6 +229,20 @@ export const AdminFlightsPage = () => {
 
       {/* Filters */}
       <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">
+            ID de Vuelo
+          </label>
+          <input
+            type="text"
+            placeholder="Ej: 123"
+            value={flightIdInput}
+            onChange={(e) => setFlightIdInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
         <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
           <label className="text-sm font-medium text-gray-700">
             Número de Vuelo (Ruta)
