@@ -66,8 +66,6 @@ export interface UpdateRouteRequest {
   airportDestinationIataCode?: string;
   idDefaultAirplaneType?: number;
   durationMinutes?: number;
-  // Backwards-compatible alias
-  lengthMinutes?: number;
   basePriceEconomy?: number;
   basePriceFirstClass?: number;
 }

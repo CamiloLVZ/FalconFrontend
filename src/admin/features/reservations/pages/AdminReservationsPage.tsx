@@ -9,8 +9,10 @@ import {
   getReservation,
   getReservationsByFlight,
   cancelReservation,
+  cancelPassengerFromReservation,
+  cancelPassengerFromReservationByPassport,
 } from "../services/reservationService";
-import type { Reservation } from "../types/reservationTypes";
+import type { Reservation, PassengerReservation } from "../types/reservationTypes";
 
 export const AdminReservationsPage = () => {
   const [flightId, setFlightId] = useState("");
@@ -27,6 +29,10 @@ export const AdminReservationsPage = () => {
 
   // Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Cancel passenger state
+  const [lastSearchType, setLastSearchType] = useState<"flight" | "number" | null>(null);
+
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
     if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -51,6 +57,7 @@ export const AdminReservationsPage = () => {
       setReservations(pagedResponse.content);
       setSelectedReservation(null);
       setIsDrawerOpen(false);
+      setLastSearchType("flight");
       setHasSearched(true);
     } catch (err) {
       console.error(err);
@@ -74,6 +81,7 @@ export const AdminReservationsPage = () => {
       setReservations([reservation]);
       setSelectedReservation(reservation);
       setIsDrawerOpen(true);
+      setLastSearchType("number");
       setHasSearched(true);
     } catch (err) {
       console.error(err);
@@ -108,6 +116,7 @@ export const AdminReservationsPage = () => {
 
       const updatedReservation = await cancelReservation(
         selectedReservation.number,
+        selectedReservation.contactEmail,
       );
 
       setReservations((prev) =>
@@ -115,13 +124,61 @@ export const AdminReservationsPage = () => {
           r.number === updatedReservation.number ? updatedReservation : r,
         ),
       );
-      setIsDrawerOpen(false);
+      setActionError(null);
     } catch (err) {
       setActionError(
         getApiErrorMessage(err, "No se pudo cancelar la reserva."),
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelPassenger = async (passenger: PassengerReservation) => {
+    if (!selectedReservation) return;
+
+    if (
+      !window.confirm(
+        `¿Estás seguro de que deseas cancelar el pasajero ${passenger.passenger.firstName} ${passenger.passenger.lastName} de la reserva ${selectedReservation.number}?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+
+      const updatedReservation = await cancelPassengerFromReservation(
+        selectedReservation.number,
+        selectedReservation.contactEmail,
+        passenger.passenger.identificationNumber,
+        passenger.passenger.nationalityIsoCode,
+      );
+
+      setReservations((prev) =>
+        prev.map((r) =>
+          r.number === updatedReservation.number ? updatedReservation : r,
+        ),
+      );
+      setActionError(null);
+    } catch (err) {
+      setActionError(
+        getApiErrorMessage(err, "No se pudo cancelar el pasajero."),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Refresh: re-run last search
+  const handleRefresh = () => {
+    if (lastSearchType === "flight" && flightId.trim()) {
+      handleSearch(new Event("submit") as unknown as React.FormEvent);
+    } else if (lastSearchType === "number" && reservationNumberInput.trim()) {
+      handleSearchByReservationNumber(
+        new Event("submit") as unknown as React.FormEvent,
+      );
     }
   };
 
@@ -133,6 +190,18 @@ export const AdminReservationsPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Gestión de Reservas</h1>
+        {hasSearched && (
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
@@ -238,9 +307,9 @@ export const AdminReservationsPage = () => {
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500 font-medium">Vuelo</p>
+                  <p className="text-gray-500 font-medium">ID Vuelo</p>
                   <p className="text-gray-900">
-                    {selectedReservation.flight.flightNumber}
+                    {selectedReservation.flight.id}
                   </p>
                 </div>
                 <div>
@@ -272,33 +341,46 @@ export const AdminReservationsPage = () => {
               {selectedReservation.passengers.length === 0 ? (
                 <p className="text-sm text-gray-500">No hay pasajeros.</p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {selectedReservation.passengers.map((p, index) => (
                     <div
                       key={index}
-                      className="flex justify-between items-center text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
+                      className="flex items-center justify-between text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
                     >
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium text-gray-900">
                           {p.passenger.firstName} {p.passenger.lastName}
                         </p>
                         <p className="text-gray-500 text-xs">
-                          Asiento: {p.seatNumber}
+                          {p.passenger.nationalityIsoCode} {p.passenger.identificationNumber}{p.passenger.passportNumber ? ` | Pasaporte: ${p.passenger.passportNumber}` : ""} | Asiento: {p.seatNumber}
                         </p>
                       </div>
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                          p.status === "CONFIRMED"
-                            ? "bg-green-100 text-green-800"
-                            : p.status === "CHECKED_IN"
-                              ? "bg-blue-100 text-blue-800"
-                              : p.status === "BOARDED"
-                                ? "bg-purple-100 text-purple-800"
-                                : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {p.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                            p.status === "RESERVED"
+                              ? "bg-green-100 text-green-800"
+                              : p.status === "CHECKED_IN"
+                                ? "bg-blue-100 text-blue-800"
+                                : p.status === "BOARDED"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : p.status === "CANCELED"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {p.status}
+                        </span>
+                        {p.status !== "CANCELED" && (
+                          <button
+                            onClick={() => handleCancelPassenger(p)}
+                            disabled={isSubmitting}
+                            className="text-red-600 hover:text-red-800 text-xs font-medium disabled:opacity-50"
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -316,9 +398,9 @@ export const AdminReservationsPage = () => {
               </p>
               <button
                 onClick={handleCancelReservation}
-                disabled={
-                  isSubmitting || selectedReservation.status === "CANCELLED"
-                }
+                  disabled={
+                    isSubmitting || selectedReservation.status === "CANCELED"
+                  }
                 className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50"
               >
                 {isSubmitting ? "Procesando..." : "Cancelar Reserva"}

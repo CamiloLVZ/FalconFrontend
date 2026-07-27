@@ -11,7 +11,7 @@ import { DaySelection } from "../components/DaySelection";
 import { getAllAirports } from "../../airports/services/airportService";
 import { getAircrafts } from "../../aircraft/services/aircraftService";
 import type { Airport } from "../../airports/types/airportTypes";
-import type { AircraftType } from "../../aircraft/types/aircraftTypes";
+import type { AirplaneType } from "../../aircraft/types/airplaneTypeTypes";
 import { ACTION_LABELS } from "../constants/routes.constants";
 import {
   getAllRoutes,
@@ -186,13 +186,13 @@ export const AdminRoutesPage = () => {
         airportOriginIataCode: originIata,
         airportDestinationIataCode: destinationIata,
         idDefaultAirplaneType: aircraftId,
-        lengthMinutes: duration,
+        durationMinutes: duration,
         basePriceEconomy,
         basePriceFirstClass,
       });
 
       setRoutes((prev) => replaceRouteInList(prev, updatedRoute));
-      setIsEditOpen(false);
+      setEditError(null);
     } catch (err) {
       setEditError(getApiErrorMessage(err, "No se pudo actualizar la ruta."));
       console.error("Error updating route:", err);
@@ -226,6 +226,7 @@ export const AdminRoutesPage = () => {
             : r,
         ),
       );
+      setScheduleError(null);
     } catch (err) {
       setScheduleError(
         getApiErrorMessage(err, "No se pudo actualizar los horarios."),
@@ -242,7 +243,29 @@ export const AdminRoutesPage = () => {
 
   return (
     <section className="min-h-[calc(100vh-136px)]">
-      <h1 className="text-2xl font-bold">Rutas</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Rutas</h1>
+        <button
+          onClick={() => loadRoutes(currentPage, pageSize)}
+          disabled={loading}
+          title="Refrescar"
+          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
+      </div>
       <div className="mt-4 overflow-x-auto">
         {loading ? (
           <LoadingScreen />
@@ -306,12 +329,18 @@ export const AdminRoutesPage = () => {
                     .value,
                 );
                 const basePriceEconomy = parseFloat(
-                  (form.elements.namedItem("basePriceEconomy") as HTMLInputElement)
-                    .value,
+                  (
+                    form.elements.namedItem(
+                      "basePriceEconomy",
+                    ) as HTMLInputElement
+                  ).value,
                 );
                 const basePriceFirstClass = parseFloat(
-                  (form.elements.namedItem("basePriceFirstClass") as HTMLInputElement)
-                    .value,
+                  (
+                    form.elements.namedItem(
+                      "basePriceFirstClass",
+                    ) as HTMLInputElement
+                  ).value,
                 );
                 saveEditedRoute(
                   selectedRoute.flightNumber,
@@ -676,9 +705,7 @@ function EditScheduleContent({
         <button
           type="button"
           className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
-          onClick={() => {
-            /* parent drawer will handle close */
-          }}
+          onClick={() => setIsEditOpen(false)}
         >
           Cancelar
         </button>

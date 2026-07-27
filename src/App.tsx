@@ -11,6 +11,9 @@ import { AdminFlightGenerationPage } from "./admin/features/flightGeneration/pag
 import { AdminFlightsPage } from "./admin/features/flights/pages/AdminFlightsPage.tsx";
 import { AdminPassengersPage } from "./admin/features/passengers/pages/AdminPassengersPage.tsx";
 import { AdminReservationsPage } from "./admin/features/reservations/pages/AdminReservationsPage.tsx";
+import { AdminUsersPage } from "./admin/features/users/pages/AdminUsersPage";
+import { AdminCheckInPage } from "./admin/features/checkin/pages/AdminCheckInPage.tsx";
+import { AdminBoardingPage } from "./admin/features/boarding/pages/AdminBoardingPage.tsx";
 import { LoginPage } from "./auth/pages/LoginPage.tsx";
 import { RequireAdmin } from "./auth/components/RequireAdmin.tsx";
 
@@ -43,6 +46,9 @@ function App() {
           element={<AdminFlightGenerationPage />}
         />
         <Route path="reservations" element={<AdminReservationsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="checkin" element={<AdminCheckInPage />} />
+        <Route path="boarding" element={<AdminBoardingPage />} />
       </Route>
     </Routes>
   );

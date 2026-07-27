@@ -31,11 +31,11 @@ export const ReservationTable = ({ reservations, onEdit }: ReservationTableProps
               <td className="px-6 py-4">
                 <span
                   className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    reservation.status === "CONFIRMED"
+                    reservation.status === "RESERVED"
                       ? "bg-green-100 text-green-800"
-                      : reservation.status === "PENDING"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
+                      : reservation.status === "COMPLETED"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-red-100 text-red-800"
                   }`}
                 >
                   {reservation.status}
@@ -44,7 +44,7 @@ export const ReservationTable = ({ reservations, onEdit }: ReservationTableProps
               <td className="px-6 py-4 text-right">
                 <button
                   onClick={() => onEdit(reservation)}
-                  className="text-primary hover:text-primary/80 font-medium"
+                  className="px-4 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 font-medium cursor-pointer transition-colors"
                 >
                   Gestión
                 </button>

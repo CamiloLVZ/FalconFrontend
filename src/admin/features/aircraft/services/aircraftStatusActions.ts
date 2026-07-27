@@ -1,7 +1,7 @@
 import type {
   AircraftStatusAction,
-  AircraftType,
-} from "../types/aircraftTypes";
+  AirplaneType,
+} from "../types/airplaneTypeTypes";
 import {
   activateAircraft,
   deactivateAircraft,
@@ -10,7 +10,7 @@ import {
 
 export const STATUS_ACTION_SERVICES: Record<
   AircraftStatusAction,
-  (id: number) => Promise<AircraftType>
+  (id: number) => Promise<AirplaneType>
 > = {
   ACTIVATE: activateAircraft,
   DEACTIVATE: deactivateAircraft,

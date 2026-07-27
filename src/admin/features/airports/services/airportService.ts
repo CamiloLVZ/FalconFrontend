@@ -2,6 +2,21 @@ import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
 import type { Airport } from "../types/airportTypes";
 
+export interface CreateAirportData {
+  iataCode: string;
+  name: string;
+  city: string;
+  countryIsoCode: string;
+  timezone: string;
+}
+
+export const createAirport = async (
+  data: CreateAirportData,
+): Promise<Airport> => {
+  const response = await apiClient.post<Airport>("/v1/airports", data);
+  return response.data;
+};
+
 export const getAllAirports = async (
   size: number,
   page: number,

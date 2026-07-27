@@ -29,14 +29,6 @@ export interface CreateFlightRequest {
   departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
 }
 
-export interface RescheduleFlightRequest {
-  departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
-}
-
-export interface ChangeAirplaneTypeRequest {
-  idAirplaneType: number;
-}
-
 export interface FlightSearchParams {
   origin: string;
   destination: string;

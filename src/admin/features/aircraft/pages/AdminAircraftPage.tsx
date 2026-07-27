@@ -15,14 +15,14 @@ import {
 import { STATUS_ACTION_SERVICES } from "../services/aircraftStatusActions";
 import type {
   AircraftStatusAction,
-  AircraftType,
-} from "../types/aircraftTypes";
+  AirplaneType,
+} from "../types/airplaneTypeTypes";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
 
 export const AdminAircraftPage = () => {
-  const [aircrafts, setAircrafts] = useState<AircraftType[]>([]);
+  const [aircrafts, setAircrafts] = useState<AirplaneType[]>([]);
   const sortedAircrafts = [...aircrafts].sort((a, b) => a.id - b.id);
-  const [selectedAircraft, setSelectedAircraft] = useState<AircraftType | null>(
+  const [selectedAircraft, setSelectedAircraft] = useState<AirplaneType | null>(
     null,
   );
 
@@ -35,7 +35,7 @@ export const AdminAircraftPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pendingStatusAction, setPendingStatusAction] = useState<{
-    aircraft: AircraftType;
+    aircraft: AirplaneType;
     action: AircraftStatusAction;
   } | null>(null);
   const isConfirmationOpen = pendingStatusAction !== null;
@@ -124,7 +124,19 @@ export const AdminAircraftPage = () => {
 
   return (
     <section className="min-h-[calc(100vh-136px)]">
-      <h1 className="text-2xl font-bold">Aeronaves</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Aeronaves</h1>
+        <button
+          onClick={loadAircrafts}
+          disabled={loading}
+          title="Refrescar"
+          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
       <div className="mt-4 overflow-x-auto">
         <AircraftTable
           aircrafts={sortedAircrafts}
@@ -169,6 +181,9 @@ export const AdminAircraftPage = () => {
                     ) as HTMLInputElement
                   ).value,
                 );
+                const seatColumns = (
+                  form.elements.namedItem("seatColumns") as HTMLInputElement
+                ).value.toUpperCase();
 
                 // Call both services in sequence
                 (async () => {
@@ -188,13 +203,14 @@ export const AdminAircraftPage = () => {
 
                     const updatedCapacity = await updateAircraftCapacity(
                       selectedAircraft.id,
-                      { economySeats, firstClassSeats },
+                      { economySeats, firstClassSeats, seatColumns },
                     );
                     setAircrafts((prev) =>
                       replaceAircraftInList(prev, updatedCapacity),
                     );
 
-                    setIsIdentityDrawerOpen(false);
+                    setIdentityError(null);
+                    setCapacityError(null);
                   } catch (err) {
                     const msg = getApiErrorMessage(
                       err,
@@ -256,6 +272,20 @@ export const AdminAircraftPage = () => {
                   type="number"
                   defaultValue={selectedAircraft.firstClassSeats}
                   required
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Columnas de asientos
+                </label>
+                <input
+                  name="seatColumns"
+                  defaultValue={selectedAircraft.seatColumns}
+                  required
+                  pattern="[A-Z]+"
+                  title="Solo letras mayúsculas, sin repetir"
                   className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>

@@ -18,9 +18,9 @@ const FLIGHT_STATUSES = [
   "SCHEDULED",
   "CHECK_IN_AVAILABLE",
   "BOARDING",
+  "GATE_CLOSED",
   "COMPLETED",
   "CANCELED",
-  "GATE_CLOSED",
 ];
 
 export const AdminFlightsPage = () => {
@@ -31,6 +31,8 @@ export const AdminFlightsPage = () => {
   const [flightNumberInput, setFlightNumberInput] = useState("");
   const [flightIdInput, setFlightIdInput] = useState("");
   const [statusInput, setStatusInput] = useState("");
+  const [dateFromInput, setDateFromInput] = useState("");
+  const [dateToInput, setDateToInput] = useState("");
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -60,6 +62,8 @@ export const AdminFlightsPage = () => {
       flightNumber: string,
       status: string,
       flightId: string,
+      dateFrom?: string,
+      dateTo?: string,
     ) => {
       try {
         setLoading(true);
@@ -89,6 +93,8 @@ export const AdminFlightsPage = () => {
           status || null,
           page,
           size,
+          dateFrom || undefined,
+          dateTo || undefined,
         );
         setFlights(data.content);
         setCurrentPage(data.page);
@@ -115,19 +121,23 @@ export const AdminFlightsPage = () => {
       flightNumberInput,
       statusInput,
       flightIdInput,
+      dateFromInput,
+      dateToInput,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 
   const handleSearch = () => {
     setCurrentPage(0);
-    loadFlights(0, pageSize, flightNumberInput, statusInput, flightIdInput);
+    loadFlights(0, pageSize, flightNumberInput, statusInput, flightIdInput, dateFromInput, dateToInput);
   };
 
   const handleClearFilters = () => {
     setFlightIdInput("");
     setFlightNumberInput("");
     setStatusInput("");
+    setDateFromInput("");
+    setDateToInput("");
     setCurrentPage(0);
     loadFlights(0, pageSize, "", "", "");
   };
@@ -146,10 +156,10 @@ export const AdminFlightsPage = () => {
       setIsSubmitting(true);
       setActionError(null);
 
-      const isoDate = new Date(newDepartureDate).toISOString();
-      await rescheduleFlight(selectedFlight.id, isoDate);
+      const localDateTime = new Date(newDepartureDate).toISOString().slice(0, 19);
+      await rescheduleFlight(selectedFlight.id, localDateTime);
 
-      setIsDrawerOpen(false);
+      setActionError(null);
       loadFlights(
         currentPage,
         pageSize,
@@ -177,7 +187,7 @@ export const AdminFlightsPage = () => {
         parseInt(newAirplaneTypeId, 10),
       );
 
-      setIsDrawerOpen(false);
+      setActionError(null);
       loadFlights(
         currentPage,
         pageSize,
@@ -207,7 +217,7 @@ export const AdminFlightsPage = () => {
       setIsSubmitting(true);
       setActionError(null);
       await cancelFlight(selectedFlight.id);
-      setIsDrawerOpen(false);
+      setActionError(null);
       loadFlights(
         currentPage,
         pageSize,
@@ -226,6 +236,16 @@ export const AdminFlightsPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Gestión de Vuelos</h1>
+        <button
+          onClick={() => loadFlights(currentPage, pageSize, flightNumberInput, statusInput, flightIdInput, dateFromInput, dateToInput)}
+          disabled={loading}
+          title="Refrescar"
+          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
 
       {/* Filters */}
@@ -272,6 +292,30 @@ export const AdminFlightsPage = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex flex-col gap-1 min-w-[160px]">
+          <label className="text-sm font-medium text-gray-700">
+            Fecha Desde
+          </label>
+          <input
+            type="date"
+            value={dateFromInput}
+            onChange={(e) => setDateFromInput(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 min-w-[160px]">
+          <label className="text-sm font-medium text-gray-700">
+            Fecha Hasta
+          </label>
+          <input
+            type="date"
+            value={dateToInput}
+            onChange={(e) => setDateToInput(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
         </div>
 
         <div className="flex gap-2">

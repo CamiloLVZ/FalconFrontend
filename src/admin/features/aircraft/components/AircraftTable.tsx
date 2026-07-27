@@ -1,14 +1,14 @@
 import type {
   AircraftStatusAction,
-  AircraftType,
-} from "../types/aircraftTypes";
+  AirplaneType,
+} from "../types/airplaneTypeTypes";
 import { AircraftRowActions } from "./AircraftRowActions";
 import { AircraftStatusBadge } from "./AircraftStatusBadge";
 
 interface AircraftsTableProps {
-  aircrafts: AircraftType[];
+  aircrafts: AirplaneType[];
   onStatusAction: (id: number, action: AircraftStatusAction) => void;
-  onEdit?: (aircraft: AircraftType) => void;
+  onEdit?: (aircraft: AirplaneType) => void;
 }
 
 export const AircraftTable = ({

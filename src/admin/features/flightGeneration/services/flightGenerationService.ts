@@ -18,11 +18,18 @@ export const getGenerationById = async (id: number): Promise<FlightGeneration> =
   return response.data;
 };
 
-export const generateFlights = async (routeFlightNumber?: string): Promise<FlightGeneration> => {
-  // Assuming POST /v1/flights/generations with optional route ID
+export const generateFlightsForRoute = async (
+  flightNumber: string,
+): Promise<FlightGeneration> => {
   const response = await apiClient.post<FlightGeneration>(
-    "/v1/flights/generations",
-    routeFlightNumber ? { routeFlightNumber } : {}
+    `/v1/routes/${flightNumber}/generateFlights`,
+  );
+  return response.data;
+};
+
+export const generateFlightsForAllRoutes = async (): Promise<FlightGeneration[]> => {
+  const response = await apiClient.post<FlightGeneration[]>(
+    "/v1/routes/generateFlights",
   );
   return response.data;
 };

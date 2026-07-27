@@ -1,4 +1,6 @@
-export type AirplaneTypeStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "RETIRED";
+export type AirplaneTypeStatus = "ACTIVE" | "INACTIVE" | "RETIRED";
+
+export type AircraftStatusAction = "ACTIVATE" | "DEACTIVATE" | "RETIRE";
 
 export interface AirplaneType {
   id: number;
@@ -6,6 +8,7 @@ export interface AirplaneType {
   model: string;
   economySeats: number;
   firstClassSeats: number;
+  seatColumns: string;
   status: AirplaneTypeStatus;
 }
 
@@ -14,6 +17,7 @@ export interface AirplaneTypeSummary {
   model: string;
   economySeats: number;
   firstClassSeats: number;
+  seatColumns: string;
 }
 
 export interface CreateAirplaneTypeRequest {
@@ -21,11 +25,13 @@ export interface CreateAirplaneTypeRequest {
   model: string;
   economySeats: number;
   firstClassSeats: number;
+  seatColumns: string;
 }
 
-export interface UpdateAirplaneTypeCapacityRequest {
+export interface ConfigureSeatsRequest {
   economySeats?: number;
   firstClassSeats?: number;
+  seatColumns: string;
 }
 
 export interface CorrectAirplaneTypeIdentityRequest {

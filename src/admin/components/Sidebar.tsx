@@ -71,7 +71,34 @@ const navItems: NavItem[] = [
           <path d="M8.8 11.2a4.1 4.1 0 1 1 0-8.2 4.1 4.1 0 0 1 0 8.2Zm0 2c3.3 0 6.3 1.7 6.3 4.4v1.9H2.5v-1.9c0-2.7 3-4.4 6.3-4.4Zm7.4-1.5a3.4 3.4 0 1 1 0-6.8 3.4 3.4 0 0 1 0 6.8Zm0 1.8c2.8 0 5.3 1.4 5.3 3.7v2.3h-4.4v-1.9c0-1.7-.9-3.1-2.4-4.1.5-.1 1-.1 1.5-.1Z" />
         </svg>
     ),
-  }
+  },
+  {
+    label: "USUARIOS",
+    path: "/admin/users",
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3Zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" />
+      </svg>
+    ),
+  },
+  {
+    label: "CHECK-IN",
+    path: "/admin/checkin",
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5L9 16.2Z" />
+      </svg>
+    ),
+  },
+  {
+    label: "BOARDING",
+    path: "/admin/boarding",
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L2 7v3l10-5 10 5V7l-10-5zM2 17v3l10 5 10-5v-3L12 19l-10-5z" />
+      </svg>
+    ),
+  },
 ];
 
 export const Sidebar = () => {

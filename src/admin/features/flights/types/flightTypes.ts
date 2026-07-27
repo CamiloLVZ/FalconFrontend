@@ -1,5 +1,10 @@
-// Re-export from shared types and add admin-specific types
-export type { Flight, FlightStatus, CreateFlightRequest, RescheduleFlightRequest, ChangeAirplaneTypeRequest } from "../../../../types/flight";
+export type {
+  Flight,
+  FlightStatus,
+  CreateFlightRequest,
+  RescheduleFlightRequest,
+  ChangeAirplaneTypeRequest,
+} from "../../../../types/flight";
 
 export interface ResponseFlightDto {
   id: number;
@@ -14,6 +19,7 @@ export interface ResponseFlightDto {
     model: string;
     economySeats: number;
     firstClassSeats: number;
+    seatColumns: string;
   } | null;
   status: string;
   basePriceEconomy: number;

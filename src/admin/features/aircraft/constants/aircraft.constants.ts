@@ -1,17 +1,15 @@
 import type {
-  AircraftStatus,
+  AirplaneTypeStatus,
   AircraftStatusAction,
-} from "../types/aircraftTypes";
+} from "../types/airplaneTypeTypes";
 
-export const STATUS_STYLES: Record<AircraftStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-600",
+export const STATUS_STYLES: Record<AirplaneTypeStatus, string> = {
   ACTIVE: "bg-green-100 text-green-800",
   INACTIVE: "bg-yellow-100 text-yellow-800",
   RETIRED: "bg-red-100 text-red-800",
 };
 
-export const STATUS_LABELS: Record<AircraftStatus, string> = {
-  DRAFT: "Borrador",
+export const STATUS_LABELS: Record<AirplaneTypeStatus, string> = {
   ACTIVE: "Activo",
   INACTIVE: "Inactivo",
   RETIRED: "Retirado",
@@ -23,15 +21,14 @@ export const ACTION_LABELS: Record<AircraftStatusAction, string> = {
   RETIRE: "Retirar",
 };
 
-export const AVAILABLE_ACTIONS: Record<AircraftStatus, AircraftStatusAction[]> =
+export const AVAILABLE_ACTIONS: Record<AirplaneTypeStatus, AircraftStatusAction[]> =
   {
-    DRAFT: ["ACTIVATE"],
     ACTIVE: ["DEACTIVATE"],
     INACTIVE: ["ACTIVATE", "RETIRE"],
     RETIRED: [],
   };
 
-export const ACTION_TO_STATUS: Record<AircraftStatusAction, AircraftStatus> = {
+export const ACTION_TO_STATUS: Record<AircraftStatusAction, AirplaneTypeStatus> = {
   ACTIVATE: "ACTIVE",
   DEACTIVATE: "INACTIVE",
   RETIRE: "RETIRED",

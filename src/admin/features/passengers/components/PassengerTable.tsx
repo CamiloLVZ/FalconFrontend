@@ -31,7 +31,7 @@ export const PassengerTable = ({ passengers, onEdit }: PassengerTableProps) => {
               <td className="px-6 py-4">
                 {passenger.firstName} {passenger.lastName}
               </td>
-              <td className="px-6 py-4">{passenger.identificationNumber}</td>
+              <td className="px-6 py-4">{passenger.nationalityIsoCode}-{passenger.identificationNumber}</td>
               <td className="px-6 py-4">{passenger.passportNumber ?? "—"}</td>
               <td className="px-6 py-4">{passenger.gender}</td>
               <td className="px-6 py-4 text-right">

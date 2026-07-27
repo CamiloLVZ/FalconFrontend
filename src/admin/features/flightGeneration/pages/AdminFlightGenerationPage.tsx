@@ -8,7 +8,8 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { FlightGenerationTable } from "../components/FlightGenerationTable";
 import {
   getAllGenerations,
-  generateFlights,
+  generateFlightsForRoute,
+  generateFlightsForAllRoutes,
 } from "../services/flightGenerationService";
 import type { FlightGeneration } from "../types/flightGenerationTypes";
 
@@ -66,8 +67,11 @@ export const AdminFlightGenerationPage = () => {
     try {
       setIsSubmitting(true);
       setActionError(null);
-      await generateFlights(routeFlightNumber || undefined);
-      setIsDrawerOpen(false);
+      if (routeFlightNumber.trim()) {
+        await generateFlightsForRoute(routeFlightNumber.trim());
+      } else {
+        await generateFlightsForAllRoutes();
+      }
       setRouteFlightNumber("");
       loadGenerations(currentPage, pageSize); // reload
     } catch (err) {
@@ -87,12 +91,24 @@ export const AdminFlightGenerationPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Generación de Vuelos</h1>
+        <div className="flex items-center gap-2">
+        <button
+          onClick={() => loadGenerations(currentPage, pageSize)}
+          disabled={loading}
+          title="Refrescar"
+          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
         <button
           onClick={() => setIsDrawerOpen(true)}
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-medium transition-colors"
         >
           Generar Vuelos
         </button>
+      </div>
       </div>
 
       <div className="mt-4 overflow-x-auto">

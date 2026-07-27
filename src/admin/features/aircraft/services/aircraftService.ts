@@ -1,12 +1,12 @@
 import { apiClient } from "../../../../api/axios";
 import type {
-  CreateAircraftDTO,
-  UpdateAircraftCapacityDTO,
-  CorrectIdentityAircraftDTO,
-  AircraftType,
-} from "../types/aircraftTypes";
+  CreateAirplaneTypeRequest,
+  ConfigureSeatsRequest,
+  CorrectAirplaneTypeIdentityRequest,
+  AirplaneType,
+} from "../types/airplaneTypeTypes";
 
-export const getAircrafts = async (): Promise<AircraftType[]> => {
+export const getAircrafts = async (): Promise<AirplaneType[]> => {
   const response = await apiClient.get<AircraftType[]>("/v1/airplane-types");
   return response.data;
 };
@@ -33,7 +33,7 @@ export const updateAircraftCapacity = async (
   capacityData: UpdateAircraftCapacityDTO,
 ): Promise<AircraftType> => {
   const response = await apiClient.patch<AircraftType>(
-    `/v1/airplane-types/${id}`,
+    `/v1/airplane-types/${id}/configure-seats`,
     capacityData,
   );
   return response.data;

@@ -10,9 +10,11 @@ import {
   getPassengersByFlight,
   getPassengerByPassport,
   getPassengerByIdentification,
+  getPassengerReservations,
   updatePassengerPassport,
 } from "../services/passengerService";
 import type { Passenger, PassengerSearchMode } from "../types/passengerTypes";
+import type { Reservation } from "../../reservations/types/reservationTypes";
 
 export const AdminPassengersPage = () => {
   const [passengers, setPassengers] = useState<Passenger[]>([]);
@@ -41,6 +43,10 @@ export const AdminPassengersPage = () => {
   // Drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [newPassportNumber, setNewPassportNumber] = useState("");
+
+  // Upcoming reservations state
+  const [upcomingReservations, setUpcomingReservations] = useState<Reservation[]>([]);
+  const [reservationsLoading, setReservationsLoading] = useState(false);
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
     if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -151,7 +157,31 @@ export const AdminPassengersPage = () => {
     setSelectedPassenger(passenger);
     setNewPassportNumber(passenger.passportNumber ?? "");
     setActionError(null);
+    setUpcomingReservations([]);
     setIsDrawerOpen(true);
+    loadUpcomingReservations(passenger);
+  };
+
+  const loadUpcomingReservations = async (passenger: Passenger) => {
+    try {
+      setReservationsLoading(true);
+      const data = await getPassengerReservations(
+        passenger.identificationNumber,
+        passenger.nationalityIsoCode,
+        0,
+        3,
+      );
+      const sorted = data.content.sort(
+        (a, b) =>
+          new Date(a.flight.departureDateTime).getTime() -
+          new Date(b.flight.departureDateTime).getTime(),
+      );
+      setUpcomingReservations(sorted.slice(0, 3));
+    } catch {
+      setUpcomingReservations([]);
+    } finally {
+      setReservationsLoading(false);
+    }
   };
 
   const handleUpdatePassport = async (e: React.FormEvent) => {
@@ -170,7 +200,7 @@ export const AdminPassengersPage = () => {
       setPassengers((prev) =>
         prev.map((p) => (p.id === updatedPassenger.id ? updatedPassenger : p)),
       );
-      setIsDrawerOpen(false);
+      setActionError(null);
     } catch (err) {
       setActionError(
         getApiErrorMessage(err, "No se pudo actualizar el pasaporte."),
@@ -182,10 +212,29 @@ export const AdminPassengersPage = () => {
 
   const showPagination = searchMode === "all" || searchMode === "by-flight";
 
+  // Refresh: re-run current search
+  const handleRefresh = () => {
+    if (searchMode === "all" || searchMode === "by-flight") {
+      loadPassengers(currentPage, pageSize);
+    } else {
+      handleSingleSearch();
+    }
+  };
+
   return (
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Pasajeros</h1>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          title="Refrescar"
+          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
 
       {/* Search Controls */}
@@ -386,6 +435,53 @@ export const AdminPassengersPage = () => {
                   <p className="text-gray-900">{selectedPassenger.gender}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Próximas Reservas */}
+            <div className="bg-white p-4 rounded-lg border shadow-sm">
+              <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
+                Próximas Reservas
+              </h3>
+              {reservationsLoading ? (
+                <p className="text-sm text-gray-500">Cargando...</p>
+              ) : upcomingReservations.length === 0 ? (
+                <p className="text-sm text-gray-500">No se encontraron reservas próximas.</p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingReservations.map((r) => (
+                    <div
+                      key={r.number}
+                      className="text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-gray-900">{r.flight.flightNumber}</p>
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                            r.status === "RESERVED"
+                              ? "bg-green-100 text-green-800"
+                              : r.status === "COMPLETED"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {r.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {r.flight.origin} → {r.flight.destination} |{" "}
+                        {new Date(r.flight.departureDateTime).toLocaleDateString()}{" "}
+                        {new Date(r.flight.departureDateTime).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Reserva: {r.number} | {r.passengers.length} pasajero(s)
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Actualizar Pasaporte */}
