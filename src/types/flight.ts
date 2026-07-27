@@ -6,8 +6,7 @@ export type FlightStatus =
   | "BOARDING"
   | "COMPLETED"
   | "CANCELED"
-  | "CANCELLED"
-  | "DELAYED";
+  | "GATE_CLOSED";
 
 export interface Flight {
   id: number;

@@ -20,6 +20,7 @@ const FLIGHT_STATUSES = [
   "BOARDING",
   "COMPLETED",
   "CANCELED",
+  "GATE_CLOSED",
 ];
 
 export const AdminFlightsPage = () => {
