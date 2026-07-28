@@ -24,7 +24,7 @@ export interface CreateAirplaneTypeRequest {
   producer: string;
   model: string;
   economySeats: number;
-  firstClassSeats: number;
+  firstClassSeats?: number;
   seatColumns: string;
 }
 

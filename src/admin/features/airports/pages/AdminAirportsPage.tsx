@@ -1,23 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { AirportTable } from "../components/AirportTable";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { Airport } from "../types/airportTypes";
-import { getAllAirports, createAirport } from "../services/airportService";
-import type { CreateAirportData } from "../services/airportService";
+import { getAllAirports, createAirport, createCountry } from "../services/airportService";
+import type { CreateAirportData, CreateCountryData } from "../services/airportService";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
-import { getAirportFieldValue } from "../utils/airport.utils";
-import type { FilterField } from "../utils/airport.utils";
 import { Pagination } from "../../../components/Pagination";
 
 export const AdminAirportsPage = () => {
   const [airports, setAirports] = useState<Airport[]>([]);
   const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterField, setFilterField] = useState<FilterField>("iataCode");
 
   // Estado de paginación
   const [currentPage, setCurrentPage] = useState(0);
@@ -28,8 +24,21 @@ export const AdminAirportsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Filter state
+  const [countryFilter, setCountryFilter] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+
   // Create airport state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Create country state
+  const [isCreateCountryOpen, setIsCreateCountryOpen] = useState(false);
+  const [countryCreateData, setCountryCreateData] = useState<CreateCountryData>({
+    name: "",
+    isoCode: "",
+  });
+  const [countryCreateSubmitting, setCountryCreateSubmitting] = useState(false);
+  const [countryCreateError, setCountryCreateError] = useState<string | null>(null);
   const [createData, setCreateData] = useState<CreateAirportData>({
     iataCode: "",
     name: "",
@@ -47,11 +56,16 @@ export const AdminAirportsPage = () => {
     return "Ha ocurrido un error inesperado.";
   };
 
-  const loadAirports = async (page: number, size: number) => {
+  const loadAirports = async (
+    page: number,
+    size: number,
+    country?: string,
+    search?: string,
+  ) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllAirports(size, page);
+      const data = await getAllAirports(size, page, country, search);
       setAirports(data.content);
       setCurrentPage(data.page);
       setTotalPages(data.totalPages);
@@ -67,8 +81,21 @@ export const AdminAirportsPage = () => {
   };
 
   useEffect(() => {
-    loadAirports(currentPage, pageSize);
+    loadAirports(currentPage, pageSize, countryFilter || undefined, searchFilter || undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
+
+  const handleSearch = () => {
+    setCurrentPage(0);
+    loadAirports(0, pageSize, countryFilter || undefined, searchFilter || undefined);
+  };
+
+  const handleClearFilters = () => {
+    setCountryFilter("");
+    setSearchFilter("");
+    setCurrentPage(0);
+    loadAirports(0, pageSize);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -76,23 +103,8 @@ export const AdminAirportsPage = () => {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
-    setCurrentPage(0); // Volver a la primera página al cambiar el tamaño
+    setCurrentPage(0);
   };
-
-  // El filtro se aplica sobre los registros de la página actual
-  const filteredAirports = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-    if (!search)
-      return [...airports].sort((a, b) => a.iataCode.localeCompare(b.iataCode));
-
-    return airports
-      .filter((airport) =>
-        getAirportFieldValue(airport, filterField)
-          .toLowerCase()
-          .includes(search),
-      )
-      .sort((a, b) => a.iataCode.localeCompare(b.iataCode));
-  }, [airports, searchTerm, filterField]);
 
   if (error) {
     return (
@@ -107,6 +119,16 @@ export const AdminAirportsPage = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
+              setCountryCreateData({ name: "", isoCode: "" });
+              setCountryCreateError(null);
+              setIsCreateCountryOpen(true);
+            }}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
+          >
+            + Crear País
+          </button>
+          <button
+            onClick={() => {
               setCreateData({ iataCode: "", name: "", city: "", countryIsoCode: "", timezone: "" });
               setCreateError(null);
               setIsCreateOpen(true);
@@ -116,7 +138,7 @@ export const AdminAirportsPage = () => {
             + Crear Aeropuerto
           </button>
           <button
-            onClick={() => loadAirports(currentPage, pageSize)}
+            onClick={() => loadAirports(currentPage, pageSize, countryFilter || undefined, searchFilter || undefined)}
             disabled={loading}
             title="Refrescar"
             className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
@@ -128,39 +150,46 @@ export const AdminAirportsPage = () => {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 md:flex-row">
-        <select
-          value={filterField}
-          onChange={(e) => {
-            setFilterField(e.target.value as FilterField);
-            setSearchTerm("");
-          }}
-          className="rounded-lg border px-4 py-2"
-        >
-          <option value="iataCode">IATA</option>
-          <option value="name">Nombre del Aeropuerto</option>
-          <option value="city">Ciudad</option>
-          <option value="country">País</option>
-        </select>
-
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={`Buscar por ${filterField}…`}
-          className="flex-1 rounded-lg border px-4 py-2"
-        />
-      </div>
-
-      {searchTerm.trim() && (
-        <p className="mt-1 text-xs text-amber-600">
-          ⚠ El filtro aplica sobre los {pageSize} registros de esta página.
-          Cambia de página para buscar en otros registros.
-        </p>
-      )}
-
-      <div className="mt-1 text-sm text-gray-500">
-        {filteredAirports.length} aeropuertos en esta página
+      <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">Buscar</label>
+          <input
+            type="text"
+            placeholder="Nombre o código IATA"
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700">País (ISO)</label>
+          <input
+            type="text"
+            maxLength={2}
+            placeholder="Ej: CO"
+            value={countryFilter}
+            onChange={(e) => setCountryFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary uppercase"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Buscar
+          </button>
+          <button
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto">
@@ -168,7 +197,7 @@ export const AdminAirportsPage = () => {
           <LoadingScreen />
         ) : (
           <AirportTable
-            airports={filteredAirports}
+            airports={airports}
             onEdit={(a) => {
               setSelectedAirport(a);
               setIsDrawerOpen(true);
@@ -192,7 +221,7 @@ export const AdminAirportsPage = () => {
               <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
                 Detalles
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500 font-medium">IATA</p>
                   <p className="text-gray-900">{selectedAirport.iataCode}</p>
@@ -219,6 +248,88 @@ export const AdminAirportsPage = () => {
             </div>
           </div>
         )}
+      </AdminDrawer>
+
+      <AdminDrawer
+        title="Crear País"
+        isOpen={isCreateCountryOpen}
+        onClose={() => setIsCreateCountryOpen(false)}
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              setCountryCreateSubmitting(true);
+              setCountryCreateError(null);
+              await createCountry(countryCreateData);
+              setIsCreateCountryOpen(false);
+            } catch (err) {
+              setCountryCreateError(
+                getApiErrorMessage(err, "No se pudo crear el país."),
+              );
+            } finally {
+              setCountryCreateSubmitting(false);
+            }
+          }}
+          className="space-y-4"
+        >
+          {countryCreateError && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+              {countryCreateError}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nombre <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              maxLength={100}
+              required
+              placeholder="Ej: Colombia"
+              value={countryCreateData.name}
+              onChange={(e) =>
+                setCountryCreateData({ ...countryCreateData, name: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Código ISO <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              maxLength={2}
+              required
+              placeholder="Ej: CO"
+              value={countryCreateData.isoCode}
+              onChange={(e) =>
+                setCountryCreateData({ ...countryCreateData, isoCode: e.target.value.toUpperCase() })
+              }
+              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary uppercase"
+            />
+          </div>
+
+          <div className="pt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsCreateCountryOpen(false)}
+              className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={countryCreateSubmitting}
+              className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
+            >
+              {countryCreateSubmitting ? "Creando..." : "Crear País"}
+            </button>
+          </div>
+        </form>
       </AdminDrawer>
 
       <AdminDrawer
@@ -254,7 +365,7 @@ export const AdminAirportsPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código IATA *
+              Código IATA <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -271,7 +382,7 @@ export const AdminAirportsPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre *
+              Nombre <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -286,7 +397,7 @@ export const AdminAirportsPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ciudad *
+              Ciudad <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -301,7 +412,7 @@ export const AdminAirportsPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              País (ISO) *
+              País (ISO) <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -318,7 +429,7 @@ export const AdminAirportsPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Zona Horaria *
+              Zona Horaria <span className="text-red-500">*</span>
             </label>
             <input
               type="text"

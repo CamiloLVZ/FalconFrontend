@@ -13,6 +13,7 @@ export interface BoardingPassValidationResponse {
   departureTime: string;
   seatClass: SeatClass;
   seatNumber: number;
+  seatLabel: string;
   status: BoardingPassStatus;
 }
 

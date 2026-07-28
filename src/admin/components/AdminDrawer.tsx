@@ -31,17 +31,17 @@ export const AdminDrawer = ({ title, isOpen, onClose, children }: AdminDrawerPro
       />
       
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-md transform bg-white shadow-2xl transition-transform h-full flex flex-col">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-xl font-bold">{title}</h2>
+      <div className="relative w-full max-w-md sm:max-w-md transform bg-white shadow-2xl transition-transform h-full flex flex-col">
+        <div className="flex items-center justify-between border-b px-4 sm:px-6 py-4">
+          <h2 className="text-lg sm:text-xl font-bold truncate pr-2">{title}</h2>
           <button 
             onClick={onClose}
-            className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+            className="shrink-0 rounded-full p-2 text-gray-500 hover:bg-gray-100"
           >
             ✕
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </div>
       </div>

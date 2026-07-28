@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { checkInPassenger } from "../../reservations/services/reservationService";
+import type { CheckInResponse } from "../../reservations/types/reservationTypes";
 
 export const AdminCheckInPage = () => {
   const [reservationNumber, setReservationNumber] = useState("");
@@ -12,12 +13,7 @@ export const AdminCheckInPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successData, setSuccessData] = useState<{
-    passenger: string;
-    seatNumber: number;
-    seatClass: string;
-    status: string;
-  } | null>(null);
+  const [successData, setSuccessData] = useState<CheckInResponse | null>(null);
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
     if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -43,22 +39,7 @@ export const AdminCheckInPage = () => {
         seatNumber.trim() ? parseInt(seatNumber, 10) : undefined,
       );
 
-      if (result.passengers && result.passengers.length > 0) {
-        const passenger = result.passengers[0];
-        setSuccessData({
-          passenger: `${passenger.passenger.firstName} ${passenger.passenger.lastName}`,
-          seatNumber: passenger.seatNumber,
-          seatClass: passenger.seatClass,
-          status: passenger.status,
-        });
-      } else {
-        setSuccessData({
-          passenger: "Desconocido",
-          seatNumber: 0,
-          seatClass: "",
-          status: result.status,
-        });
-      }
+      setSuccessData(result);
     } catch (err) {
       setError(getApiErrorMessage(err, "No se pudo realizar el check-in."));
     } finally {
@@ -154,8 +135,8 @@ export const AdminCheckInPage = () => {
           {successData && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm space-y-1">
               <p className="font-semibold">Check-in exitoso</p>
-              <p>Pasajero: {successData.passenger}</p>
-              <p>Asiento: {successData.seatNumber} ({successData.seatClass === "FIRST_CLASS" ? "Primera Clase" : "Económico"})</p>
+              <p>Pasajero: {successData.passenger.firstName} {successData.passenger.lastName}</p>
+              <p>Asiento: {successData.seatLabel} ({successData.seatClass === "FIRST_CLASS" ? "Primera Clase" : "Económico"})</p>
               <p>Estado: {successData.status}</p>
             </div>
           )}

@@ -10,11 +10,13 @@ import { RouteTable } from "../components/RouteTable";
 import { DaySelection } from "../components/DaySelection";
 import { getAllAirports } from "../../airports/services/airportService";
 import { getAircrafts } from "../../aircraft/services/aircraftService";
+
 import type { Airport } from "../../airports/types/airportTypes";
 import type { AirplaneType } from "../../aircraft/types/airplaneTypeTypes";
 import { ACTION_LABELS } from "../constants/routes.constants";
 import {
   getAllRoutes,
+  createRoute,
   updateRoute,
   setRouteOperatingSchedules,
   getRouteOperatingSchedules,
@@ -25,6 +27,7 @@ import type {
   ResponseRoute,
   RouteStatusAction,
   LocalTime,
+  CreateRouteRequest,
 } from "../types/routeTypes";
 import { replaceRouteInList } from "../utils/routes.utils";
 
@@ -58,8 +61,26 @@ export const AdminRoutesPage = () => {
   const isConfirmationOpen = pendingStatusAction !== null;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [airportsData, setAirportsData] = useState<Airport[]>([]);
-  const [aircraftsData, setAircraftsData] = useState<AircraftType[]>([]);
+  const [aircraftsData, setAircraftsData] = useState<AirplaneType[]>([]);
   const [editLoadingData, setEditLoadingData] = useState(false);
+  // Filter state
+  const [originFilter, setOriginFilter] = useState("");
+  const [destFilter, setDestFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [flightNumberFilter, setFlightNumberFilter] = useState("");
+
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
+  const [createFormData, setCreateFormData] = useState<CreateRouteRequest>({
+    flightNumber: "",
+    airportOriginIataCode: "",
+    airportDestinationIataCode: "",
+    idDefaultAirplaneType: 0,
+    durationMinutes: 0,
+    basePriceEconomy: 0,
+    basePriceFirstClass: 0,
+  });
   // scheduleLoading removed — not required in current flow
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
@@ -70,11 +91,20 @@ export const AdminRoutesPage = () => {
     return "Ha ocurrido un error inesperado.";
   };
 
-  const loadRoutes = async (page: number, size: number) => {
+  const loadRoutes = async (
+    page: number,
+    size: number,
+    filters?: {
+      originAirportIataCode?: string;
+      destinationAirportIataCode?: string;
+      status?: string;
+      flightNumber?: string;
+    },
+  ) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllRoutes(size, page);
+      const data = await getAllRoutes(size, page, filters);
       const routesWithSchedules = await Promise.all(
         data.content.map(async (route) => {
           try {
@@ -110,8 +140,33 @@ export const AdminRoutesPage = () => {
   };
 
   useEffect(() => {
-    loadRoutes(currentPage, pageSize);
+    loadRoutes(currentPage, pageSize, {
+      originAirportIataCode: originFilter || undefined,
+      destinationAirportIataCode: destFilter || undefined,
+      status: statusFilter || undefined,
+      flightNumber: flightNumberFilter || undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
+
+  const handleSearch = () => {
+    setCurrentPage(0);
+    loadRoutes(0, pageSize, {
+      originAirportIataCode: originFilter || undefined,
+      destinationAirportIataCode: destFilter || undefined,
+      status: statusFilter || undefined,
+      flightNumber: flightNumberFilter || undefined,
+    });
+  };
+
+  const handleClearFilters = () => {
+    setOriginFilter("");
+    setDestFilter("");
+    setStatusFilter("");
+    setFlightNumberFilter("");
+    setCurrentPage(0);
+    loadRoutes(0, pageSize);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -245,27 +300,130 @@ export const AdminRoutesPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Rutas</h1>
-        <button
-          onClick={() => loadRoutes(currentPage, pageSize)}
-          disabled={loading}
-          title="Refrescar"
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              setCreateError(null);
+              setCreateFormData({
+                flightNumber: "",
+                airportOriginIataCode: "",
+                airportDestinationIataCode: "",
+                idDefaultAirplaneType: 0,
+                durationMinutes: 0,
+                basePriceEconomy: 0,
+                basePriceFirstClass: 0,
+              });
+              try {
+                const [airportsResp, aircraftsResp] = await Promise.all([
+                  getAllAirports(1000, 0),
+                  getAircrafts(),
+                ]);
+                setAirportsData(airportsResp.content);
+                setAircraftsData(aircraftsResp);
+                setIsCreateDrawerOpen(true);
+              } catch {
+                setCreateError("Error al cargar datos para crear ruta.");
+              }
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        </button>
+            + Crear Ruta
+          </button>
+          <button
+            onClick={() => loadRoutes(currentPage, pageSize, {
+            originAirportIataCode: originFilter || undefined,
+            destinationAirportIataCode: destFilter || undefined,
+            status: statusFilter || undefined,
+            flightNumber: flightNumberFilter || undefined,
+          })}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      <div className="bg-white border rounded-lg p-4 mt-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
+          <label className="text-sm font-medium text-gray-700">Origen (IATA)</label>
+          <input
+            type="text"
+            maxLength={3}
+            placeholder="Ej: BOG"
+            value={originFilter}
+            onChange={(e) => setOriginFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary uppercase"
+          />
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
+          <label className="text-sm font-medium text-gray-700">Destino (IATA)</label>
+          <input
+            type="text"
+            maxLength={3}
+            placeholder="Ej: MIA"
+            value={destFilter}
+            onChange={(e) => setDestFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary uppercase"
+          />
+        </div>
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700">Estado</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+          >
+            <option value="">Todos</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DRAFT">DRAFT</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
+          <label className="text-sm font-medium text-gray-700">Número de Vuelo</label>
+          <input
+            type="text"
+            placeholder="Ej: AV"
+            value={flightNumberFilter}
+            onChange={(e) => setFlightNumberFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Buscar
+          </button>
+          <button
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
+      </div>
+
       <div className="mt-4 overflow-x-auto">
         {loading ? (
           <LoadingScreen />
@@ -477,7 +635,7 @@ export const AdminRoutesPage = () => {
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsEditOpen(false)}
+          onClick={() => setIsEditOpen(false)}
                   className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
                 >
                   Cancelar
@@ -504,11 +662,135 @@ export const AdminRoutesPage = () => {
               <EditScheduleContent
                 route={selectedRoute}
                 onSave={saveEditedSchedule}
+                onClose={() => setIsEditOpen(false)}
                 isSubmitting={scheduleSubmitting}
                 error={scheduleError}
               />
             </div>
           )}
+        </AdminDrawer>
+
+        <AdminDrawer
+          title="Crear Ruta"
+          isOpen={isCreateDrawerOpen}
+          onClose={() => setIsCreateDrawerOpen(false)}
+        >
+          <form
+            className="space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                setCreateSubmitting(true);
+                setCreateError(null);
+                await createRoute(createFormData);
+                setIsCreateDrawerOpen(false);
+                loadRoutes(currentPage, pageSize, {
+                  originAirportIataCode: originFilter || undefined,
+                  destinationAirportIataCode: destFilter || undefined,
+                  status: statusFilter || undefined,
+                  flightNumber: flightNumberFilter || undefined,
+                });
+              } catch (err) {
+                setCreateError(getApiErrorMessage(err, "No se pudo crear la ruta."));
+              } finally {
+                setCreateSubmitting(false);
+              }
+            }}
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Número de vuelo <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                placeholder="Ej: AV5678"
+                value={createFormData.flightNumber}
+                onChange={(e) => setCreateFormData({ ...createFormData, flightNumber: e.target.value.toUpperCase() })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Aeropuerto de origen <span className="text-red-500">*</span></label>
+              <select
+                value={createFormData.airportOriginIataCode}
+                onChange={(e) => setCreateFormData({ ...createFormData, airportOriginIataCode: e.target.value })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+              >
+                <option value="">Seleccionar origen</option>
+                {airportsData.map((airport) => (
+                  <option key={airport.iataCode} value={airport.iataCode}>{airport.iataCode} - {airport.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Aeropuerto de destino <span className="text-red-500">*</span></label>
+              <select
+                value={createFormData.airportDestinationIataCode}
+                onChange={(e) => setCreateFormData({ ...createFormData, airportDestinationIataCode: e.target.value })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+              >
+                <option value="">Seleccionar destino</option>
+                {airportsData.map((airport) => (
+                  <option key={airport.iataCode} value={airport.iataCode}>{airport.iataCode} - {airport.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Tipo de aeronave <span className="text-red-500">*</span></label>
+              <select
+                value={createFormData.idDefaultAirplaneType}
+                onChange={(e) => setCreateFormData({ ...createFormData, idDefaultAirplaneType: parseInt(e.target.value) })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+              >
+                <option value={0}>Seleccionar aeronave</option>
+                {aircraftsData.filter((a) => a.status === "ACTIVE").map((aircraft) => (
+                  <option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Duración (minutos) <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                min={1}
+                value={createFormData.durationMinutes}
+                onChange={(e) => setCreateFormData({ ...createFormData, durationMinutes: parseInt(e.target.value) || 0 })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio base (Economy) <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                step="0.01"
+                min={0}
+                value={createFormData.basePriceEconomy}
+                onChange={(e) => setCreateFormData({ ...createFormData, basePriceEconomy: parseFloat(e.target.value) || 0 })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio base (First Class) <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                step="0.01"
+                min={0}
+                value={createFormData.basePriceFirstClass}
+                onChange={(e) => setCreateFormData({ ...createFormData, basePriceFirstClass: parseFloat(e.target.value) || 0 })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div className="pt-4 flex justify-end gap-3">
+              <button type="button" onClick={() => setIsCreateDrawerOpen(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
+              <button type="submit" disabled={createSubmitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{createSubmitting ? "Creando..." : "Crear"}</button>
+            </div>
+            {createError && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{createError}</div>}
+          </form>
         </AdminDrawer>
 
         {isConfirmationOpen && pendingStatusAction ? (
@@ -539,6 +821,7 @@ export const AdminRoutesPage = () => {
 function EditScheduleContent({
   route,
   onSave,
+  onClose,
   isSubmitting,
   error,
 }: {
@@ -548,6 +831,7 @@ function EditScheduleContent({
     daysOfWeek: DayOfWeek[],
     schedules: LocalTime[],
   ) => void;
+  onClose: () => void;
   isSubmitting: boolean;
   error: string | null;
 }) {
@@ -687,7 +971,7 @@ function EditScheduleContent({
                 type="time"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="block flex-1 min-w-0 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <button
                 type="button"
@@ -705,7 +989,7 @@ function EditScheduleContent({
         <button
           type="button"
           className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
-          onClick={() => setIsEditOpen(false)}
+          onClick={() => onClose()}
         >
           Cancelar
         </button>

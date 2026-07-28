@@ -5,10 +5,15 @@ import type { PagedResponse } from "../../../../types/pagedResponse";
 export const getAllGenerations = async (
   page = 0,
   size = 10,
+  filters?: {
+    type?: string;
+    status?: string;
+    routeFlightNumber?: string;
+  },
 ): Promise<PagedResponse<FlightGeneration>> => {
   const response = await apiClient.get<PagedResponse<FlightGeneration>>(
     "/v1/flights/generations",
-    { params: { page, size } },
+    { params: { page, size, ...filters } },
   );
   return response.data;
 };

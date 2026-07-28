@@ -16,6 +16,11 @@ export interface PassengerReservation {
   seatNumber: number;
   seatClass: SeatClass;
   status: PassengerReservationStatus;
+  seatLabel: string;
+}
+
+export interface CheckInResponse extends PassengerReservation {
+  id: number;
 }
 
 export interface Reservation {

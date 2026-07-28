@@ -11,9 +11,10 @@ import {
   getPassengerByPassport,
   getPassengerByIdentification,
   getPassengerReservations,
+  createPassenger,
   updatePassengerPassport,
 } from "../services/passengerService";
-import type { Passenger, PassengerSearchMode } from "../types/passengerTypes";
+import type { Passenger, PassengerSearchMode, CreatePassengerRequest } from "../types/passengerTypes";
 import type { Reservation } from "../../reservations/types/reservationTypes";
 
 export const AdminPassengersPage = () => {
@@ -42,6 +43,9 @@ export const AdminPassengersPage = () => {
 
   // Drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
   const [newPassportNumber, setNewPassportNumber] = useState("");
 
   // Upcoming reservations state
@@ -225,16 +229,27 @@ export const AdminPassengersPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Pasajeros</h1>
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          title="Refrescar"
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setCreateError(null);
+              setIsCreateDrawerOpen(true);
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
+          >
+            + Crear Pasajero
+          </button>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Search Controls */}
@@ -263,7 +278,7 @@ export const AdminPassengersPage = () => {
         </div>
 
         {searchMode === "by-flight" && (
-          <div className="flex gap-2 items-end">
+          <div className="flex gap-2 items-end flex-wrap">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 ID del Vuelo
@@ -287,7 +302,7 @@ export const AdminPassengersPage = () => {
         )}
 
         {searchMode === "by-passport" && (
-          <div className="flex gap-2 items-end">
+          <div className="flex gap-2 items-end flex-wrap">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Número de Pasaporte
@@ -384,6 +399,79 @@ export const AdminPassengersPage = () => {
       )}
 
       <AdminDrawer
+        title="Crear Pasajero"
+        isOpen={isCreateDrawerOpen}
+        onClose={() => setIsCreateDrawerOpen(false)}
+      >
+        <form
+          className="space-y-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target as HTMLFormElement;
+            const data: CreatePassengerRequest = {
+              firstName: (form.elements.namedItem("firstName") as HTMLInputElement).value,
+              lastName: (form.elements.namedItem("lastName") as HTMLInputElement).value,
+              gender: (form.elements.namedItem("gender") as HTMLSelectElement).value as "M" | "F" | "O",
+              nationalityIsoCode: (form.elements.namedItem("nationality") as HTMLInputElement).value.toUpperCase(),
+              dateOfBirth: (form.elements.namedItem("dateOfBirth") as HTMLInputElement).value,
+              identificationNumber: (form.elements.namedItem("identificationNumber") as HTMLInputElement).value,
+              passportNumber: (form.elements.namedItem("passportNumber") as HTMLInputElement).value || undefined,
+            };
+            try {
+              setCreateSubmitting(true);
+              setCreateError(null);
+              await createPassenger(data);
+              setIsCreateDrawerOpen(false);
+              handleRefresh();
+            } catch (err) {
+              setCreateError(getApiErrorMessage(err, "No se pudo crear el pasajero."));
+            } finally {
+              setCreateSubmitting(false);
+            }
+          }}
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Nombre <span className="text-red-500">*</span></label>
+            <input name="firstName" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Apellido <span className="text-red-500">*</span></label>
+            <input name="lastName" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Género <span className="text-red-500">*</span></label>
+            <select name="gender" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm">
+              <option value="">Seleccionar</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="O">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Nacionalidad (ISO) <span className="text-red-500">*</span></label>
+            <input name="nationality" placeholder="Ej: CO" maxLength={2} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 uppercase" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Fecha de nacimiento <span className="text-red-500">*</span></label>
+            <input name="dateOfBirth" type="date" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Número de identificación <span className="text-red-500">*</span></label>
+            <input name="identificationNumber" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Número de pasaporte</label>
+            <input name="passportNumber" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={() => setIsCreateDrawerOpen(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
+            <button type="submit" disabled={createSubmitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{createSubmitting ? "Creando..." : "Crear"}</button>
+          </div>
+          {createError && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{createError}</div>}
+        </form>
+      </AdminDrawer>
+
+      <AdminDrawer
         title={
           selectedPassenger
             ? `Pasajero: ${selectedPassenger.firstName} ${selectedPassenger.lastName}`
@@ -399,7 +487,7 @@ export const AdminPassengersPage = () => {
               <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
                 Detalles
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500 font-medium">Nombre Completo</p>
                   <p className="text-gray-900">

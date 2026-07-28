@@ -2,8 +2,6 @@ export type {
   Flight,
   FlightStatus,
   CreateFlightRequest,
-  RescheduleFlightRequest,
-  ChangeAirplaneTypeRequest,
 } from "../../../../types/flight";
 
 export interface ResponseFlightDto {

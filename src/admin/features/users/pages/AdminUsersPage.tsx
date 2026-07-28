@@ -14,6 +14,8 @@ import {
   toggleUserDisabled,
 } from "../services/userAdminService";
 import type { AdminUser, UpdateUserCredentials } from "../types/userTypes";
+import { registerAdmin, registerUser } from "../../../../auth/services/authService";
+import type { RegisterRequest } from "../../../../auth/types/auth";
 
 export const AdminUsersPage = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -32,6 +34,10 @@ export const AdminUsersPage = () => {
   const [loading, setLoading] = useState(false);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
+  const [createUserRole, setCreateUserRole] = useState<"CLIENT" | "ADMIN">("CLIENT");
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,7 +48,7 @@ export const AdminUsersPage = () => {
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [reservationsPage, setReservationsPage] = useState(0);
   const [reservationsTotalPages, setReservationsTotalPages] = useState(0);
-  const [reservationsTotalElements, setReservationsTotalElements] = useState(0);
+  const [, setReservationsTotalElements] = useState(0);
   const [reservationStatusFilter, setReservationStatusFilter] = useState("");
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
@@ -198,16 +204,28 @@ export const AdminUsersPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Usuarios</h1>
-        <button
-          onClick={() => loadUsers(currentPage, pageSize, emailFilter, disabledFilter, roleFilter)}
-          disabled={loading}
-          title="Refrescar"
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setCreateError(null);
+              setCreateUserRole("CLIENT");
+              setIsCreateDrawerOpen(true);
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
+          >
+            + Crear Usuario
+          </button>
+          <button
+            onClick={() => loadUsers(currentPage, pageSize, emailFilter, disabledFilter, roleFilter)}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
@@ -290,6 +308,63 @@ export const AdminUsersPage = () => {
       />
 
       <AdminDrawer
+        title="Crear Usuario"
+        isOpen={isCreateDrawerOpen}
+        onClose={() => setIsCreateDrawerOpen(false)}
+      >
+        <form
+          className="space-y-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target as HTMLFormElement;
+            const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+            const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+            const data: RegisterRequest = { email, password };
+            try {
+              setCreateSubmitting(true);
+              setCreateError(null);
+              if (createUserRole === "ADMIN") {
+                await registerAdmin(data);
+              } else {
+                await registerUser(data);
+              }
+              setIsCreateDrawerOpen(false);
+              loadUsers(currentPage, pageSize, emailFilter, disabledFilter, roleFilter);
+            } catch (err) {
+              setCreateError(getApiErrorMessage(err, "No se pudo crear el usuario."));
+            } finally {
+              setCreateSubmitting(false);
+            }
+          }}
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+            <input name="email" type="email" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Contraseña <span className="text-red-500">*</span></label>
+            <input name="password" type="password" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tipo de usuario <span className="text-red-500">*</span></label>
+            <select
+              value={createUserRole}
+              onChange={(e) => setCreateUserRole(e.target.value as "CLIENT" | "ADMIN")}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+            >
+              <option value="CLIENT">Cliente</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={() => setIsCreateDrawerOpen(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
+            <button type="submit" disabled={createSubmitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{createSubmitting ? "Creando..." : "Crear"}</button>
+          </div>
+          {createError && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{createError}</div>}
+        </form>
+      </AdminDrawer>
+
+      <AdminDrawer
         title={
           selectedUser
             ? `Usuario: ${selectedUser.email}`
@@ -353,7 +428,7 @@ export const AdminUsersPage = () => {
                 <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
                   Perfil de Pasajero
                 </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500 font-medium">Nombre</p>
                     <p className="text-gray-900">

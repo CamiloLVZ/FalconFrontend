@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { validateBoardingPass, boardPassengerViaQr } from "../services/boardingService";
 import type { BoardingPassValidationResponse } from "../types/boardingTypes";
@@ -94,7 +93,7 @@ export const AdminBoardingPage = () => {
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
               showScanner
                 ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
             {showScanner ? "Escanear QR" : "Escanear con Cámara"}
@@ -150,7 +149,7 @@ export const AdminBoardingPage = () => {
             </h2>
           </div>
 
-          <div className="p-6 grid grid-cols-2 gap-6 text-sm">
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
             <div>
               <p className="text-gray-500 font-medium">Pasajero</p>
               <p className="text-gray-900 font-semibold">{boardingPass.passengerName}</p>
@@ -176,7 +175,7 @@ export const AdminBoardingPage = () => {
             <div>
               <p className="text-gray-500 font-medium">Asiento</p>
               <p className="text-gray-900">
-                {boardingPass.seatNumber} ({boardingPass.seatClass === "FIRST_CLASS" ? "Primera Clase" : "Económico"})
+                {boardingPass.seatLabel} ({boardingPass.seatClass === "FIRST_CLASS" ? "Primera Clase" : "Económico"})
               </p>
             </div>
             <div>

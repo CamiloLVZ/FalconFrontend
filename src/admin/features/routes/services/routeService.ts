@@ -11,9 +11,16 @@ import type {
 export const getAllRoutes = async (
   size: number,
   page: number,
+  filters?: {
+    originAirportIataCode?: string;
+    destinationAirportIataCode?: string;
+    status?: string;
+    flightNumber?: string;
+    airplaneTypeId?: number;
+  },
 ): Promise<PagedResponse<Route>> => {
   const response = await apiClient.get<PagedResponse<Route>>("/v1/routes", {
-    params: { size, page },
+    params: { size, page, ...filters },
   });
   return response.data;
 };

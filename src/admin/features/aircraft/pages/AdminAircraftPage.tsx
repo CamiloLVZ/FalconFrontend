@@ -9,6 +9,7 @@ import { AircraftTable } from "../components/AircraftTable";
 import { ACTION_LABELS } from "../constants/aircraft.constants";
 import {
   getAircrafts,
+  createAircraft,
   updateAircraftCapacity,
   updateAircraftIdentity,
 } from "../services/aircraftService";
@@ -16,6 +17,7 @@ import { STATUS_ACTION_SERVICES } from "../services/aircraftStatusActions";
 import type {
   AircraftStatusAction,
   AirplaneType,
+  CreateAirplaneTypeRequest,
 } from "../types/airplaneTypeTypes";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
 
@@ -40,6 +42,9 @@ export const AdminAircraftPage = () => {
   } | null>(null);
   const isConfirmationOpen = pendingStatusAction !== null;
   const [isIdentityDrawerOpen, setIsIdentityDrawerOpen] = useState(false);
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
 
   const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
     if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -126,16 +131,27 @@ export const AdminAircraftPage = () => {
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Aeronaves</h1>
-        <button
-          onClick={loadAircrafts}
-          disabled={loading}
-          title="Refrescar"
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setCreateError(null);
+              setIsCreateDrawerOpen(true);
+            }}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
+          >
+            + Crear Aeronave
+          </button>
+          <button
+            onClick={loadAircrafts}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
       <div className="mt-4 overflow-x-auto">
         <AircraftTable
@@ -316,6 +332,65 @@ export const AdminAircraftPage = () => {
               )}
             </form>
           )}
+        </AdminDrawer>
+
+        <AdminDrawer
+          title="Crear Aeronave"
+          isOpen={isCreateDrawerOpen}
+          onClose={() => setIsCreateDrawerOpen(false)}
+        >
+          <form
+            className="space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const firstClassVal = (form.elements.namedItem("firstClassSeats") as HTMLInputElement).value;
+              const data: CreateAirplaneTypeRequest = {
+                producer: (form.elements.namedItem("producer") as HTMLInputElement).value.toUpperCase(),
+                model: (form.elements.namedItem("model") as HTMLInputElement).value.toUpperCase(),
+                economySeats: parseInt((form.elements.namedItem("economySeats") as HTMLInputElement).value),
+                firstClassSeats: firstClassVal ? parseInt(firstClassVal) : undefined,
+                seatColumns: (form.elements.namedItem("seatColumns") as HTMLInputElement).value.toUpperCase(),
+              };
+              try {
+                setCreateSubmitting(true);
+                setCreateError(null);
+                await createAircraft(data);
+                setIsCreateDrawerOpen(false);
+                loadAircrafts();
+              } catch (err) {
+                setCreateError(getApiErrorMessage(err, "No se pudo crear la aeronave."));
+              } finally {
+                setCreateSubmitting(false);
+              }
+            }}
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Fabricante <span className="text-red-500">*</span></label>
+              <input name="producer" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Modelo <span className="text-red-500">*</span></label>
+              <input name="model" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Asientos clase económica <span className="text-red-500">*</span></label>
+              <input name="economySeats" type="number" min={1} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Asientos primera clase</label>
+              <input name="firstClassSeats" type="number" min={0} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Columnas de asientos <span className="text-red-500">*</span></label>
+              <input name="seatColumns" required pattern="[A-Z]+" title="Solo letras mayúsculas, sin repetir" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div className="pt-4 flex justify-end gap-3">
+              <button type="button" onClick={() => setIsCreateDrawerOpen(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
+              <button type="submit" disabled={createSubmitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{createSubmitting ? "Creando..." : "Crear"}</button>
+            </div>
+            {createError && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{createError}</div>}
+          </form>
         </AdminDrawer>
 
         {isConfirmationOpen && pendingStatusAction ? (

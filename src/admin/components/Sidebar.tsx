@@ -8,6 +8,11 @@ interface NavItem {
   icon: ReactNode;
 }
 
+interface SidebarProps {
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
 const navItems: NavItem[] = [
   {
     label: "AERONAVES",
@@ -101,9 +106,9 @@ const navItems: NavItem[] = [
   },
 ];
 
-export const Sidebar = () => {
-  return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[310px] flex-col bg-[#071c33] text-slate-100 shadow-2xl lg:flex">
+export const Sidebar = ({ mobileOpen, onMobileClose }: SidebarProps) => {
+  const sidebar = (
+    <aside className="flex h-full w-[310px] flex-col bg-[#071c33] text-slate-100 shadow-2xl">
       <div className="flex h-[72px] items-center border-b border-white/5 px-7">
         <div className="text-3xl font-black tracking-[-0.08em] text-[#ffb400]">
           <Logo />
@@ -119,11 +124,12 @@ export const Sidebar = () => {
         </p>
       </div>
 
-      <nav className="flex-1 space-y-3 px-2">
+      <nav className="flex-1 space-y-3 overflow-y-auto px-2">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={onMobileClose}
             className={({ isActive }) =>
               [
                 "flex h-[59px] items-center gap-5 rounded-lg px-6 text-sm font-semibold tracking-[0.12em] transition",
@@ -141,5 +147,27 @@ export const Sidebar = () => {
         ))}
       </nav>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop: fixed sidebar */}
+      <div className="fixed inset-y-0 left-0 z-30 hidden lg:block">
+        {sidebar}
+      </div>
+
+      {/* Mobile: overlay sidebar */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={onMobileClose}
+          />
+          <div className="absolute inset-y-0 left-0 shadow-2xl">
+            {sidebar}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

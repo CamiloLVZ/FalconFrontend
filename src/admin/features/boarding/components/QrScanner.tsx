@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 
 interface QrScannerProps {
@@ -12,8 +12,9 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const html5QrRef = useRef<Html5Qrcode | null>(null);
+  const scanningHandledRef = useRef(false);
 
-  const extractToken = (url: string): string | null => {
+  const extractToken = useCallback((url: string): string | null => {
     try {
       const u = new URL(url);
       const parts = u.pathname.split("/").filter(Boolean);
@@ -24,12 +25,16 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
       if (/^[0-9a-f-]{36}$/i.test(url)) return url;
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     return () => {
       if (html5QrRef.current) {
-        html5QrRef.current.stop().catch(() => {});
+        try {
+          html5QrRef.current.stop().catch(() => {});
+        } catch {
+          // element already removed from DOM
+        }
       }
     };
   }, []);
@@ -37,6 +42,7 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
   const startScanner = async () => {
     try {
       setErrorMsg(null);
+      scanningHandledRef.current = false;
       const html5Qr = new Html5Qrcode(QR_ELEMENT_ID);
       html5QrRef.current = html5Qr;
 
@@ -46,18 +52,24 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
           fps: 10,
           qrbox: { width: 250, height: 250 },
         },
-        (decodedText) => {
+        async (decodedText) => {
+          if (scanningHandledRef.current) return;
           const token = extractToken(decodedText);
-          if (token) {
-            html5Qr.stop().catch(() => {});
-            setIsScanning(false);
-            onScan(token);
+          if (!token) return;
+          scanningHandledRef.current = true;
+          try {
+            await html5Qr.stop();
+            html5QrRef.current = null;
+          } catch {
+            // scanner already stopped
           }
+          setIsScanning(false);
+          onScan(token);
         },
         () => {},
       );
       setIsScanning(true);
-    } catch (err) {
+    } catch {
       const msg = "No se pudo acceder a la cámara. Verifica los permisos.";
       setErrorMsg(msg);
       onError?.(msg);
@@ -68,7 +80,9 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
     if (html5QrRef.current) {
       try {
         await html5QrRef.current.stop();
-      } catch {}
+      } catch {
+        // scanner stopped
+      }
     }
     setIsScanning(false);
   };

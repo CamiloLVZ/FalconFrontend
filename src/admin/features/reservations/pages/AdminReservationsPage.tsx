@@ -4,13 +4,13 @@ import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
+
 import { ReservationTable } from "../components/ReservationTable";
 import {
   getReservation,
   getReservationsByFlight,
   cancelReservation,
   cancelPassengerFromReservation,
-  cancelPassengerFromReservationByPassport,
 } from "../services/reservationService";
 import type { Reservation, PassengerReservation } from "../types/reservationTypes";
 
@@ -305,7 +305,7 @@ export const AdminReservationsPage = () => {
               <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
                 Detalles Generales
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500 font-medium">ID Vuelo</p>
                   <p className="text-gray-900">
@@ -352,7 +352,7 @@ export const AdminReservationsPage = () => {
                           {p.passenger.firstName} {p.passenger.lastName}
                         </p>
                         <p className="text-gray-500 text-xs">
-                          {p.passenger.nationalityIsoCode} {p.passenger.identificationNumber}{p.passenger.passportNumber ? ` | Pasaporte: ${p.passenger.passportNumber}` : ""} | Asiento: {p.seatNumber}
+                          {p.passenger.nationalityIsoCode} {p.passenger.identificationNumber}{p.passenger.passportNumber ? ` | Pasaporte: ${p.passenger.passportNumber}` : ""} | Asiento: {p.seatLabel}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

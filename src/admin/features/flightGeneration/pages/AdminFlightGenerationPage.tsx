@@ -29,6 +29,11 @@ export const AdminFlightGenerationPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState("");
+  const [genStatusFilter, setGenStatusFilter] = useState("");
+  const [genRouteFilter, setGenRouteFilter] = useState("");
+
   // Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -41,11 +46,15 @@ export const AdminFlightGenerationPage = () => {
     return "Ha ocurrido un error inesperado.";
   };
 
-  const loadGenerations = async (page: number, size: number) => {
+  const loadGenerations = async (
+    page: number,
+    size: number,
+    filters?: { type?: string; status?: string; routeFlightNumber?: string },
+  ) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllGenerations(page, size);
+      const data = await getAllGenerations(page, size, filters);
       setGenerations(data.content);
       setCurrentPage(data.page);
       setTotalPages(data.totalPages);
@@ -59,8 +68,30 @@ export const AdminFlightGenerationPage = () => {
   };
 
   useEffect(() => {
-    loadGenerations(currentPage, pageSize);
+    loadGenerations(currentPage, pageSize, {
+      type: typeFilter || undefined,
+      status: genStatusFilter || undefined,
+      routeFlightNumber: genRouteFilter || undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
+
+  const handleSearch = () => {
+    setCurrentPage(0);
+    loadGenerations(0, pageSize, {
+      type: typeFilter || undefined,
+      status: genStatusFilter || undefined,
+      routeFlightNumber: genRouteFilter || undefined,
+    });
+  };
+
+  const handleClearFilters = () => {
+    setTypeFilter("");
+    setGenStatusFilter("");
+    setGenRouteFilter("");
+    setCurrentPage(0);
+    loadGenerations(0, pageSize);
+  };
 
   const handleTriggerGeneration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +104,11 @@ export const AdminFlightGenerationPage = () => {
         await generateFlightsForAllRoutes();
       }
       setRouteFlightNumber("");
-      loadGenerations(currentPage, pageSize); // reload
+      loadGenerations(currentPage, pageSize, {
+        type: typeFilter || undefined,
+        status: genStatusFilter || undefined,
+        routeFlightNumber: genRouteFilter || undefined,
+      }); // reload
     } catch (err) {
       setActionError(
         getApiErrorMessage(err, "No se pudo iniciar la generación."),
@@ -93,7 +128,11 @@ export const AdminFlightGenerationPage = () => {
         <h1 className="text-2xl font-bold">Generación de Vuelos</h1>
         <div className="flex items-center gap-2">
         <button
-          onClick={() => loadGenerations(currentPage, pageSize)}
+          onClick={() => loadGenerations(currentPage, pageSize, {
+            type: typeFilter || undefined,
+            status: genStatusFilter || undefined,
+            routeFlightNumber: genRouteFilter || undefined,
+          })}
           disabled={loading}
           title="Refrescar"
           className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
@@ -109,6 +148,62 @@ export const AdminFlightGenerationPage = () => {
           Generar Vuelos
         </button>
       </div>
+      </div>
+
+      <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700">Tipo</label>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+          >
+            <option value="">Todos</option>
+            <option value="DAILY">DAILY</option>
+            <option value="ROUTE">ROUTE</option>
+            <option value="GLOBAL">GLOBAL</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700">Estado</label>
+          <select
+            value={genStatusFilter}
+            onChange={(e) => setGenStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+          >
+            <option value="">Todos</option>
+            <option value="RUNNING">RUNNING</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="FAILED">FAILED</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">Ruta</label>
+          <input
+            type="text"
+            placeholder="Ej: AV1234"
+            value={genRouteFilter}
+            onChange={(e) => setGenRouteFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Buscar
+          </button>
+          <button
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto">

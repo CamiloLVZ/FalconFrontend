@@ -7,21 +7,21 @@ import type {
 } from "../types/airplaneTypeTypes";
 
 export const getAircrafts = async (): Promise<AirplaneType[]> => {
-  const response = await apiClient.get<AircraftType[]>("/v1/airplane-types");
+  const response = await apiClient.get<AirplaneType[]>("/v1/airplane-types");
   return response.data;
 };
 
-export const getAircraftById = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.get<AircraftType>(
+export const getAircraftById = async (id: number): Promise<AirplaneType> => {
+  const response = await apiClient.get<AirplaneType>(
     `/v1/airplane-types/${id}`,
   );
   return response.data;
 };
 
 export const createAircraft = async (
-  aircraftData: CreateAircraftDTO,
-): Promise<AircraftType> => {
-  const response = await apiClient.post<AircraftType>(
+  aircraftData: CreateAirplaneTypeRequest,
+): Promise<AirplaneType> => {
+  const response = await apiClient.post<AirplaneType>(
     "/v1/airplane-types",
     aircraftData,
   );
@@ -30,9 +30,9 @@ export const createAircraft = async (
 
 export const updateAircraftCapacity = async (
   id: number,
-  capacityData: UpdateAircraftCapacityDTO,
-): Promise<AircraftType> => {
-  const response = await apiClient.patch<AircraftType>(
+  capacityData: ConfigureSeatsRequest,
+): Promise<AirplaneType> => {
+  const response = await apiClient.patch<AirplaneType>(
     `/v1/airplane-types/${id}/configure-seats`,
     capacityData,
   );
@@ -41,31 +41,31 @@ export const updateAircraftCapacity = async (
 
 export const updateAircraftIdentity = async (
   id: number,
-  identityData: CorrectIdentityAircraftDTO,
-): Promise<AircraftType> => {
-  const response = await apiClient.patch<AircraftType>(
+  identityData: CorrectAirplaneTypeIdentityRequest,
+): Promise<AirplaneType> => {
+  const response = await apiClient.patch<AirplaneType>(
     `/v1/airplane-types/${id}/correct-identity`,
     identityData,
   );
   return response.data;
 };
 
-export const activateAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.patch<AircraftType>(
+export const activateAircraft = async (id: number): Promise<AirplaneType> => {
+  const response = await apiClient.patch<AirplaneType>(
     `/v1/airplane-types/${id}/activate`,
   );
   return response.data;
 };
 
-export const deactivateAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.patch<AircraftType>(
+export const deactivateAircraft = async (id: number): Promise<AirplaneType> => {
+  const response = await apiClient.patch<AirplaneType>(
     `/v1/airplane-types/${id}/deactivate`,
   );
   return response.data;
 };
 
-export const retireAircraft = async (id: number): Promise<AircraftType> => {
-  const response = await apiClient.patch<AircraftType>(
+export const retireAircraft = async (id: number): Promise<AirplaneType> => {
+  const response = await apiClient.patch<AirplaneType>(
     `/v1/airplane-types/${id}/retire`,
   );
   return response.data;

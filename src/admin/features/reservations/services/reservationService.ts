@@ -1,6 +1,6 @@
 import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
-import type { Reservation } from "../types/reservationTypes";
+import type { CheckInResponse, Reservation } from "../types/reservationTypes";
 
 export const getReservation = async (
   reservationNumber: string,
@@ -68,8 +68,8 @@ export const checkInPassenger = async (
   identificationNumber: string,
   countryIsoCode: string,
   seatNumber?: number,
-): Promise<Reservation> => {
-  const response = await apiClient.post<Reservation>(
+): Promise<CheckInResponse> => {
+  const response = await apiClient.post<CheckInResponse>(
     "/v1/check-in",
     {
       reservationNumber,
