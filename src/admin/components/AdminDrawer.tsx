@@ -28,6 +28,9 @@ export const AdminDrawer = ({ title, isOpen, onClose, children }: AdminDrawerPro
       <div 
         className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClose(); } }}
+        role="button"
+        tabIndex={0}
       />
       
       {/* Drawer Panel */}

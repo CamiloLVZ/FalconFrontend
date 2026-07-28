@@ -162,6 +162,9 @@ export const Sidebar = ({ mobileOpen, onMobileClose }: SidebarProps) => {
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onMobileClose}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onMobileClose(); } }}
+            role="button"
+            tabIndex={0}
           />
           <div className="absolute inset-y-0 left-0 shadow-2xl">
             {sidebar}

@@ -63,21 +63,22 @@ export const AirportSelect = ({
       {showDropdown && (
         <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-300 rounded-xl shadow-lg z-50 overflow-hidden">
           {options.map((airport) => (
-            <div
+            <button
               key={airport.iataCode}
+              type="button"
               onClick={() => {
                 onSelect(airport);
 
                 setShowDropdown(false);
               }}
-              className="px-4 py-3 hover:bg-gray-100 cursor-pointer"
+              className="w-full text-left px-4 py-3 hover:bg-gray-100 cursor-pointer"
             >
               <p className="font-semibold">
                 {airport.city} ({airport.iataCode})
               </p>
 
               <p className="text-sm text-gray-500">{airport.name}</p>
-            </div>
+            </button>
           ))}
         </div>
       )}
