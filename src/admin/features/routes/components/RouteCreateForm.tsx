@@ -107,8 +107,6 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
             if (aircraft.status === "ACTIVE") acc.push(<option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>);
             return acc;
           }, [])}
-            <option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>
-          ))}
         </select>
       </div>
       <div>
