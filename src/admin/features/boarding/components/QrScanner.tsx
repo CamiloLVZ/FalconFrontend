@@ -104,6 +104,7 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
       <div className="flex justify-center gap-3">
         {!isScanning ? (
           <button
+            type="button"
             onClick={startScanner}
             className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium"
           >
@@ -111,6 +112,7 @@ export const QrScanner = ({ onScan, onError }: QrScannerProps) => {
           </button>
         ) : (
           <button
+            type="button"
             onClick={stopScanner}
             className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium"
           >

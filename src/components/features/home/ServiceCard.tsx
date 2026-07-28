@@ -21,7 +21,7 @@ export const ServiceCard = ({title, description, action, dark = false,}: Props) 
                 {description}
             </p>
 
-            <button className="text-sm font-medium hover:underline cursor-pointer">
+            <button type="button" className="text-sm font-medium hover:underline cursor-pointer">
                 {action} →
             </button>
         </div>

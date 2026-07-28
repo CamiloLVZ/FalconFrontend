@@ -24,6 +24,7 @@ export const ConfirmationModal = ({
       <FormError error={error} />
       <div className="flex justify-end space-x-2">
         <button
+          type="button"
           onClick={onConfirm}
           className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
           disabled={isSubmitting}
@@ -31,6 +32,7 @@ export const ConfirmationModal = ({
           {isSubmitting ? "Procesando..." : "Confirmar"}
         </button>
         <button
+          type="button"
           onClick={onCancel}
           className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70"
           disabled={isSubmitting}

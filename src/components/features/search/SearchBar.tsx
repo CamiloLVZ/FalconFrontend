@@ -83,6 +83,7 @@ export const SearchBar = ({
       <div className="flex-2 w-full">
         <input
           type="date"
+          aria-label="Fecha"
           onClick={(e) => e.currentTarget.showPicker()}
           className="rounded-xl border border-gray-300 w-full px-4 py-3 cursor-pointer"
           value={filters.date}
@@ -96,6 +97,7 @@ export const SearchBar = ({
       </div>
 
       <button
+        type="button"
         onClick={onSearch}
         disabled={isSearchDisabled}
         className={`px-6 py-2 rounded-3xl font-semibold transition h-fit w-fit md:w-auto flex-1 text-[20px] ${

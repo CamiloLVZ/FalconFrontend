@@ -43,6 +43,7 @@ export const ReservationTable = ({ reservations, onEdit }: ReservationTableProps
               </td>
               <td className="px-6 py-4 text-right">
                 <button
+                  type="button"
                   onClick={() => onEdit(reservation)}
                   className="px-4 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 font-medium cursor-pointer transition-colors"
                 >

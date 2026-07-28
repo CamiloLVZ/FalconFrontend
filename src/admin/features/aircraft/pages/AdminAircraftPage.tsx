@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
+import type { Reducer } from "react";
 import axios from "axios";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
@@ -6,66 +7,91 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import { AircraftTable } from "../components/AircraftTable";
+import { AircraftEditForm } from "../components/AircraftEditForm";
+import { AircraftCreateForm } from "../components/AircraftCreateForm";
 import { ACTION_LABELS } from "../constants/aircraft.constants";
-import {
-  getAircrafts,
-  createAircraft,
-  updateAircraftCapacity,
-  updateAircraftIdentity,
-} from "../services/aircraftService";
+import { getAircrafts } from "../services/aircraftService";
 import { STATUS_ACTION_SERVICES } from "../services/aircraftStatusActions";
 import type {
   AircraftStatusAction,
   AirplaneType,
-  CreateAirplaneTypeRequest,
 } from "../types/airplaneTypeTypes";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
 
+const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+  if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+    return unknownError.response?.data.message ?? fallback;
+  }
+  return "Ha ocurrido un error inesperado.";
+};
+
+interface State {
+  aircrafts: AirplaneType[];
+  loading: boolean;
+  error: string | null;
+  selectedAircraft: AirplaneType | null;
+  isEditDrawerOpen: boolean;
+  isCreateDrawerOpen: boolean;
+  isSubmitting: boolean;
+  actionError: string | null;
+  pendingStatusAction: { aircraft: AirplaneType; action: AircraftStatusAction } | null;
+}
+
+type Action =
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_AIRCRAFTS"; payload: AirplaneType[] }
+  | { type: "UPDATE_AIRCRAFTS"; payload: (prev: AirplaneType[]) => AirplaneType[] }
+  | { type: "SET_SELECTED_AIRCRAFT"; payload: AirplaneType | null }
+  | { type: "SET_EDIT_DRAWER"; payload: boolean }
+  | { type: "SET_CREATE_DRAWER"; payload: boolean }
+  | { type: "SET_SUBMITTING"; payload: boolean }
+  | { type: "SET_ACTION_ERROR"; payload: string | null }
+  | { type: "SET_PENDING_ACTION"; payload: { aircraft: AirplaneType; action: AircraftStatusAction } | null };
+
+const reducer: Reducer<State, Action> = (state, action): State => {
+  switch (action.type) {
+    case "SET_LOADING": return { ...state, loading: action.payload };
+    case "SET_ERROR": return { ...state, error: action.payload };
+    case "SET_AIRCRAFTS": return { ...state, aircrafts: action.payload };
+    case "UPDATE_AIRCRAFTS": return { ...state, aircrafts: action.payload(state.aircrafts) };
+    case "SET_SELECTED_AIRCRAFT": return { ...state, selectedAircraft: action.payload };
+    case "SET_EDIT_DRAWER": return { ...state, isEditDrawerOpen: action.payload };
+    case "SET_CREATE_DRAWER": return { ...state, isCreateDrawerOpen: action.payload };
+    case "SET_SUBMITTING": return { ...state, isSubmitting: action.payload };
+    case "SET_ACTION_ERROR": return { ...state, actionError: action.payload };
+    case "SET_PENDING_ACTION": return { ...state, pendingStatusAction: action.payload };
+    default: return state;
+  }
+};
+
+const initialState: State = {
+  aircrafts: [],
+  loading: false,
+  error: null,
+  selectedAircraft: null,
+  isEditDrawerOpen: false,
+  isCreateDrawerOpen: false,
+  isSubmitting: false,
+  actionError: null,
+  pendingStatusAction: null,
+};
+
 export const AdminAircraftPage = () => {
-  const [aircrafts, setAircrafts] = useState<AirplaneType[]>([]);
-  const sortedAircrafts = [...aircrafts].sort((a, b) => a.id - b.id);
-  const [selectedAircraft, setSelectedAircraft] = useState<AirplaneType | null>(
-    null,
-  );
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [identityError, setIdentityError] = useState<string | null>(null);
-  const [identitySubmitting, setIdentitySubmitting] = useState(false);
-  const [capacityError, setCapacityError] = useState<string | null>(null);
-  const [capacitySubmitting, setCapacitySubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [pendingStatusAction, setPendingStatusAction] = useState<{
-    aircraft: AirplaneType;
-    action: AircraftStatusAction;
-  } | null>(null);
-  const isConfirmationOpen = pendingStatusAction !== null;
-  const [isIdentityDrawerOpen, setIsIdentityDrawerOpen] = useState(false);
-  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-
-    return "Ha ocurrido un error inesperado.";
-  };
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { aircrafts, loading, error, selectedAircraft, isEditDrawerOpen, isCreateDrawerOpen, isSubmitting, actionError, pendingStatusAction } = state;
+  const sortedAircrafts = aircrafts.toSorted((a, b) => a.id - b.id);
 
   const loadAircrafts = async () => {
+    dispatch({ type: "SET_LOADING", payload: true });
     try {
-      setLoading(true);
       const data = await getAircrafts();
-      setAircrafts(data);
+      dispatch({ type: "SET_AIRCRAFTS", payload: data });
     } catch (error) {
       console.error(error);
-      setError(
-        "No se han podido cargar las aeronaves. Por favor, inténtalo de nuevo más tarde.",
-      );
+      dispatch({ type: "SET_ERROR", payload: "No se han podido cargar las aeronaves. Por favor, inténtalo de nuevo más tarde." });
     } finally {
-      setLoading(false);
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   };
 
@@ -73,58 +99,38 @@ export const AdminAircraftPage = () => {
     loadAircrafts();
   }, []);
 
-  // Drawer close handler is implemented inline where needed.
-
-  const closeConfirmationModal = () => {
-    setPendingStatusAction(null);
-  };
-
   const handleStatusAction = (id: number, action: AircraftStatusAction) => {
-    setError(null);
-    setActionError(null);
+    dispatch({ type: "SET_ERROR", payload: null });
+    dispatch({ type: "SET_ACTION_ERROR", payload: null });
     const aircraft = aircrafts.find((a) => a.id === id);
-
-    if (!aircraft) return;
-
-    setPendingStatusAction({
-      aircraft,
-      action,
-    });
+    if (aircraft) {
+      dispatch({ type: "SET_PENDING_ACTION", payload: { aircraft, action } });
+    }
   };
 
   const executePendingAction = async () => {
     if (!pendingStatusAction) return;
-
     const { aircraft, action } = pendingStatusAction;
     const updateService = STATUS_ACTION_SERVICES[action];
-
+    dispatch({ type: "SET_SUBMITTING", payload: true });
+    dispatch({ type: "SET_ACTION_ERROR", payload: null });
     try {
-      setIsSubmitting(true);
-      setActionError(null);
-
       const updatedAircraft = await updateService(aircraft.id);
-
-      setAircrafts((prev) => replaceAircraftInList(prev, updatedAircraft));
-      setPendingStatusAction(null);
+      dispatch({ type: "UPDATE_AIRCRAFTS", payload: (prev) => replaceAircraftInList(prev, updatedAircraft) });
+      dispatch({ type: "SET_PENDING_ACTION", payload: null });
     } catch (error) {
-      setActionError(
-        getApiErrorMessage(error, "No se pudo actualizar la aeronave."),
-      );
+      dispatch({ type: "SET_ACTION_ERROR", payload: getApiErrorMessage(error, "No se pudo actualizar la aeronave.") });
     } finally {
-      setIsSubmitting(false);
+      dispatch({ type: "SET_SUBMITTING", payload: false });
     }
   };
-
-  // Unified edit flow uses a single drawer and combined save logic in the form submit handler.
 
   if (loading) {
     return <LoadingScreen />;
   }
 
   if (error) {
-    return (
-      <ErrorScreen messageTitle="Error al cargar aeronaves" message={error} />
-    );
+    return <ErrorScreen messageTitle="Error al cargar aeronaves" message={error} />;
   }
 
   return (
@@ -132,21 +138,10 @@ export const AdminAircraftPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Aeronaves</h1>
         <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setCreateError(null);
-              setIsCreateDrawerOpen(true);
-            }}
-            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
-          >
+          <button type="button" onClick={() => dispatch({ type: "SET_CREATE_DRAWER", payload: true })} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium">
             + Crear Aeronave
           </button>
-          <button
-            onClick={loadAircrafts}
-            disabled={loading}
-            title="Refrescar"
-            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
-          >
+          <button type="button" onClick={loadAircrafts} disabled={loading} title="Refrescar" className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -158,251 +153,46 @@ export const AdminAircraftPage = () => {
           aircrafts={sortedAircrafts}
           onStatusAction={handleStatusAction}
           onEdit={(a) => {
-            setSelectedAircraft(a);
-            setIdentityError(null);
-            setCapacityError(null);
-            setIsIdentityDrawerOpen(true);
+            dispatch({ type: "SET_SELECTED_AIRCRAFT", payload: a });
+            dispatch({ type: "SET_EDIT_DRAWER", payload: true });
           }}
         />
 
         <AdminDrawer
-          title={
-            selectedAircraft
-              ? `Editar ${selectedAircraft.producer} ${selectedAircraft.model}`
-              : "Editar aeronave"
-          }
-          isOpen={isIdentityDrawerOpen}
-          onClose={() => setIsIdentityDrawerOpen(false)}
+          title={selectedAircraft ? `Editar ${selectedAircraft.producer} ${selectedAircraft.model}` : "Editar aeronave"}
+          isOpen={isEditDrawerOpen}
+          onClose={() => dispatch({ type: "SET_EDIT_DRAWER", payload: false })}
         >
           {selectedAircraft && (
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const producer = (
-                  form.elements.namedItem("producer") as HTMLInputElement
-                ).value.toUpperCase();
-                const model = (
-                  form.elements.namedItem("model") as HTMLInputElement
-                ).value.toUpperCase();
-                const economySeats = parseInt(
-                  (form.elements.namedItem("economySeats") as HTMLInputElement)
-                    .value,
-                );
-                const firstClassSeats = parseInt(
-                  (
-                    form.elements.namedItem(
-                      "firstClassSeats",
-                    ) as HTMLInputElement
-                  ).value,
-                );
-                const seatColumns = (
-                  form.elements.namedItem("seatColumns") as HTMLInputElement
-                ).value.toUpperCase();
-
-                // Call both services in sequence
-                (async () => {
-                  try {
-                    setIdentitySubmitting(true);
-                    setCapacitySubmitting(true);
-                    setIdentityError(null);
-                    setCapacityError(null);
-
-                    const updatedIdentity = await updateAircraftIdentity(
-                      selectedAircraft.id,
-                      { producer, model },
-                    );
-                    setAircrafts((prev) =>
-                      replaceAircraftInList(prev, updatedIdentity),
-                    );
-
-                    const updatedCapacity = await updateAircraftCapacity(
-                      selectedAircraft.id,
-                      { economySeats, firstClassSeats, seatColumns },
-                    );
-                    setAircrafts((prev) =>
-                      replaceAircraftInList(prev, updatedCapacity),
-                    );
-
-                    setIdentityError(null);
-                    setCapacityError(null);
-                  } catch (err) {
-                    const msg = getApiErrorMessage(
-                      err,
-                      "No se pudo actualizar la aeronave.",
-                    );
-                    setIdentityError(msg);
-                    setCapacityError(msg);
-                  } finally {
-                    setIdentitySubmitting(false);
-                    setCapacitySubmitting(false);
-                  }
-                })();
-              }}
-            >
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Fabricante
-                </label>
-                <input
-                  name="producer"
-                  defaultValue={selectedAircraft.producer}
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Modelo
-                </label>
-                <input
-                  name="model"
-                  defaultValue={selectedAircraft.model}
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Asientos clase económica
-                </label>
-                <input
-                  name="economySeats"
-                  type="number"
-                  min={1}
-                  defaultValue={selectedAircraft.economySeats}
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Asientos primera clase
-                </label>
-                <input
-                  name="firstClassSeats"
-                  type="number"
-                  defaultValue={selectedAircraft.firstClassSeats}
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Columnas de asientos
-                </label>
-                <input
-                  name="seatColumns"
-                  defaultValue={selectedAircraft.seatColumns}
-                  required
-                  pattern="[A-Z]+"
-                  title="Solo letras mayúsculas, sin repetir"
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsIdentityDrawerOpen(false)}
-                  className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={identitySubmitting || capacitySubmitting}
-                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
-                >
-                  {identitySubmitting || capacitySubmitting
-                    ? "Guardando..."
-                    : "Guardar cambios"}
-                </button>
-              </div>
-
-              {(identityError || capacityError) && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">
-                  {identityError || capacityError}
-                </div>
-              )}
-            </form>
+            <AircraftEditForm
+              aircraft={selectedAircraft}
+              onClose={() => dispatch({ type: "SET_EDIT_DRAWER", payload: false })}
+              onAircraftsUpdate={(updater) => dispatch({ type: "UPDATE_AIRCRAFTS", payload: updater })}
+            />
           )}
         </AdminDrawer>
 
         <AdminDrawer
           title="Crear Aeronave"
           isOpen={isCreateDrawerOpen}
-          onClose={() => setIsCreateDrawerOpen(false)}
+          onClose={() => dispatch({ type: "SET_CREATE_DRAWER", payload: false })}
         >
-          <form
-            className="space-y-4"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              const firstClassVal = (form.elements.namedItem("firstClassSeats") as HTMLInputElement).value;
-              const data: CreateAirplaneTypeRequest = {
-                producer: (form.elements.namedItem("producer") as HTMLInputElement).value.toUpperCase(),
-                model: (form.elements.namedItem("model") as HTMLInputElement).value.toUpperCase(),
-                economySeats: parseInt((form.elements.namedItem("economySeats") as HTMLInputElement).value),
-                firstClassSeats: firstClassVal ? parseInt(firstClassVal) : undefined,
-                seatColumns: (form.elements.namedItem("seatColumns") as HTMLInputElement).value.toUpperCase(),
-              };
-              try {
-                setCreateSubmitting(true);
-                setCreateError(null);
-                await createAircraft(data);
-                setIsCreateDrawerOpen(false);
-                loadAircrafts();
-              } catch (err) {
-                setCreateError(getApiErrorMessage(err, "No se pudo crear la aeronave."));
-              } finally {
-                setCreateSubmitting(false);
-              }
-            }}
-          >
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Fabricante <span className="text-red-500">*</span></label>
-              <input name="producer" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Modelo <span className="text-red-500">*</span></label>
-              <input name="model" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Asientos clase económica <span className="text-red-500">*</span></label>
-              <input name="economySeats" type="number" min={1} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Asientos primera clase</label>
-              <input name="firstClassSeats" type="number" min={0} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Columnas de asientos <span className="text-red-500">*</span></label>
-              <input name="seatColumns" required pattern="[A-Z]+" title="Solo letras mayúsculas, sin repetir" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-            </div>
-            <div className="pt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setIsCreateDrawerOpen(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
-              <button type="submit" disabled={createSubmitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{createSubmitting ? "Creando..." : "Crear"}</button>
-            </div>
-            {createError && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{createError}</div>}
-          </form>
+          <AircraftCreateForm
+            onSuccess={loadAircrafts}
+            onClose={() => dispatch({ type: "SET_CREATE_DRAWER", payload: false })}
+          />
         </AdminDrawer>
 
-        {isConfirmationOpen && pendingStatusAction ? (
+        {pendingStatusAction && (
           <ConfirmationModal
             title="Confirmar acción"
             message={`¿Desea ${ACTION_LABELS[pendingStatusAction.action].toLowerCase()} la aeronave ${pendingStatusAction.aircraft.producer} ${pendingStatusAction.aircraft.model}?`}
             onConfirm={executePendingAction}
-            onCancel={closeConfirmationModal}
+            onCancel={() => dispatch({ type: "SET_PENDING_ACTION", payload: null })}
             error={actionError}
             isSubmitting={isSubmitting}
           />
-        ) : null}
+        )}
       </div>
     </section>
   );

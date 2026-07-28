@@ -53,12 +53,14 @@ export const UserTable = ({ users, onEdit, onToggleDisabled, isSubmitting }: Use
             <td className="p-3">
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => onEdit(user)}
                   className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-md text-xs font-medium transition-colors"
                 >
                   Ver detalle
                 </button>
                 <button
+                  type="button"
                   onClick={() => onToggleDisabled(user)}
                   disabled={isSubmitting}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50 ${

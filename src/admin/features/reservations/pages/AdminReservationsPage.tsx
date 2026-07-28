@@ -1,11 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useState, useReducer, type FormEvent, type Reducer } from "react";
 import axios from "axios";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
-import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 
 import { ReservationTable } from "../components/ReservationTable";
+import { ReservationSearchForm } from "../components/ReservationSearchForm";
+import { ReservationDetailDrawer } from "../components/ReservationDetailDrawer";
 import {
   getReservation,
   getReservationsByFlight,
@@ -14,56 +15,136 @@ import {
 } from "../services/reservationService";
 import type { Reservation, PassengerReservation } from "../types/reservationTypes";
 
+interface State {
+  reservations: Reservation[];
+  loading: boolean;
+  error: string | null;
+  isSubmitting: boolean;
+  actionError: string | null;
+  isDrawerOpen: boolean;
+  selectedReservation: Reservation | null;
+  hasSearched: boolean;
+  lastSearchType: "flight" | "number" | null;
+}
+
+type Action =
+  | { type: "SEARCH_START" }
+  | { type: "SEARCH_FLIGHT_SUCCESS"; payload: Reservation[] }
+  | { type: "SEARCH_NUMBER_SUCCESS"; payload: Reservation }
+  | { type: "SEARCH_FLIGHT_ERROR" }
+  | { type: "SEARCH_NUMBER_ERROR" }
+  | { type: "EDIT_RESERVATION"; payload: Reservation }
+  | { type: "SUBMIT_START" }
+  | { type: "SUBMIT_SUCCESS"; payload: Reservation }
+  | { type: "SUBMIT_ERROR"; payload: string }
+  | { type: "CLOSE_DRAWER" };
+
+const initialState: State = {
+  reservations: [],
+  loading: false,
+  error: null,
+  isSubmitting: false,
+  actionError: null,
+  isDrawerOpen: false,
+  selectedReservation: null,
+  hasSearched: false,
+  lastSearchType: null,
+};
+
+const reducer: Reducer<State, Action> = (state, action) => {
+  switch (action.type) {
+    case "SEARCH_START":
+      return { ...state, loading: true, error: null, actionError: null };
+    case "SEARCH_FLIGHT_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        reservations: action.payload,
+        selectedReservation: null,
+        isDrawerOpen: false,
+        lastSearchType: "flight",
+        hasSearched: true,
+        error: null,
+      };
+    case "SEARCH_NUMBER_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        reservations: [action.payload],
+        selectedReservation: action.payload,
+        isDrawerOpen: true,
+        lastSearchType: "number",
+        hasSearched: true,
+        error: null,
+      };
+    case "SEARCH_FLIGHT_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: "No se han podido cargar las reservas del vuelo.",
+      };
+    case "SEARCH_NUMBER_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: "No se encontró ninguna reserva con ese número.",
+        selectedReservation: null,
+        isDrawerOpen: false,
+      };
+    case "EDIT_RESERVATION":
+      return {
+        ...state,
+        selectedReservation: action.payload,
+        actionError: null,
+        isDrawerOpen: true,
+      };
+    case "SUBMIT_START":
+      return { ...state, isSubmitting: true, actionError: null };
+    case "SUBMIT_SUCCESS":
+      return {
+        ...state,
+        isSubmitting: false,
+        actionError: null,
+        reservations: state.reservations.map((r) =>
+          r.number === action.payload.number ? action.payload : r,
+        ),
+      };
+    case "SUBMIT_ERROR":
+      return { ...state, isSubmitting: false, actionError: action.payload };
+    case "CLOSE_DRAWER":
+      return { ...state, isDrawerOpen: false };
+    default:
+      return state;
+  }
+};
+
+const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+  if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+    return unknownError.response?.data.message ?? fallback;
+  }
+  return "Ha ocurrido un error inesperado.";
+};
+
 export const AdminReservationsPage = () => {
   const [flightId, setFlightId] = useState("");
   const [reservationNumberInput, setReservationNumberInput] = useState("");
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [selectedReservation, setSelectedReservation] =
-    useState<Reservation | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
-
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  // Drawer State
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  // Cancel passenger state
-  const [lastSearchType, setLastSearchType] = useState<"flight" | "number" | null>(null);
-
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-    return "Ha ocurrido un error inesperado.";
-  };
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
     if (!flightId.trim()) return;
 
     try {
-      setLoading(true);
-      setError(null);
-      setActionError(null);
+      dispatch({ type: "SEARCH_START" });
       const pagedResponse = await getReservationsByFlight(
         Number(flightId),
         0,
         10,
       );
-      setReservations(pagedResponse.content);
-      setSelectedReservation(null);
-      setIsDrawerOpen(false);
-      setLastSearchType("flight");
-      setHasSearched(true);
+      dispatch({ type: "SEARCH_FLIGHT_SUCCESS", payload: pagedResponse.content });
     } catch (err) {
       console.error(err);
-      setError("No se han podido cargar las reservas del vuelo.");
-    } finally {
-      setLoading(false);
+      dispatch({ type: "SEARCH_FLIGHT_ERROR" });
     }
   };
 
@@ -74,126 +155,100 @@ export const AdminReservationsPage = () => {
     if (!reservationNumber) return;
 
     try {
-      setLoading(true);
-      setError(null);
-      setActionError(null);
+      dispatch({ type: "SEARCH_START" });
       const reservation = await getReservation(reservationNumber);
-      setReservations([reservation]);
-      setSelectedReservation(reservation);
-      setIsDrawerOpen(true);
-      setLastSearchType("number");
-      setHasSearched(true);
+      dispatch({ type: "SEARCH_NUMBER_SUCCESS", payload: reservation });
     } catch (err) {
       console.error(err);
-      setSelectedReservation(null);
-      setIsDrawerOpen(false);
-      setError("No se encontró ninguna reserva con ese número.");
-    } finally {
-      setLoading(false);
+      dispatch({ type: "SEARCH_NUMBER_ERROR" });
     }
   };
 
   const handleEditClick = (reservation: Reservation) => {
-    setSelectedReservation(reservation);
-    setActionError(null);
-    setIsDrawerOpen(true);
+    dispatch({ type: "EDIT_RESERVATION", payload: reservation });
   };
 
   const handleCancelReservation = async () => {
-    if (!selectedReservation) return;
+    if (!state.selectedReservation) return;
 
     if (
       !window.confirm(
-        `¿Estás seguro de que deseas cancelar la reserva ${selectedReservation.number}?`,
+        `¿Estás seguro de que deseas cancelar la reserva ${state.selectedReservation.number}?`,
       )
     ) {
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      setActionError(null);
+      dispatch({ type: "SUBMIT_START" });
 
       const updatedReservation = await cancelReservation(
-        selectedReservation.number,
-        selectedReservation.contactEmail,
+        state.selectedReservation.number,
+        state.selectedReservation.contactEmail,
       );
 
-      setReservations((prev) =>
-        prev.map((r) =>
-          r.number === updatedReservation.number ? updatedReservation : r,
-        ),
-      );
-      setActionError(null);
+      dispatch({ type: "SUBMIT_SUCCESS", payload: updatedReservation });
     } catch (err) {
-      setActionError(
-        getApiErrorMessage(err, "No se pudo cancelar la reserva."),
-      );
-    } finally {
-      setIsSubmitting(false);
+      dispatch({
+        type: "SUBMIT_ERROR",
+        payload: getApiErrorMessage(err, "No se pudo cancelar la reserva."),
+      });
     }
   };
 
   const handleCancelPassenger = async (passenger: PassengerReservation) => {
-    if (!selectedReservation) return;
+    if (!state.selectedReservation) return;
 
     if (
       !window.confirm(
-        `¿Estás seguro de que deseas cancelar el pasajero ${passenger.passenger.firstName} ${passenger.passenger.lastName} de la reserva ${selectedReservation.number}?`,
+        `¿Estás seguro de que deseas cancelar el pasajero ${passenger.passenger.firstName} ${passenger.passenger.lastName} de la reserva ${state.selectedReservation.number}?`,
       )
     ) {
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      setActionError(null);
+      dispatch({ type: "SUBMIT_START" });
 
       const updatedReservation = await cancelPassengerFromReservation(
-        selectedReservation.number,
-        selectedReservation.contactEmail,
+        state.selectedReservation.number,
+        state.selectedReservation.contactEmail,
         passenger.passenger.identificationNumber,
         passenger.passenger.nationalityIsoCode,
       );
 
-      setReservations((prev) =>
-        prev.map((r) =>
-          r.number === updatedReservation.number ? updatedReservation : r,
-        ),
-      );
-      setActionError(null);
+      dispatch({ type: "SUBMIT_SUCCESS", payload: updatedReservation });
     } catch (err) {
-      setActionError(
-        getApiErrorMessage(err, "No se pudo cancelar el pasajero."),
-      );
-    } finally {
-      setIsSubmitting(false);
+      dispatch({
+        type: "SUBMIT_ERROR",
+        payload: getApiErrorMessage(err, "No se pudo cancelar el pasajero."),
+      });
     }
   };
 
-  // Refresh: re-run last search
   const handleRefresh = () => {
-    if (lastSearchType === "flight" && flightId.trim()) {
+    if (state.lastSearchType === "flight" && flightId.trim()) {
       handleSearch(new Event("submit") as unknown as React.FormEvent);
-    } else if (lastSearchType === "number" && reservationNumberInput.trim()) {
+    } else if (state.lastSearchType === "number" && reservationNumberInput.trim()) {
       handleSearchByReservationNumber(
         new Event("submit") as unknown as React.FormEvent,
       );
     }
   };
 
-  if (error) {
-    return <ErrorScreen messageTitle="Error" message={error} />;
+  if (state.error) {
+    return <ErrorScreen messageTitle="Error" message={state.error} />;
   }
 
   return (
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Gestión de Reservas</h1>
-        {hasSearched && (
+        {state.hasSearched && (
           <button
+            type="button"
             onClick={handleRefresh}
-            disabled={loading}
+            disabled={state.loading}
             title="Refrescar"
             className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
           >
@@ -204,211 +259,45 @@ export const AdminReservationsPage = () => {
         )}
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
-        <div className="grid gap-4 md:grid-cols-2">
-          <form onSubmit={handleSearch} className="flex gap-4 items-end">
-            <div className="flex-1 max-w-xs">
-              <label
-                htmlFor="flightId"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                ID del Vuelo
-              </label>
-              <input
-                type="text"
-                id="flightId"
-                value={flightId}
-                onChange={(e) => setFlightId(e.target.value)}
-                placeholder="Ej: 123"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading || !flightId.trim()}
-              className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              Buscar Reservas
-            </button>
-          </form>
-
-          <form
-            onSubmit={handleSearchByReservationNumber}
-            className="flex gap-4 items-end"
-          >
-            <div className="flex-1 max-w-xs">
-              <label
-                htmlFor="reservationNumber"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Número de Reserva
-              </label>
-              <input
-                type="text"
-                id="reservationNumber"
-                value={reservationNumberInput}
-                onChange={(e) => setReservationNumberInput(e.target.value)}
-                placeholder="Ej: RES-1001"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading || !reservationNumberInput.trim()}
-              className="px-6 py-2 bg-gray-800 text-white font-medium rounded-md hover:bg-gray-900 disabled:opacity-50"
-            >
-              Buscar Reserva
-            </button>
-          </form>
-        </div>
-      </div>
+      <ReservationSearchForm
+        flightId={flightId}
+        reservationNumberInput={reservationNumberInput}
+        loading={state.loading}
+        onFlightIdChange={setFlightId}
+        onReservationNumberChange={setReservationNumberInput}
+        onSearchByFlight={handleSearch}
+        onSearchByNumber={handleSearchByReservationNumber}
+      />
 
       <div className="mt-4 overflow-x-auto">
-        {loading ? (
+        {state.loading ? (
           <LoadingScreen />
-        ) : !hasSearched ? (
+        ) : !state.hasSearched ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-100 shadow-sm text-gray-500">
             Ingresa un ID de vuelo o un número de reserva para consultar la
             información.
           </div>
-        ) : reservations.length === 0 ? (
+        ) : state.reservations.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-100 shadow-sm text-gray-500">
             No se encontraron reservas para el vuelo especificado.
           </div>
         ) : (
           <ReservationTable
-            reservations={reservations}
+            reservations={state.reservations}
             onEdit={handleEditClick}
           />
         )}
       </div>
 
-      <AdminDrawer
-        title={
-          selectedReservation
-            ? `Reserva: ${selectedReservation.number}`
-            : "Reserva"
-        }
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      >
-        {selectedReservation && (
-          <div className="space-y-6">
-            {actionError && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mb-3">
-                {actionError}
-              </div>
-            )}
-
-            {/* Detalles de Reserva */}
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
-              <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
-                Detalles Generales
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500 font-medium">ID Vuelo</p>
-                  <p className="text-gray-900">
-                    {selectedReservation.flight.id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500 font-medium">Email Contacto</p>
-                  <p className="text-gray-900">
-                    {selectedReservation.contactEmail}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500 font-medium">Fecha de Reserva</p>
-                  <p className="text-gray-900">
-                    {new Date(
-                      selectedReservation.reservationDatetime,
-                    ).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500 font-medium">Estado</p>
-                  <p className="text-gray-900">{selectedReservation.status}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Detalles de Pasajeros */}
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
-              <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
-                Pasajeros
-              </h3>
-              {selectedReservation.passengers.length === 0 ? (
-                <p className="text-sm text-gray-500">No hay pasajeros.</p>
-              ) : (
-                <div className="space-y-3">
-                  {selectedReservation.passengers.map((p, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {p.passenger.firstName} {p.passenger.lastName}
-                        </p>
-                        <p className="text-gray-500 text-xs">
-                          {p.passenger.nationalityIsoCode} {p.passenger.identificationNumber}{p.passenger.passportNumber ? ` | Pasaporte: ${p.passenger.passportNumber}` : ""} | Asiento: {p.seatLabel}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                            p.status === "RESERVED"
-                              ? "bg-green-100 text-green-800"
-                              : p.status === "CHECKED_IN"
-                                ? "bg-blue-100 text-blue-800"
-                                : p.status === "BOARDED"
-                                  ? "bg-purple-100 text-purple-800"
-                                  : p.status === "CANCELED"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {p.status}
-                        </span>
-                        {p.status !== "CANCELED" && (
-                          <button
-                            onClick={() => handleCancelPassenger(p)}
-                            disabled={isSubmitting}
-                            className="text-red-600 hover:text-red-800 text-xs font-medium disabled:opacity-50"
-                          >
-                            Cancelar
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Cancelar Reserva */}
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <h3 className="font-semibold text-red-800 mb-2">
-                Zona de Peligro
-              </h3>
-              <p className="text-xs text-red-600 mb-3">
-                La cancelación de una reserva eliminará la asignación de asiento
-                y no se puede deshacer.
-              </p>
-              <button
-                onClick={handleCancelReservation}
-                  disabled={
-                    isSubmitting || selectedReservation.status === "CANCELED"
-                  }
-                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50"
-              >
-                {isSubmitting ? "Procesando..." : "Cancelar Reserva"}
-              </button>
-            </div>
-          </div>
-        )}
-      </AdminDrawer>
+      <ReservationDetailDrawer
+        selectedReservation={state.selectedReservation}
+        isSubmitting={state.isSubmitting}
+        actionError={state.actionError}
+        isDrawerOpen={state.isDrawerOpen}
+        onClose={() => dispatch({ type: "CLOSE_DRAWER" })}
+        onCancelReservation={handleCancelReservation}
+        onCancelPassenger={handleCancelPassenger}
+      />
     </section>
   );
 };

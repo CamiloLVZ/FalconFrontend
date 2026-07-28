@@ -1,61 +1,90 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useReducer } from "react";
+import type { Reducer } from "react";
 import { AirportTable } from "../components/AirportTable";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { Airport } from "../types/airportTypes";
-import { getAllAirports, createAirport, createCountry } from "../services/airportService";
-import type { CreateAirportData, CreateCountryData } from "../services/airportService";
-import type { ApiErrorResponse } from "../../../../types/ApiError";
+import { getAllAirports } from "../services/airportService";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
 import { Pagination } from "../../../components/Pagination";
+import { CountryCreateForm } from "../components/CountryCreateForm";
+import { AirportCreateForm } from "../components/AirportCreateForm";
+
+interface State {
+  airports: Airport[];
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+  isCreateOpen: boolean;
+  isCreateCountryOpen: boolean;
+}
+
+type Action =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; payload: { airports: Airport[]; page: number; totalPages: number; totalElements: number } }
+  | { type: "LOAD_ERROR"; payload: string }
+  | { type: "SET_PAGE"; payload: number }
+  | { type: "SET_PAGE_SIZE"; payload: number }
+  | { type: "OPEN_CREATE" }
+  | { type: "CLOSE_CREATE" }
+  | { type: "OPEN_CREATE_COUNTRY" }
+  | { type: "CLOSE_CREATE_COUNTRY" };
+
+const initialState: State = {
+  airports: [],
+  loading: false,
+  error: null,
+  currentPage: 0,
+  pageSize: 10,
+  totalPages: 0,
+  totalElements: 0,
+  isCreateOpen: false,
+  isCreateCountryOpen: false,
+};
+
+const reducer: Reducer<State, Action> = (state, action) => {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true, error: null };
+    case "LOAD_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        airports: action.payload.airports,
+        currentPage: action.payload.page,
+        totalPages: action.payload.totalPages,
+        totalElements: action.payload.totalElements,
+      };
+    case "LOAD_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "SET_PAGE":
+      return { ...state, currentPage: action.payload };
+    case "SET_PAGE_SIZE":
+      return { ...state, pageSize: action.payload, currentPage: 0 };
+    case "OPEN_CREATE":
+      return { ...state, isCreateOpen: true };
+    case "CLOSE_CREATE":
+      return { ...state, isCreateOpen: false };
+    case "OPEN_CREATE_COUNTRY":
+      return { ...state, isCreateCountryOpen: true };
+    case "CLOSE_CREATE_COUNTRY":
+      return { ...state, isCreateCountryOpen: false };
+    default:
+      return state;
+  }
+};
 
 export const AdminAirportsPage = () => {
-  const [airports, setAirports] = useState<Airport[]>([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { airports, loading, error, currentPage, pageSize, totalPages, totalElements, isCreateOpen, isCreateCountryOpen } = state;
+
   const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  // Estado de paginación
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Filter state
   const [countryFilter, setCountryFilter] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
-
-  // Create airport state
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-
-  // Create country state
-  const [isCreateCountryOpen, setIsCreateCountryOpen] = useState(false);
-  const [countryCreateData, setCountryCreateData] = useState<CreateCountryData>({
-    name: "",
-    isoCode: "",
-  });
-  const [countryCreateSubmitting, setCountryCreateSubmitting] = useState(false);
-  const [countryCreateError, setCountryCreateError] = useState<string | null>(null);
-  const [createData, setCreateData] = useState<CreateAirportData>({
-    iataCode: "",
-    name: "",
-    city: "",
-    countryIsoCode: "",
-    timezone: "",
-  });
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-    return "Ha ocurrido un error inesperado.";
-  };
-
   const loadAirports = async (
     page: number,
     size: number,
@@ -63,20 +92,12 @@ export const AdminAirportsPage = () => {
     search?: string,
   ) => {
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "LOAD_START" });
       const data = await getAllAirports(size, page, country, search);
-      setAirports(data.content);
-      setCurrentPage(data.page);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      dispatch({ type: "LOAD_SUCCESS", payload: { airports: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
     } catch (err) {
       console.error(err);
-      setError(
-        "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde.",
-      );
-    } finally {
-      setLoading(false);
+      dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde." });
     }
   };
 
@@ -86,26 +107,16 @@ export const AdminAirportsPage = () => {
   }, [currentPage, pageSize]);
 
   const handleSearch = () => {
-    setCurrentPage(0);
+    dispatch({ type: "SET_PAGE", payload: 0 });
     loadAirports(0, pageSize, countryFilter || undefined, searchFilter || undefined);
   };
 
   const handleClearFilters = () => {
     setCountryFilter("");
     setSearchFilter("");
-    setCurrentPage(0);
+    dispatch({ type: "SET_PAGE", payload: 0 });
     loadAirports(0, pageSize);
   };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(0);
-  };
-
   if (error) {
     return (
       <ErrorScreen messageTitle="Error al cargar aeropuertos" message={error} />
@@ -118,26 +129,21 @@ export const AdminAirportsPage = () => {
         <h1 className="text-2xl font-bold">Airports</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => {
-              setCountryCreateData({ name: "", isoCode: "" });
-              setCountryCreateError(null);
-              setIsCreateCountryOpen(true);
-            }}
+            type="button"
+            onClick={() => dispatch({ type: "OPEN_CREATE_COUNTRY" })}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
           >
             + Crear País
           </button>
           <button
-            onClick={() => {
-              setCreateData({ iataCode: "", name: "", city: "", countryIsoCode: "", timezone: "" });
-              setCreateError(null);
-              setIsCreateOpen(true);
-            }}
+            type="button"
+            onClick={() => dispatch({ type: "OPEN_CREATE" })}
             className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
           >
             + Crear Aeropuerto
           </button>
           <button
+            type="button"
             onClick={() => loadAirports(currentPage, pageSize, countryFilter || undefined, searchFilter || undefined)}
             disabled={loading}
             title="Refrescar"
@@ -155,6 +161,7 @@ export const AdminAirportsPage = () => {
           <label className="text-sm font-medium text-gray-700">Buscar</label>
           <input
             type="text"
+            aria-label="Buscar"
             placeholder="Nombre o código IATA"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
@@ -166,6 +173,7 @@ export const AdminAirportsPage = () => {
           <label className="text-sm font-medium text-gray-700">País (ISO)</label>
           <input
             type="text"
+            aria-label="País (ISO)"
             maxLength={2}
             placeholder="Ej: CO"
             value={countryFilter}
@@ -176,6 +184,7 @@ export const AdminAirportsPage = () => {
         </div>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={handleSearch}
             disabled={loading}
             className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
@@ -183,6 +192,7 @@ export const AdminAirportsPage = () => {
             Buscar
           </button>
           <button
+            type="button"
             onClick={handleClearFilters}
             disabled={loading}
             className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
@@ -253,212 +263,23 @@ export const AdminAirportsPage = () => {
       <AdminDrawer
         title="Crear País"
         isOpen={isCreateCountryOpen}
-        onClose={() => setIsCreateCountryOpen(false)}
+        onClose={() => dispatch({ type: "CLOSE_CREATE_COUNTRY" })}
       >
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            try {
-              setCountryCreateSubmitting(true);
-              setCountryCreateError(null);
-              await createCountry(countryCreateData);
-              setIsCreateCountryOpen(false);
-            } catch (err) {
-              setCountryCreateError(
-                getApiErrorMessage(err, "No se pudo crear el país."),
-              );
-            } finally {
-              setCountryCreateSubmitting(false);
-            }
-          }}
-          className="space-y-4"
-        >
-          {countryCreateError && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-              {countryCreateError}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={100}
-              required
-              placeholder="Ej: Colombia"
-              value={countryCreateData.name}
-              onChange={(e) =>
-                setCountryCreateData({ ...countryCreateData, name: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código ISO <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={2}
-              required
-              placeholder="Ej: CO"
-              value={countryCreateData.isoCode}
-              onChange={(e) =>
-                setCountryCreateData({ ...countryCreateData, isoCode: e.target.value.toUpperCase() })
-              }
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary uppercase"
-            />
-          </div>
-
-          <div className="pt-4 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsCreateCountryOpen(false)}
-              className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={countryCreateSubmitting}
-              className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
-            >
-              {countryCreateSubmitting ? "Creando..." : "Crear País"}
-            </button>
-          </div>
-        </form>
+        <CountryCreateForm
+          onClose={() => dispatch({ type: "CLOSE_CREATE_COUNTRY" })}
+          onCreated={() => loadAirports(0, pageSize)}
+        />
       </AdminDrawer>
 
       <AdminDrawer
         title="Crear Aeropuerto"
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        onClose={() => dispatch({ type: "CLOSE_CREATE" })}
       >
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            try {
-              setCreateSubmitting(true);
-              setCreateError(null);
-              await createAirport(createData);
-              setIsCreateOpen(false);
-              loadAirports(0, pageSize);
-              setCurrentPage(0);
-            } catch (err) {
-              setCreateError(
-                getApiErrorMessage(err, "No se pudo crear el aeropuerto."),
-              );
-            } finally {
-              setCreateSubmitting(false);
-            }
-          }}
-          className="space-y-4"
-        >
-          {createError && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-              {createError}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código IATA <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={3}
-              required
-              placeholder="Ej: CTG"
-              value={createData.iataCode}
-              onChange={(e) =>
-                setCreateData({ ...createData, iataCode: e.target.value.toUpperCase() })
-              }
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary uppercase"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={150}
-              required
-              placeholder="Ej: Aeropuerto Internacional Rafael Núñez"
-              value={createData.name}
-              onChange={(e) => setCreateData({ ...createData, name: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ciudad <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={150}
-              required
-              placeholder="Ej: Cartagena"
-              value={createData.city}
-              onChange={(e) => setCreateData({ ...createData, city: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              País (ISO) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={2}
-              required
-              placeholder="Ej: CO"
-              value={createData.countryIsoCode}
-              onChange={(e) =>
-                setCreateData({ ...createData, countryIsoCode: e.target.value.toUpperCase() })
-              }
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary uppercase"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Zona Horaria <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={20}
-              required
-              placeholder="Ej: America/Bogota"
-              value={createData.timezone}
-              onChange={(e) => setCreateData({ ...createData, timezone: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div className="pt-4 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsCreateOpen(false)}
-              className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={createSubmitting}
-              className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
-            >
-              {createSubmitting ? "Creando..." : "Crear Aeropuerto"}
-            </button>
-          </div>
-        </form>
+        <AirportCreateForm
+          onClose={() => dispatch({ type: "CLOSE_CREATE" })}
+          onCreated={() => { loadAirports(0, pageSize); dispatch({ type: "SET_PAGE", payload: 0 }); }}
+        />
       </AdminDrawer>
 
       <Pagination
@@ -466,8 +287,8 @@ export const AdminAirportsPage = () => {
         totalPages={totalPages}
         totalElements={totalElements}
         pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
+        onPageChange={(page) => dispatch({ type: "SET_PAGE", payload: page })}
+        onPageSizeChange={(size) => dispatch({ type: "SET_PAGE_SIZE", payload: size })}
       />
     </section>
   );

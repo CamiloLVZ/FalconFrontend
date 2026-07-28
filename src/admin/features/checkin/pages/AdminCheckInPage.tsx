@@ -63,6 +63,7 @@ export const AdminCheckInPage = () => {
               type="text"
               value={reservationNumber}
               onChange={(e) => setReservationNumber(e.target.value)}
+              aria-label="Número de Reserva"
               placeholder="Ej: ABC123"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -77,6 +78,7 @@ export const AdminCheckInPage = () => {
               type="email"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
+              aria-label="Email de Contacto"
               placeholder="Ej: contacto@example.com"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -91,6 +93,7 @@ export const AdminCheckInPage = () => {
               type="text"
               value={identificationNumber}
               onChange={(e) => setIdentificationNumber(e.target.value)}
+              aria-label="Número de Identificación del Pasajero"
               placeholder="Ej: 1032456789"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -105,6 +108,7 @@ export const AdminCheckInPage = () => {
               type="text"
               value={countryIsoCode}
               onChange={(e) => setCountryIsoCode(e.target.value.toUpperCase())}
+              aria-label="País (Código ISO)"
               placeholder="Ej: CO"
               maxLength={2}
               required
@@ -120,6 +124,7 @@ export const AdminCheckInPage = () => {
               type="number"
               value={seatNumber}
               onChange={(e) => setSeatNumber(e.target.value)}
+              aria-label="Número de Asiento"
               placeholder="Ej: 12 (dejar en blanco para asignación automática)"
               min={1}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"

@@ -36,6 +36,7 @@ export const PassengerTable = ({ passengers, onEdit }: PassengerTableProps) => {
               <td className="px-6 py-4">{passenger.gender}</td>
               <td className="px-6 py-4 text-right">
                 <button
+                  type="button"
                   onClick={() => onEdit(passenger)}
                   className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-200 text-sm font-medium"
                 >

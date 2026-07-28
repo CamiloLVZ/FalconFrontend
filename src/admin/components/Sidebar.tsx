@@ -159,12 +159,11 @@ export const Sidebar = ({ mobileOpen, onMobileClose }: SidebarProps) => {
       {/* Mobile: overlay sidebar */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          <button
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm border-0 p-0 cursor-default"
             onClick={onMobileClose}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onMobileClose(); } }}
-            role="button"
-            tabIndex={0}
+            aria-label="Cerrar menú"
+            type="button"
           />
           <div className="absolute inset-y-0 left-0 shadow-2xl">
             {sidebar}

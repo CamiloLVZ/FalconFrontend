@@ -1,26 +1,65 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
+import type { Reducer } from "react";
 import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { validateBoardingPass, boardPassengerViaQr } from "../services/boardingService";
 import type { BoardingPassValidationResponse } from "../types/boardingTypes";
 import { QrScanner } from "../components/QrScanner";
 
+const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+  if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+    return unknownError.response?.data.message ?? fallback;
+  }
+  return "Ha ocurrido un error inesperado.";
+};
+
+interface ValidationState {
+  loading: boolean;
+  error: string | null;
+  boardingPass: BoardingPassValidationResponse | null;
+}
+
+interface ActionState {
+  isSubmitting: boolean;
+  actionError: string | null;
+  successMsg: string | null;
+}
+
+type ValidationAction =
+  | { type: "VALIDATE_START" }
+  | { type: "VALIDATE_SUCCESS"; payload: BoardingPassValidationResponse }
+  | { type: "VALIDATE_ERROR"; payload: string }
+  | { type: "BOARD_PASS" };
+
+const validationReducer: Reducer<ValidationState, ValidationAction> = (state, action): ValidationState => {
+  switch (action.type) {
+    case "VALIDATE_START": return { loading: true, error: null, boardingPass: null };
+    case "VALIDATE_SUCCESS": return { loading: false, error: null, boardingPass: action.payload };
+    case "VALIDATE_ERROR": return { loading: false, error: action.payload, boardingPass: null };
+    case "BOARD_PASS": return state.boardingPass ? { ...state, boardingPass: { ...state.boardingPass, status: "BOARDED" as const } } : state;
+  }
+};
+
+type ActionAction =
+  | { type: "BOARD_START" }
+  | { type: "BOARD_SUCCESS" }
+  | { type: "BOARD_ERROR"; payload: string };
+
+const actionReducer: Reducer<ActionState, ActionAction> = (_state, action): ActionState => {
+  switch (action.type) {
+    case "BOARD_START": return { isSubmitting: true, actionError: null, successMsg: null };
+    case "BOARD_SUCCESS": return { isSubmitting: false, actionError: null, successMsg: "Pasajero abordado exitosamente." };
+    case "BOARD_ERROR": return { isSubmitting: false, actionError: action.payload, successMsg: null };
+  }
+};
+
 export const AdminBoardingPage = () => {
   const [qrInput, setQrInput] = useState("");
-  const [boardingPass, setBoardingPass] = useState<BoardingPassValidationResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-    return "Ha ocurrido un error inesperado.";
-  };
+  const [vState, vDispatch] = useReducer(validationReducer, { loading: false, error: null, boardingPass: null });
+  const [aState, aDispatch] = useReducer(actionReducer, { isSubmitting: false, actionError: null, successMsg: null });
+  const { loading, error, boardingPass } = vState;
+  const { isSubmitting, actionError, successMsg } = aState;
 
   const extractToken = (value: string): string => {
     const trimmed = value.trim();
@@ -36,19 +75,12 @@ export const AdminBoardingPage = () => {
   };
 
   const handleValidate = async (token: string) => {
+    vDispatch({ type: "VALIDATE_START" });
     try {
-      setLoading(true);
-      setError(null);
-      setSuccessMsg(null);
-      setActionError(null);
-      setBoardingPass(null);
-
       const result = await validateBoardingPass(token);
-      setBoardingPass(result);
+      vDispatch({ type: "VALIDATE_SUCCESS", payload: result });
     } catch (err) {
-      setError(getApiErrorMessage(err, "No se pudo validar el boarding pass."));
-    } finally {
-      setLoading(false);
+      vDispatch({ type: "VALIDATE_ERROR", payload: getApiErrorMessage(err, "No se pudo validar el boarding pass.") });
     }
   };
 
@@ -67,16 +99,13 @@ export const AdminBoardingPage = () => {
 
   const handleBoard = async () => {
     if (!boardingPass) return;
+    aDispatch({ type: "BOARD_START" });
     try {
-      setIsSubmitting(true);
-      setActionError(null);
       await boardPassengerViaQr(boardingPass.qrToken);
-      setSuccessMsg("Pasajero abordado exitosamente.");
-      setBoardingPass((prev) => prev ? { ...prev, status: "BOARDED" } : null);
+      aDispatch({ type: "BOARD_SUCCESS" });
+      vDispatch({ type: "BOARD_PASS" });
     } catch (err) {
-      setActionError(getApiErrorMessage(err, "No se pudo realizar el abordaje."));
-    } finally {
-      setIsSubmitting(false);
+      aDispatch({ type: "BOARD_ERROR", payload: getApiErrorMessage(err, "No se pudo realizar el abordaje.") });
     }
   };
 
@@ -89,6 +118,7 @@ export const AdminBoardingPage = () => {
       <div className="bg-white p-6 rounded-lg border shadow-sm mb-6">
         <div className="flex gap-3 mb-4">
           <button
+            type="button"
             onClick={() => setShowScanner(!showScanner)}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
               showScanner
@@ -102,7 +132,7 @@ export const AdminBoardingPage = () => {
 
         {showScanner && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-            <QrScanner onScan={handleQrScan} onError={(msg) => setError(msg)} />
+            <QrScanner onScan={handleQrScan} onError={(msg) => vDispatch({ type: "VALIDATE_ERROR", payload: msg })} />
           </div>
         )}
 
@@ -115,6 +145,7 @@ export const AdminBoardingPage = () => {
               type="text"
               value={qrInput}
               onChange={(e) => setQrInput(e.target.value)}
+              aria-label="Token o Enlace del Boarding Pass"
               placeholder="Pega el enlace o token QR aquí"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
@@ -206,6 +237,7 @@ export const AdminBoardingPage = () => {
                 </div>
               )}
               <button
+                type="button"
                 onClick={handleBoard}
                 disabled={isSubmitting}
                 className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 text-base"
