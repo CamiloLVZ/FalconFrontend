@@ -78,9 +78,9 @@ export const ReservationDetailDrawer = ({
               <p className="text-sm text-gray-500">No hay pasajeros.</p>
             ) : (
               <div className="space-y-3">
-                {selectedReservation.passengers.map((p, index) => (
+                {selectedReservation.passengers.map((p) => (
                   <div
-                    key={index}
+                    key={p.passenger.identificationNumber + p.passenger.nationalityIsoCode}
                     className="flex items-center justify-between text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
                   >
                     <div className="flex-1">

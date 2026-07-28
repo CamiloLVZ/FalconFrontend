@@ -143,7 +143,33 @@ export const AdminRoutesPage = () => {
   };
   const filterParams = () => ({ originAirportIataCode: originFilter || undefined, destinationAirportIataCode: destFilter || undefined, status: statusFilter || undefined, flightNumber: flightNumberFilter || undefined });
   useEffect(() => {
-    loadRoutes(currentPage, pageSize, filterParams());
+    let ignore = false;
+    dispatch({ type: "LOAD_START" });
+    (async () => {
+      if (ignore) return;
+      try {
+        // react-doctor-disable-next-line async-defer-await – `data` is needed for data.content.map in Promise.all below
+        const data = await getAllRoutes(pageSize, currentPage, filterParams());
+        if (ignore) return;
+        const routesWithSchedules = await Promise.all(
+          data.content.map(async (route) => {
+            try {
+              const scheduleData = await getRouteOperatingSchedules(route.flightNumber);
+              return { ...route, daysOfWeek: scheduleData.daysOfWeek || [], schedules: scheduleData.schedules || [] };
+            } catch {
+              return { ...route, daysOfWeek: [], schedules: [] };
+            }
+          }),
+        );
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { routes: routesWithSchedules, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      } catch (err) {
+        if (!ignore) {
+          console.error(err);
+          dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar las rutas. Por favor, inténtalo de nuevo más tarde." });
+        }
+      }
+    })();
+    return () => { ignore = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
   const handleSearch = () => {

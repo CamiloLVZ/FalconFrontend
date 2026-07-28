@@ -17,7 +17,7 @@ interface FlightEditFormProps {
 }
 
 export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
-  const [departureDate, setDepartureDate] = useState(flight.departureDateTime.substring(0, 16));
+  const [departureDate, setDepartureDate] = useState(() => flight.departureDateTime.substring(0, 16));
   const [airplaneTypeId, setAirplaneTypeId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

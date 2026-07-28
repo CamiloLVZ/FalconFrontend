@@ -24,28 +24,27 @@ export const PassengerDetailsDrawer = ({ passenger }: PassengerDetailsDrawerProp
   const [reservationsLoading, setReservationsLoading] = useState(false);
 
   useEffect(() => {
-    const loadReservations = async () => {
-      try {
-        setReservationsLoading(true);
-        const data = await getPassengerReservations(
-          passenger.identificationNumber,
-          passenger.nationalityIsoCode,
-          0,
-          3,
-        );
-        const sorted = data.content.sort(
-          (a, b) =>
-            new Date(a.flight.departureDateTime).getTime() -
-            new Date(b.flight.departureDateTime).getTime(),
-        );
-        setUpcomingReservations(sorted.slice(0, 3));
-      } catch {
-        setUpcomingReservations([]);
-      } finally {
-        setReservationsLoading(false);
-      }
-    };
-    loadReservations();
+    let ignore = false;
+    setReservationsLoading(true);
+    getPassengerReservations(
+      passenger.identificationNumber,
+      passenger.nationalityIsoCode,
+      0,
+      3,
+    ).then((data) => {
+      if (ignore) return;
+      const sorted = data.content.toSorted(
+        (a, b) =>
+          new Date(a.flight.departureDateTime).getTime() -
+          new Date(b.flight.departureDateTime).getTime(),
+      );
+      setUpcomingReservations(sorted.slice(0, 3));
+    }).catch(() => {
+      if (!ignore) setUpcomingReservations([]);
+    }).finally(() => {
+      setReservationsLoading(false);
+    });
+    return () => { ignore = true; };
   }, [passenger.identificationNumber, passenger.nationalityIsoCode]);
 
   const handleUpdatePassport = async (e: React.FormEvent) => {

@@ -102,7 +102,19 @@ export const AdminAirportsPage = () => {
   };
 
   useEffect(() => {
-    loadAirports(currentPage, pageSize, countryFilter || undefined, searchFilter || undefined);
+    let ignore = false;
+    dispatch({ type: "LOAD_START" });
+    getAllAirports(pageSize, currentPage, countryFilter || undefined, searchFilter || undefined)
+      .then((data) => {
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { airports: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      })
+      .catch((err) => {
+        if (!ignore) {
+          console.error(err);
+          dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde." });
+        }
+      });
+    return () => { ignore = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 

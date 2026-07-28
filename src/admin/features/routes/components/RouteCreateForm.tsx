@@ -103,7 +103,10 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
           className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
         >
           <option value={0}>Seleccionar aeronave</option>
-          {aircraftsData.filter((a) => a.status === "ACTIVE").map((aircraft) => (
+          {aircraftsData.reduce<React.ReactNode[]>((acc, aircraft) => {
+            if (aircraft.status === "ACTIVE") acc.push(<option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>);
+            return acc;
+          }, [])}
             <option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>
           ))}
         </select>

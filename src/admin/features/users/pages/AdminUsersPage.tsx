@@ -98,7 +98,20 @@ export const AdminUsersPage = () => {
   };
 
   useEffect(() => {
-    loadUsers(currentPage, pageSize, emailFilter, disabledFilter, roleFilter);
+    let ignore = false;
+    dispatch({ type: "LOAD_START" });
+    const disabledBool = disabledFilter === "true" ? true : disabledFilter === "false" ? false : undefined;
+    getAdminUsers(currentPage, pageSize, emailFilter || undefined, disabledBool, roleFilter || undefined)
+      .then((data) => {
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { users: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      })
+      .catch((err) => {
+        if (!ignore) {
+          console.error(err);
+          dispatch({ type: "LOAD_ERROR", payload: "No se pudieron cargar los usuarios." });
+        }
+      });
+    return () => { ignore = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 

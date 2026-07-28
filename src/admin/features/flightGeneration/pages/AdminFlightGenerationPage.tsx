@@ -104,11 +104,23 @@ export const AdminFlightGenerationPage = () => {
   };
 
   useEffect(() => {
-    loadGenerations(currentPage, pageSize, {
+    let ignore = false;
+    dispatch({ type: "LOAD_START" });
+    getAllGenerations(currentPage, pageSize, {
       type: typeFilter || undefined,
       status: genStatusFilter || undefined,
       routeFlightNumber: genRouteFilter || undefined,
-    });
+    })
+      .then((data) => {
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { generations: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      })
+      .catch((err) => {
+        if (!ignore) {
+          console.error(err);
+          dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar las generaciones." });
+        }
+      });
+    return () => { ignore = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 

@@ -166,11 +166,6 @@ export const AdminPassengersPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (searchMode === "all") { loadPassengers(currentPage, pageSize); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize]);
-
   const handleModeChange = (mode: PassengerSearchMode) => {
     setSearchMode(mode);
     dispatch({

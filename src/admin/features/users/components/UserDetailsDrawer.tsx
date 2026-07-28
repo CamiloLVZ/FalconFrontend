@@ -48,7 +48,20 @@ export const UserDetailsDrawer = ({ user, loading: pageLoading, onUpdated }: Use
   };
 
   useEffect(() => {
-    loadUserReservations(user.id, 0, 5);
+    let ignore = false;
+    setReservationsLoading(true);
+    getUserReservations(user.id, 0, 5).then((data) => {
+      if (ignore) return;
+      setUserReservations(data.content);
+      setReservationsPage(data.page);
+      setReservationsTotalPages(data.totalPages);
+      setReservationsTotalElements(data.totalElements);
+    }).catch(() => {
+      if (!ignore) setUserReservations([]);
+    }).finally(() => {
+      setReservationsLoading(false);
+    });
+    return () => { ignore = true; };
   }, [user.id]);
 
   const handleUpdateCredentials = async (e: React.FormEvent) => {

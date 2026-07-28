@@ -35,20 +35,21 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadSchedule = async () => {
-      try {
-        setScheduleLoading(true);
-        const scheduleData = await getRouteOperatingSchedules(route.flightNumber);
-        setSelectedDays(scheduleData.daysOfWeek || []);
-        setSchedules(scheduleData.schedules || []);
-      } catch {
+    let ignore = false;
+    setScheduleLoading(true);
+    getRouteOperatingSchedules(route.flightNumber).then((scheduleData) => {
+      if (ignore) return;
+      setSelectedDays(scheduleData.daysOfWeek || []);
+      setSchedules(scheduleData.schedules || []);
+    }).catch(() => {
+      if (!ignore) {
         setSelectedDays([]);
         setSchedules([]);
-      } finally {
-        setScheduleLoading(false);
       }
-    };
-    loadSchedule();
+    }).finally(() => {
+      setScheduleLoading(false);
+    });
+    return () => { ignore = true; };
   }, [route.flightNumber]);
 
   const saveEditedRoute = async (e: React.FormEvent) => {
@@ -178,11 +179,10 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
           >
             <option value="">Seleccionar aeronave</option>
-            {aircraftsData.filter((a) => a.status === "ACTIVE").map((aircraft) => (
-              <option key={aircraft.id} value={aircraft.id}>
-                {aircraft.producer} {aircraft.model}
-              </option>
-            ))}
+            {aircraftsData.reduce<React.ReactNode[]>((acc, aircraft) => {
+              if (aircraft.status === "ACTIVE") acc.push(<option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>);
+              return acc;
+            }, [])}
           </select>
         </div>
 
