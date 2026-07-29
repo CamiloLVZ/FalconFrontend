@@ -54,6 +54,7 @@ export const FlightGenerationTable = ({
               <td className="px-6 py-4 text-right">
                 {onViewDetails && (
                   <button
+                    type="button"
                     onClick={() => onViewDetails(gen)}
                     className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-200 text-sm font-medium"
                   >

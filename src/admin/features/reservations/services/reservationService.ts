@@ -1,15 +1,14 @@
 import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
-import type {
-  Reservation,
-  CreateReservationRequest,
-} from "../types/reservationTypes";
+import type { CheckInResponse, Reservation, ResponseReservationDto } from "../types/reservationTypes";
 
 export const getReservation = async (
   reservationNumber: string,
+  contactEmail?: string,
 ): Promise<Reservation> => {
   const response = await apiClient.get<Reservation>(
     `/v1/reservations/${reservationNumber}`,
+    { params: contactEmail ? { contactEmail } : undefined },
   );
   return response.data;
 };
@@ -20,45 +19,33 @@ export const getReservationsByFlight = async (
   size = 10,
 ): Promise<PagedResponse<Reservation>> => {
   const response = await apiClient.get<
-    PagedResponse<Reservation> | Reservation[]
+    PagedResponse<Reservation>
   >(`/v1/reservations/flight/${flightId}`, { params: { page, size } });
 
-  const data = response.data;
-
-  if (Array.isArray(data)) {
-    return {
-      content: data,
-      page,
-      size,
-      totalElements: data.length,
-      totalPages: 1,
-    };
-  }
-
-  return data;
-};
-
-export const createReservation = async (
-  data: CreateReservationRequest,
-): Promise<Reservation> => {
-  const response = await apiClient.post<Reservation>("/v1/reservations", data);
   return response.data;
 };
 
 export const cancelReservation = async (
   reservationNumber: string,
+  contactEmail: string,
 ): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/cancel`,
+    { contactEmail },
   );
   return response.data;
 };
 
 export const cancelPassengerFromReservation = async (
   reservationNumber: string,
+  contactEmail: string,
+  identificationNumber: string,
+  countryIsoCode: string,
 ): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/cancel/passenger`,
+    { contactEmail },
+    { params: { identificationNumber, countryIsoCode } },
   );
   return response.data;
 };
@@ -66,27 +53,40 @@ export const cancelPassengerFromReservation = async (
 export const cancelPassengerFromReservationByPassport = async (
   reservationNumber: string,
   passportNumber: string,
+  contactEmail: string,
 ): Promise<Reservation> => {
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/cancel/passenger/${passportNumber}`,
+    { contactEmail },
   );
   return response.data;
 };
 
-export const checkInReservation = async (
-  reservationNumber: string,
-): Promise<Reservation> => {
-  const response = await apiClient.patch<Reservation>(
-    `/v1/reservations/${reservationNumber}/check-in`,
+export const getReservationWithDetails = async (
+  id: number,
+): Promise<ResponseReservationDto> => {
+  const response = await apiClient.get<ResponseReservationDto>(
+    `/v1/reservations/${id}/with-details`,
   );
   return response.data;
 };
 
-export const boardReservation = async (
+export const checkInPassenger = async (
   reservationNumber: string,
-): Promise<Reservation> => {
-  const response = await apiClient.patch<Reservation>(
-    `/v1/reservations/${reservationNumber}/board`,
+  contactEmail: string,
+  identificationNumber: string,
+  countryIsoCode: string,
+  seatNumber?: number,
+): Promise<CheckInResponse> => {
+  const response = await apiClient.post<CheckInResponse>(
+    "/v1/check-in",
+    {
+      reservationNumber,
+      contactEmail,
+      identificationNumber,
+      countryIsoCode,
+      seatNumber,
+    },
   );
   return response.data;
 };

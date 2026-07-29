@@ -101,7 +101,10 @@ export const FlightsPage = () => {
     loadOrigins();
   }, []);
 
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect – guarded by `if (ignore) return;` at the top of the .then() callback
   useEffect(() => {
+    let ignore = false;
+
     if (origins.length === 0) {
       return;
     }
@@ -139,6 +142,8 @@ export const FlightsPage = () => {
     setOriginInput(formattedOrigin);
 
     loadDestinations(origin).then((loadedDestinations) => {
+      if (ignore) return;
+
       const destinationAirport = loadedDestinations.find(
         (airport) => airport.iataCode === destination,
       );
@@ -157,6 +162,8 @@ export const FlightsPage = () => {
         date,
       });
     });
+
+    return () => { ignore = true; };
   }, [searchParams, origins]);
 
   return (

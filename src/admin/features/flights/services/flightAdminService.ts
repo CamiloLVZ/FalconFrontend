@@ -2,7 +2,6 @@ import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
 import type {
   CreateFlightDto,
-  Flight,
   ResponseFlightDto,
 } from "../types/flightTypes";
 
@@ -16,6 +15,8 @@ export const getAllFlights = async (
   status: string | null = null,
   page = 0,
   size = 10,
+  dateFrom?: string,
+  dateTo?: string,
 ): Promise<PagedResponse<ResponseFlightDto>> => {
   const response = await apiClient.get<PagedResponse<ResponseFlightDto>>(
     "/v1/flights/all",
@@ -23,6 +24,8 @@ export const getAllFlights = async (
       params: {
         flightNumber: flightNumber || undefined,
         status: status || undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
         page,
         size,
       },
@@ -43,26 +46,27 @@ export const createFlight = async (
 
 export const rescheduleFlight = async (
   id: number,
-  newDepartureDateTime: string,
-): Promise<Flight> => {
-  const response = await apiClient.post(`/v1/flights/${id}/reschedule`, {
-    params: { newDepartureDateTime: newDepartureDateTime },
+  newDepartureLocalDateTime: string,
+): Promise<ResponseFlightDto> => {
+  const response = await apiClient.post<ResponseFlightDto>(`/v1/flights/${id}/reschedule`, null, {
+    params: { newDepartureLocalDateTime },
   });
   return response.data;
 };
 
-export const cancelFlight = async (id: number): Promise<Flight> => {
-  const response = await apiClient.patch(`/v1/flights/${id}/cancel`);
+export const cancelFlight = async (id: number): Promise<ResponseFlightDto> => {
+  const response = await apiClient.patch<ResponseFlightDto>(`/v1/flights/${id}/cancel`);
   return response.data;
 };
 
 export const changeAirplaneType = async (
   id: number,
   idAirplaneType: number,
-): Promise<Flight> => {
-  const response = await apiClient.patch(
+): Promise<ResponseFlightDto> => {
+  const response = await apiClient.patch<ResponseFlightDto>(
     `/v1/flights/${id}/change-airplane-type`,
-    { params: { idAirplaneType: idAirplaneType } },
+    null,
+    { params: { idAirplaneType } },
   );
   return response.data;
 };

@@ -5,12 +5,12 @@ import {
 } from "../constants/aircraft.constants";
 import type {
   AircraftStatusAction,
-  AircraftType,
-} from "../types/aircraftTypes";
+  AirplaneType,
+} from "../types/airplaneTypeTypes";
 
 interface AircraftRowActionsProps {
-  aircraft: AircraftType;
-  onEdit?: (aircraft: AircraftType) => void;
+  aircraft: AirplaneType;
+  onEdit?: (aircraft: AirplaneType) => void;
   onStatusAction: (id: number, action: AircraftStatusAction) => void;
 }
 

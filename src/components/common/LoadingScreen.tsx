@@ -1,4 +1,4 @@
-import imgLogo from "../../assets/logo/logo.jpg";
+import imgLogo from "../../assets/logo/logo.png";
 
 export const LoadingScreen = () => {
   return (

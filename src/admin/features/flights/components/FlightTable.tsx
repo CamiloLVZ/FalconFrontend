@@ -15,6 +15,8 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
             <th className="px-6 py-4 font-semibold">Vuelo</th>
             <th className="px-6 py-4 font-semibold">Ruta</th>
             <th className="px-6 py-4 font-semibold">Salida (Local)</th>
+            <th className="px-6 py-4 font-semibold">Precio Econ.</th>
+            <th className="px-6 py-4 font-semibold">Precio 1ra C.</th>
             <th className="px-6 py-4 font-semibold">Avión</th>
             <th className="px-6 py-4 font-semibold">Estado</th>
             <th className="px-6 py-4 font-semibold text-right">Acciones</th>
@@ -40,6 +42,12 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
                 })}
               </td>
               <td className="px-6 py-4">
+                ${flight.basePriceEconomy ?? 0}
+              </td>
+              <td className="px-6 py-4">
+                ${flight.basePriceFirstClass ?? 0}
+              </td>
+              <td className="px-6 py-4">
                 {flight.airplaneType
                   ? `${flight.airplaneType.producer} ${flight.airplaneType.model}`
                   : "—"}
@@ -62,6 +70,7 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
               </td>
               <td className="px-6 py-4 text-right">
                 <button
+                  type="button"
                   onClick={() => onEdit(flight)}
                   className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-200 text-sm font-medium"
                 >
@@ -72,7 +81,7 @@ export const FlightTable = ({ flights, onEdit }: FlightTableProps) => {
           ))}
           {flights.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                 No hay vuelos registrados.
               </td>
             </tr>

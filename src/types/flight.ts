@@ -6,8 +6,7 @@ export type FlightStatus =
   | "BOARDING"
   | "COMPLETED"
   | "CANCELED"
-  | "CANCELLED"
-  | "DELAYED";
+  | "GATE_CLOSED";
 
 export interface Flight {
   id: number;
@@ -19,6 +18,8 @@ export interface Flight {
   durationMinutes: number;
   airplaneType: AirplaneTypeSummary;
   status: FlightStatus;
+  basePriceEconomy: number;
+  basePriceFirstClass: number;
 }
 
 export type FlightSearchResult = Flight[];
@@ -26,14 +27,6 @@ export type FlightSearchResult = Flight[];
 export interface CreateFlightRequest {
   routeFlightNumber: string;
   departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
-}
-
-export interface RescheduleFlightRequest {
-  departureDateTime: string; // "YYYY-MM-DDTHH:mm:ss"
-}
-
-export interface ChangeAirplaneTypeRequest {
-  idAirplaneType: number;
 }
 
 export interface FlightSearchParams {

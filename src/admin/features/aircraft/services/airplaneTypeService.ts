@@ -2,7 +2,7 @@ import { apiClient } from "../../../../api/axios";
 import type {
   AirplaneType,
   CreateAirplaneTypeRequest,
-  UpdateAirplaneTypeCapacityRequest,
+  ConfigureSeatsRequest,
   CorrectAirplaneTypeIdentityRequest,
 } from "../types/airplaneTypeTypes";
 
@@ -25,9 +25,9 @@ export const createAirplaneType = async (
 
 export const updateAirplaneTypeCapacity = async (
   id: number,
-  data: UpdateAirplaneTypeCapacityRequest,
+  data: ConfigureSeatsRequest,
 ): Promise<AirplaneType> => {
-  const response = await apiClient.patch<AirplaneType>(`/v1/airplane-types/${id}`, data);
+  const response = await apiClient.patch<AirplaneType>(`/v1/airplane-types/${id}/configure-seats`, data);
   return response.data;
 };
 

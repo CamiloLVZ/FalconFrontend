@@ -1,8 +1,8 @@
 import { STATUS_LABELS, STATUS_STYLES } from "../constants/aircraft.constants";
-import type { AircraftStatus } from "../types/aircraftTypes";
+import type { AirplaneTypeStatus } from "../types/airplaneTypeTypes";
 
 interface AircraftStatusBadgeProps {
-  status: AircraftStatus;
+  status: AirplaneTypeStatus;
 }
 
 export const AircraftStatusBadge = ({ status }: AircraftStatusBadgeProps) => {

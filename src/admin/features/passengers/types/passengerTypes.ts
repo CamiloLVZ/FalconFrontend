@@ -1,4 +1,4 @@
-export type PassengerGender = "M" | "F";
+export type PassengerGender = "M" | "F" | "O";
 
 export interface Passenger {
   id: number;
