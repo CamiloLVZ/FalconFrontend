@@ -3,6 +3,7 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createAircraft } from "../services/aircraftService";
 import type { CreateAirplaneTypeRequest } from "../types/airplaneTypeTypes";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 interface AircraftCreateFormProps {
   onSuccess: () => void;
@@ -19,6 +20,7 @@ const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
 export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,8 +37,8 @@ export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormPro
       setSubmitting(true);
       setError(null);
       await createAircraft(data);
-      onSuccess();
-      onClose();
+      setSuccess("Aeronave creada exitosamente.");
+      setTimeout(() => { onSuccess(); onClose(); }, 1500);
     } catch (err) {
       setError(getApiErrorMessage(err, "No se pudo crear la aeronave."));
     } finally {
@@ -69,6 +71,9 @@ export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormPro
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
         <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Creando..." : "Crear"}</button>
+      </div>
+      <div className="mt-3">
+        <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       </div>
       {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{error}</div>}
     </form>

@@ -1,7 +1,6 @@
 import type { ResponseRoute, RouteStatusAction } from "../types/routeTypes";
 import { RouteRowActions } from "./RouteRowActions";
 import { RouteStatusBadge } from "./RouteStatusBadge";
-import { OperatingDaysBadge } from "./OperatingDaysBadge";
 import { formatFlightDuration } from "../utils/routes.utils";
 
 interface RouteTableProps {
@@ -41,9 +40,6 @@ export const RouteTable = ({
             Tipo de aeronave
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-            Días de operación
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             Estado
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -75,12 +71,6 @@ export const RouteTable = ({
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
               {route.defaultAirplaneType.producer}{" "}
               {route.defaultAirplaneType.model}
-            </td>
-            <td className="px-6 py-4 text-sm">
-              <OperatingDaysBadge
-                days={route.daysOfWeek || []}
-                schedules={route.schedules}
-              />
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm">
               <RouteStatusBadge status={route.status} />

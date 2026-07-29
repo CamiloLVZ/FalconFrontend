@@ -3,6 +3,7 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createCountry } from "../services/airportService";
 import type { CreateCountryData } from "../services/airportService";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -20,6 +21,7 @@ export const CountryCreateForm = ({ onClose, onCreated }: CountryCreateFormProps
   const [data, setData] = useState<CreateCountryData>({ name: "", isoCode: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   return (
     <form
@@ -29,8 +31,8 @@ export const CountryCreateForm = ({ onClose, onCreated }: CountryCreateFormProps
           setSubmitting(true);
           setError(null);
           await createCountry(data);
-          onCreated();
-          onClose();
+          setSuccess("País creado exitosamente.");
+          setTimeout(() => { onCreated(); onClose(); }, 1500);
         } catch (err) {
           setError(getApiErrorMessage(err, "No se pudo crear el país."));
         } finally {
@@ -39,6 +41,7 @@ export const CountryCreateForm = ({ onClose, onCreated }: CountryCreateFormProps
       }}
       className="space-y-4"
     >
+      <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {error}

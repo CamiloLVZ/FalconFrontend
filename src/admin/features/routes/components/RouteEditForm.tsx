@@ -4,8 +4,8 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { updateRoute, setRouteOperatingSchedules, getRouteOperatingSchedules } from "../services/routeService";
 import { DaySelection } from "./DaySelection";
 import type { DayOfWeek, LocalTime, ResponseRoute } from "../types/routeTypes";
-import type { Airport } from "../../airports/types/airportTypes";
-import type { AirplaneType } from "../../aircraft/types/airplaneTypeTypes";
+import type { AirportOption, AirplaneTypeOption } from "../../../../services/catalogService";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -16,8 +16,8 @@ const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
 
 interface RouteEditFormProps {
   route: ResponseRoute;
-  airportsData: Airport[];
-  aircraftsData: AirplaneType[];
+  airportsData: AirportOption[];
+  aircraftsData: AirplaneTypeOption[];
   onClose: () => void;
   onUpdated: () => void;
 }
@@ -25,8 +25,10 @@ interface RouteEditFormProps {
 export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onUpdated }: RouteEditFormProps) => {
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
   const [scheduleSubmitting, setScheduleSubmitting] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
 
   const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([]);
   const [schedules, setSchedules] = useState<LocalTime[]>([]);
@@ -72,6 +74,7 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
         basePriceEconomy,
         basePriceFirstClass,
       });
+      setEditSuccess("Ruta actualizada exitosamente.");
       setEditError(null);
     } catch (err) {
       setEditError(getApiErrorMessage(err, "No se pudo actualizar la ruta."));
@@ -98,6 +101,7 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
       });
       setSelectedDays(scheduleData.daysOfWeek);
       setSchedules(scheduleData.schedules);
+      setScheduleSuccess("Horarios guardados exitosamente.");
       setScheduleError(null);
       onUpdated();
     } catch (err) {
@@ -121,6 +125,8 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
 
   return (
     <div className="space-y-8">
+      <SuccessMessage message={editSuccess} onDismiss={() => setEditSuccess(null)} />
+      <SuccessMessage message={scheduleSuccess} onDismiss={() => setScheduleSuccess(null)} />
       <form className="space-y-4" onSubmit={saveEditedRoute}>
         <div>
           <label className="block text-sm font-medium text-gray-700">Número de vuelo</label>
@@ -179,10 +185,9 @@ export const RouteEditForm = ({ route, airportsData, aircraftsData, onClose, onU
             className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
           >
             <option value="">Seleccionar aeronave</option>
-            {aircraftsData.reduce<React.ReactNode[]>((acc, aircraft) => {
-              if (aircraft.status === "ACTIVE") acc.push(<option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>);
-              return acc;
-            }, [])}
+            {aircraftsData.map((aircraft) => (
+              <option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>
+            ))}
           </select>
         </div>
 

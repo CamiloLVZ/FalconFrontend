@@ -3,6 +3,7 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createPassenger } from "../services/passengerService";
 import type { CreatePassengerRequest } from "../types/passengerTypes";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -19,6 +20,7 @@ interface PassengerCreateFormProps {
 export const PassengerCreateForm = ({ onClose, onCreated }: PassengerCreateFormProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   return (
     <form
@@ -39,8 +41,8 @@ export const PassengerCreateForm = ({ onClose, onCreated }: PassengerCreateFormP
           setSubmitting(true);
           setError(null);
           await createPassenger(data);
-          onCreated();
-          onClose();
+          setSuccess("Pasajero creado exitosamente.");
+          setTimeout(() => { onCreated(); onClose(); }, 1500);
         } catch (err) {
           setError(getApiErrorMessage(err, "No se pudo crear el pasajero."));
         } finally {
@@ -84,6 +86,9 @@ export const PassengerCreateForm = ({ onClose, onCreated }: PassengerCreateFormP
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
         <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Creando..." : "Crear"}</button>
+      </div>
+      <div className="mt-3">
+        <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       </div>
       {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{error}</div>}
     </form>

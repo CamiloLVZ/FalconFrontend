@@ -3,6 +3,7 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createAirport } from "../services/airportService";
 import type { CreateAirportData } from "../services/airportService";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -26,6 +27,7 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   return (
     <form
@@ -35,8 +37,8 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
           setSubmitting(true);
           setError(null);
           await createAirport(data);
-          onCreated();
-          onClose();
+          setSuccess("Aeropuerto creado exitosamente.");
+          setTimeout(() => { onCreated(); onClose(); }, 1500);
         } catch (err) {
           setError(
             getApiErrorMessage(err, "No se pudo crear el aeropuerto."),
@@ -47,6 +49,7 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       }}
       className="space-y-4"
     >
+      <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {error}

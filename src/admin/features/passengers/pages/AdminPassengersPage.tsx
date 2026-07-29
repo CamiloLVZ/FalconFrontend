@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from "react";
+import { useState, useReducer } from "react";
 import type { Reducer } from "react";
 import axios from "axios";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
@@ -37,7 +37,15 @@ interface State {
 
 type Action =
   | { type: "LOAD_START" }
-  | { type: "LOAD_SUCCESS"; payload: { passengers: Passenger[]; page: number; totalPages: number; totalElements: number } }
+  | {
+      type: "LOAD_SUCCESS";
+      payload: {
+        passengers: Passenger[];
+        page: number;
+        totalPages: number;
+        totalElements: number;
+      };
+    }
   | { type: "LOAD_ERROR"; payload: string }
   | { type: "SET_PAGE"; payload: number }
   | { type: "SET_PAGE_SIZE"; payload: number }
@@ -85,9 +93,20 @@ const reducer: Reducer<State, Action> = (state, action) => {
 
 export const AdminPassengersPage = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { passengers, loading, error, currentPage, pageSize, totalPages, totalElements, isCreateDrawerOpen } = state;
+  const {
+    passengers,
+    loading,
+    error,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalElements,
+    isCreateDrawerOpen,
+  } = state;
 
-  const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(null);
+  const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(
+    null,
+  );
   const [searchMode, setSearchMode] = useState<PassengerSearchMode>("all");
   const [flightIdInput, setFlightIdInput] = useState("");
   const [passportInput, setPassportInput] = useState("");
@@ -107,23 +126,39 @@ export const AdminPassengersPage = () => {
         const data = await getAllPassengers(page, size);
         dispatch({
           type: "LOAD_SUCCESS",
-          payload: { passengers: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements },
+          payload: {
+            passengers: data.content,
+            page: data.page,
+            totalPages: data.totalPages,
+            totalElements: data.totalElements,
+          },
         });
       } else if (mode === "by-flight") {
         const id = parseInt(flightIdInput, 10);
         if (isNaN(id)) {
-          dispatch({ type: "LOAD_ERROR", payload: "Ingrese un ID de vuelo válido." });
+          dispatch({
+            type: "LOAD_ERROR",
+            payload: "Ingrese un ID de vuelo válido.",
+          });
           return;
         }
         const data = await getPassengersByFlight(id, page, size);
         dispatch({
           type: "LOAD_SUCCESS",
-          payload: { passengers: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements },
+          payload: {
+            passengers: data.content,
+            page: data.page,
+            totalPages: data.totalPages,
+            totalElements: data.totalElements,
+          },
         });
       }
     } catch (err) {
       console.error(err);
-      dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar los pasajeros." });
+      dispatch({
+        type: "LOAD_ERROR",
+        payload: "No se han podido cargar los pasajeros.",
+      });
     }
   };
 
@@ -133,17 +168,28 @@ export const AdminPassengersPage = () => {
 
       if (searchMode === "by-passport") {
         if (!passportInput.trim()) {
-          dispatch({ type: "LOAD_ERROR", payload: "Ingrese un número de pasaporte." });
+          dispatch({
+            type: "LOAD_ERROR",
+            payload: "Ingrese un número de pasaporte.",
+          });
           return;
         }
         const passenger = await getPassengerByPassport(passportInput.trim());
         dispatch({
           type: "LOAD_SUCCESS",
-          payload: { passengers: [passenger], page: 0, totalPages: 1, totalElements: 1 },
+          payload: {
+            passengers: [passenger],
+            page: 0,
+            totalPages: 1,
+            totalElements: 1,
+          },
         });
       } else if (searchMode === "by-identification") {
         if (!identificationInput.trim() || !countryCodeInput.trim()) {
-          dispatch({ type: "LOAD_ERROR", payload: "Ingrese el número de identificación y el código de país." });
+          dispatch({
+            type: "LOAD_ERROR",
+            payload: "Ingrese el número de identificación y el código de país.",
+          });
           return;
         }
         const passenger = await getPassengerByIdentification(
@@ -152,7 +198,12 @@ export const AdminPassengersPage = () => {
         );
         dispatch({
           type: "LOAD_SUCCESS",
-          payload: { passengers: [passenger], page: 0, totalPages: 1, totalElements: 1 },
+          payload: {
+            passengers: [passenger],
+            page: 0,
+            totalPages: 1,
+            totalElements: 1,
+          },
         });
       }
     } catch (err) {
@@ -188,8 +239,11 @@ export const AdminPassengersPage = () => {
   };
 
   const handleRefresh = () => {
-    if (searchMode === "all" || searchMode === "by-flight") { loadPassengers(currentPage, pageSize); }
-    else { handleSingleSearch(); }
+    if (searchMode === "all" || searchMode === "by-flight") {
+      loadPassengers(currentPage, pageSize);
+    } else {
+      handleSingleSearch();
+    }
   };
   const showPagination = searchMode === "all" || searchMode === "by-flight";
 
@@ -212,8 +266,18 @@ export const AdminPassengersPage = () => {
             title="Refrescar"
             className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
           </button>
         </div>

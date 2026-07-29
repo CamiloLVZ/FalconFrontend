@@ -8,16 +8,10 @@ import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import { Pagination } from "../../../components/Pagination";
 import { RouteTable } from "../components/RouteTable";
-import { getAllAirports } from "../../airports/services/airportService";
-import { getAircrafts } from "../../aircraft/services/aircraftService";
-
-import type { Airport } from "../../airports/types/airportTypes";
-import type { AirplaneType } from "../../aircraft/types/airplaneTypeTypes";
+import { getDropdownOptions } from "../../../../services/catalogService";
+import type { AirportOption, AirplaneTypeOption } from "../../../../services/catalogService";
 import { ACTION_LABELS } from "../constants/routes.constants";
-import {
-  getAllRoutes,
-  getRouteOperatingSchedules,
-} from "../services/routeService";
+import { getAllRoutes } from "../services/routeService";
 import { STATUS_ACTION_SERVICES } from "../services/routeStatusActions";
 import type {
   ResponseRoute,
@@ -103,8 +97,8 @@ export const AdminRoutesPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [airportsData, setAirportsData] = useState<Airport[]>([]);
-  const [aircraftsData, setAircraftsData] = useState<AirplaneType[]>([]);
+  const [airportsData, setAirportsData] = useState<AirportOption[]>([]);
+  const [aircraftsData, setAircraftsData] = useState<AirplaneTypeOption[]>([]);
   const [originFilter, setOriginFilter] = useState("");
   const [destFilter, setDestFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -125,17 +119,7 @@ export const AdminRoutesPage = () => {
     try {
       dispatch({ type: "LOAD_START" });
       const data = await getAllRoutes(size, page, filters);
-      const routesWithSchedules = await Promise.all(
-        data.content.map(async (route) => {
-          try {
-            const scheduleData = await getRouteOperatingSchedules(route.flightNumber);
-            return { ...route, daysOfWeek: scheduleData.daysOfWeek || [], schedules: scheduleData.schedules || [] };
-          } catch {
-            return { ...route, daysOfWeek: [], schedules: [] };
-          }
-        }),
-      );
-      dispatch({ type: "LOAD_SUCCESS", payload: { routes: routesWithSchedules, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      dispatch({ type: "LOAD_SUCCESS", payload: { routes: data.content as ResponseRoute[], page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
     } catch (err) {
       console.error(err);
       dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar las rutas. Por favor, inténtalo de nuevo más tarde." });
@@ -148,20 +132,8 @@ export const AdminRoutesPage = () => {
     (async () => {
       if (ignore) return;
       try {
-        // react-doctor-disable-next-line async-defer-await – `data` is needed for data.content.map in Promise.all below
         const data = await getAllRoutes(pageSize, currentPage, filterParams());
-        if (ignore) return;
-        const routesWithSchedules = await Promise.all(
-          data.content.map(async (route) => {
-            try {
-              const scheduleData = await getRouteOperatingSchedules(route.flightNumber);
-              return { ...route, daysOfWeek: scheduleData.daysOfWeek || [], schedules: scheduleData.schedules || [] };
-            } catch {
-              return { ...route, daysOfWeek: [], schedules: [] };
-            }
-          }),
-        );
-        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { routes: routesWithSchedules, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { routes: data.content as ResponseRoute[], page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
       } catch (err) {
         if (!ignore) {
           console.error(err);
@@ -172,6 +144,18 @@ export const AdminRoutesPage = () => {
     return () => { ignore = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getDropdownOptions();
+        setAirportsData(data.airports);
+        setAircraftsData(data.airplaneTypes);
+      } catch {
+        setActionError("Error al cargar datos de catálogo.");
+      }
+    })();
+  }, []);
   const handleSearch = () => {
     dispatch({ type: "SET_PAGE", payload: 0 });
     loadRoutes(0, pageSize, filterParams());
@@ -212,7 +196,7 @@ export const AdminRoutesPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Rutas</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={async () => { try { const [airportsResp, aircraftsResp] = await Promise.all([getAllAirports(1000, 0), getAircrafts()]); setAirportsData(airportsResp.content); setAircraftsData(aircraftsResp); dispatch({ type: "OPEN_CREATE" }); } catch { setActionError("Error al cargar datos para crear ruta."); }}} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium">+ Crear Ruta</button>
+          <button type="button" onClick={() => dispatch({ type: "OPEN_CREATE" })} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium">+ Crear Ruta</button>
           <button type="button" onClick={() => loadRoutes(currentPage, pageSize, filterParams())} disabled={loading} title="Refrescar" className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
@@ -237,11 +221,13 @@ export const AdminRoutesPage = () => {
         {loading ? (
           <LoadingScreen />
         ) : (
-          <RouteTable routes={sortedRoutes} onStatusAction={handleStatusAction} onEdit={(r) => { setSelectedRoute(r); (async () => { try { const [airportsResp, aircraftsResp] = await Promise.all([getAllAirports(1000, 0), getAircrafts()]); setAirportsData(airportsResp.content); setAircraftsData(aircraftsResp); setIsEditOpen(true); } catch { setActionError("Error al cargar datos para edición"); } })(); }} />
+          <RouteTable routes={sortedRoutes} onStatusAction={handleStatusAction} onEdit={(r) => { setSelectedRoute(r); setIsEditOpen(true); }} />
         )}
 
         <AdminDrawer title={selectedRoute ? `Editar ruta ${selectedRoute.flightNumber}` : "Editar ruta"} isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-          {selectedRoute && <RouteEditForm route={selectedRoute} airportsData={airportsData} aircraftsData={aircraftsData} onClose={() => setIsEditOpen(false)} onUpdated={() => loadRoutes(currentPage, pageSize, filterParams())} />}
+          {selectedRoute && (
+            <RouteEditForm route={selectedRoute} airportsData={airportsData} aircraftsData={aircraftsData} onClose={() => setIsEditOpen(false)} onUpdated={() => loadRoutes(currentPage, pageSize, filterParams())} />
+          )}
         </AdminDrawer>
 
         <AdminDrawer title="Crear Ruta" isOpen={isCreateDrawerOpen} onClose={() => dispatch({ type: "CLOSE_CREATE" })}>

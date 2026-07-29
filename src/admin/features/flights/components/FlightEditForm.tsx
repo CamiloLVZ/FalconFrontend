@@ -3,6 +3,7 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { rescheduleFlight, changeAirplaneType, cancelFlight } from "../services/flightAdminService";
 import type { ResponseFlightDto } from "../types/flightTypes";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -21,6 +22,7 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
   const [airplaneTypeId, setAirplaneTypeId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleReschedule = async () => {
     if (!departureDate) return;
@@ -29,6 +31,7 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
       setActionError(null);
       const localDateTime = new Date(departureDate).toISOString().slice(0, 19);
       await rescheduleFlight(flight.id, localDateTime);
+      setSuccess("Vuelo reprogramado exitosamente.");
       setActionError(null);
       onUpdated();
     } catch (err) {
@@ -46,6 +49,7 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
       setIsSubmitting(true);
       setActionError(null);
       await changeAirplaneType(flight.id, parseInt(airplaneTypeId, 10));
+      setSuccess("Aeronave asignada exitosamente.");
       setActionError(null);
       onUpdated();
     } catch (err) {
@@ -61,6 +65,7 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
       setIsSubmitting(true);
       setActionError(null);
       await cancelFlight(flight.id);
+      setSuccess(`Vuelo ${flight.flightNumber} cancelado.`);
       setActionError(null);
       onUpdated();
     } catch (err) {
@@ -72,6 +77,7 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
 
   return (
     <div className="space-y-8">
+      <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       {actionError && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {actionError}

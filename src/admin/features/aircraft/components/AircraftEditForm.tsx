@@ -4,6 +4,7 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { updateAircraftIdentity, updateAircraftCapacity } from "../services/aircraftService";
 import type { AirplaneType } from "../types/airplaneTypeTypes";
 import { replaceAircraftInList } from "../utils/aircraft.utils";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 interface AircraftEditFormProps {
   aircraft: AirplaneType;
@@ -21,6 +22,7 @@ const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
 export const AircraftEditForm = ({ aircraft, onClose, onAircraftsUpdate }: AircraftEditFormProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,6 +42,7 @@ export const AircraftEditForm = ({ aircraft, onClose, onAircraftsUpdate }: Aircr
 
       const updatedCapacity = await updateAircraftCapacity(aircraft.id, { economySeats, firstClassSeats, seatColumns });
       onAircraftsUpdate((prev) => replaceAircraftInList(prev, updatedCapacity));
+      setSuccess("Aeronave actualizada exitosamente.");
     } catch (err) {
       setError(getApiErrorMessage(err, "No se pudo actualizar la aeronave."));
     } finally {
@@ -72,6 +75,9 @@ export const AircraftEditForm = ({ aircraft, onClose, onAircraftsUpdate }: Aircr
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
         <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Guardando..." : "Guardar cambios"}</button>
+      </div>
+      <div className="mt-3">
+        <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       </div>
       {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{error}</div>}
     </form>

@@ -4,7 +4,10 @@ import type {
   CreatePassengerRequest,
 } from "../types/passengerTypes";
 import type { PagedResponse } from "../../../../types/pagedResponse";
-import type { Reservation } from "../../reservations/types/reservationTypes";
+import type {
+  Reservation,
+  ResponsePassengerReservationDto,
+} from "../../reservations/types/reservationTypes";
 
 export const getAllPassengers = async (
   page = 0,
@@ -63,6 +66,15 @@ export const getPassengerReservations = async (
   const response = await apiClient.get<PagedResponse<Reservation>>(
     "/v1/passengers/reservations",
     { params: { identificationNumber, countryIsoCode, page, size } },
+  );
+  return response.data;
+};
+
+export const getPassengerReservationsSummary = async (
+  passengerId: number,
+): Promise<ResponsePassengerReservationDto[]> => {
+  const response = await apiClient.get<ResponsePassengerReservationDto[]>(
+    `/v1/passengers/${passengerId}/reservations/summary`,
   );
   return response.data;
 };

@@ -3,8 +3,8 @@ import axios from "axios";
 import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createRoute } from "../services/routeService";
 import type { CreateRouteRequest } from "../types/routeTypes";
-import type { Airport } from "../../airports/types/airportTypes";
-import type { AirplaneType } from "../../aircraft/types/airplaneTypeTypes";
+import type { AirportOption, AirplaneTypeOption } from "../../../../services/catalogService";
+import { SuccessMessage } from "../../../components/SuccessMessage";
 
 const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
@@ -14,8 +14,8 @@ const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
 };
 
 interface RouteCreateFormProps {
-  airportsData: Airport[];
-  aircraftsData: AirplaneType[];
+  airportsData: AirportOption[];
+  aircraftsData: AirplaneTypeOption[];
   onClose: () => void;
   onCreated: () => void;
 }
@@ -32,6 +32,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   return (
     <form
@@ -42,8 +43,8 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
           setSubmitting(true);
           setError(null);
           await createRoute(formData);
-          onCreated();
-          onClose();
+          setSuccess("Ruta creada exitosamente.");
+          setTimeout(() => { onCreated(); onClose(); }, 1500);
         } catch (err) {
           setError(getApiErrorMessage(err, "No se pudo crear la ruta."));
         } finally {
@@ -103,10 +104,9 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
           className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
         >
           <option value={0}>Seleccionar aeronave</option>
-          {aircraftsData.reduce<React.ReactNode[]>((acc, aircraft) => {
-            if (aircraft.status === "ACTIVE") acc.push(<option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>);
-            return acc;
-          }, [])}
+          {aircraftsData.map((aircraft) => (
+            <option key={aircraft.id} value={aircraft.id}>{aircraft.producer} {aircraft.model}</option>
+          ))}
         </select>
       </div>
       <div>
@@ -150,6 +150,9 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
         <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Creando..." : "Crear"}</button>
+      </div>
+      <div className="mt-3">
+        <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       </div>
       {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{error}</div>}
     </form>

@@ -1,6 +1,6 @@
 import { apiClient } from "../../../../api/axios";
 import type { PagedResponse } from "../../../../types/pagedResponse";
-import type { CheckInResponse, Reservation } from "../types/reservationTypes";
+import type { CheckInResponse, Reservation, ResponseReservationDto } from "../types/reservationTypes";
 
 export const getReservation = async (
   reservationNumber: string,
@@ -58,6 +58,15 @@ export const cancelPassengerFromReservationByPassport = async (
   const response = await apiClient.patch<Reservation>(
     `/v1/reservations/${reservationNumber}/cancel/passenger/${passportNumber}`,
     { contactEmail },
+  );
+  return response.data;
+};
+
+export const getReservationWithDetails = async (
+  id: number,
+): Promise<ResponseReservationDto> => {
+  const response = await apiClient.get<ResponseReservationDto>(
+    `/v1/reservations/${id}/with-details`,
   );
   return response.data;
 };

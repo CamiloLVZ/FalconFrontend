@@ -19,8 +19,27 @@ export interface PassengerReservation {
   seatLabel: string;
 }
 
+export interface ResponsePassengerReservationDto {
+  id: number;
+  passenger: Passenger;
+  seatNumber: number;
+  seatLabel: string;
+  seatClass: SeatClass;
+  status: PassengerReservationStatus;
+}
+
 export interface CheckInResponse extends PassengerReservation {
   id: number;
+}
+
+export interface ResponseReservationDto {
+  id: number;
+  number: string;
+  contactEmail: string;
+  reservationDatetime: string;
+  status: ReservationStatus;
+  flight: ResponseFlightDto;
+  passengers: PassengerReservation[];
 }
 
 export interface Reservation {
