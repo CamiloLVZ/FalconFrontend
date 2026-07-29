@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import imgLogo from "../../assets/logo/logo.png";
 
-const HEALTH_ENDPOINT = `${import.meta.env.VITE_API_URL}/health`;
+const HEALTH_ENDPOINT = `${import.meta.env.VITE_API_URL}/v1/health`;
 const SHOW_DELAY_MS = 400;
 const RETRY_INTERVAL_MS = 4000;
 const MAX_WAIT_MS = 420_000;
@@ -78,7 +78,11 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
   if (status === "error") {
     return (
       <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
-        <img src={imgLogo} alt="Falcon logo" className="mb-6 h-20 w-auto rounded-xl" />
+        <img
+          src={imgLogo}
+          alt="Falcon logo"
+          className="mb-6 h-20 w-auto rounded-xl"
+        />
         <p className="text-xl font-semibold text-gray-700 mb-2">
           El servidor no está disponible
         </p>
