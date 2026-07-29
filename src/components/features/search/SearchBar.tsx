@@ -45,6 +45,7 @@ export const SearchBar = ({
             value={originInput}
             placeholder="Origen"
             icon={<AirplaneDepartureIcon />}
+            onInputChange={setOriginInput}
             onSelect={async (airport) => {
               setOriginInput(`${airport.city} (${airport.iataCode})`);
 
@@ -68,6 +69,7 @@ export const SearchBar = ({
             placeholder="Destino"
             icon={<AirplaneArrivalIcon />}
             disabled={!filters.origin}
+            onInputChange={setDestinationInput}
             onSelect={(airport) => {
               setDestinationInput(`${airport.city} (${airport.iataCode})`);
 

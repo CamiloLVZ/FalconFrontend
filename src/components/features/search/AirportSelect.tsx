@@ -8,6 +8,7 @@ interface Props {
   icon: ReactNode;
   disabled?: boolean;
   onSelect: (airport: AirportSearchOption) => void;
+  onInputChange: (value: string) => void;
 }
 
 export const AirportSelect = ({
@@ -17,10 +18,18 @@ export const AirportSelect = ({
   icon,
   disabled = false,
   onSelect,
+  onInputChange,
 }: Props) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const filteredOptions = options.filter(
+    (opt) =>
+      opt.city.toLowerCase().includes(value.toLowerCase()) ||
+      opt.iataCode.toLowerCase().includes(value.toLowerCase()) ||
+      opt.name.toLowerCase().includes(value.toLowerCase()),
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,8 +60,8 @@ export const AirportSelect = ({
         placeholder={placeholder}
         className="focus:outline-none border-0 rounded-lg px-3 w-full bg-transparent disabled:cursor-not-allowed font-semibold"
         value={value}
-        readOnly
         disabled={disabled}
+        onChange={(e) => onInputChange(e.target.value)}
         onFocus={() => {
           if (!disabled) {
             setShowDropdown(true);
@@ -61,25 +70,30 @@ export const AirportSelect = ({
       />
 
       {showDropdown && (
-        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-300 rounded-xl shadow-lg z-50 overflow-hidden">
-          {options.map((airport) => (
-            <button
-              key={airport.iataCode}
-              type="button"
-              onClick={() => {
-                onSelect(airport);
+        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-300 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((airport) => (
+              <button
+                key={airport.iataCode}
+                type="button"
+                onClick={() => {
+                  onSelect(airport);
+                  setShowDropdown(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 cursor-pointer"
+              >
+                <p className="font-semibold">
+                  {airport.city} ({airport.iataCode})
+                </p>
 
-                setShowDropdown(false);
-              }}
-              className="w-full text-left px-4 py-3 hover:bg-gray-100 cursor-pointer"
-            >
-              <p className="font-semibold">
-                {airport.city} ({airport.iataCode})
-              </p>
-
-              <p className="text-sm text-gray-500">{airport.name}</p>
-            </button>
-          ))}
+                <p className="text-sm text-gray-500">{airport.name}</p>
+              </button>
+            ))
+          ) : (
+            <p className="text-sm text-gray-400 text-center px-4 py-3">
+              Sin resultados
+            </p>
+          )}
         </div>
       )}
     </div>
