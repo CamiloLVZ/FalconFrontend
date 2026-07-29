@@ -6,6 +6,7 @@ const SHOW_DELAY_MS = 400;
 const RETRY_INTERVAL_MS = 4000;
 const MAX_WAIT_MS = 420_000;
 const SESSION_KEY = "serverAwake";
+const SESSION_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 interface ServerWakeupGateProps {
   children: ReactNode;
@@ -14,9 +15,19 @@ interface ServerWakeupGateProps {
 type Status = "checking" | "ready" | "error";
 
 export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
-  const [status, setStatus] = useState<Status>(
-    sessionStorage.getItem(SESSION_KEY) === "true" ? "ready" : "checking",
-  );
+  const [status, setStatus] = useState<Status>(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return "checking";
+      const parsed = JSON.parse(raw);
+      if (parsed?.at && Date.now() - parsed.at < SESSION_TTL_MS) {
+        return "ready";
+      }
+    } catch {
+      // corrupted or unparseable → treat as unconfirmed
+    }
+    return "checking";
+  });
   const [showLoader, setShowLoader] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,7 +61,7 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
           clearTimeout(timeoutId);
 
           if (res.ok) {
-            sessionStorage.setItem(SESSION_KEY, "true");
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ at: Date.now() }));
             if (mountedRef.current) setStatus("ready");
             return;
           }
