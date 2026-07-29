@@ -57,7 +57,7 @@ export const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative w-full h-[450px] md:h-[550px] lg:h-[650px] overflow-hidden">
+    <section className="relative z-10 w-full h-[450px] md:h-[550px] lg:h-[650px] overflow-visible">
       {/* Background image */}
       <img
         src={bgImage}

@@ -1,18 +1,24 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/Homepage.tsx";
 import { FlightsPage } from "./pages/FlightsPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { MainLayout } from "./layouts/MainLayout.tsx";
-import { AdminLayout } from "./admin/layout/AdminLayout.tsx";
-import { AdminAircraftPage } from "./admin/features/aircraft/pages/AdminAircraftPage.tsx";
-import { AdminRoutesPage } from "./admin/features/routes/pages/AdminRoutesPage.tsx";
-import { AdminAirportsPage } from "./admin/features/airports/pages/AdminAirportsPage.tsx";
-import { AdminFlightGenerationPage } from "./admin/features/flightGeneration/pages/AdminFlightGenerationPage.tsx";
-import { AdminFlightsPage } from "./admin/features/flights/pages/AdminFlightsPage.tsx";
-import { AdminPassengersPage } from "./admin/features/passengers/pages/AdminPassengersPage.tsx";
-import { AdminReservationsPage } from "./admin/features/reservations/pages/AdminReservationsPage.tsx";
 import { LoginPage } from "./auth/pages/LoginPage.tsx";
 import { RequireAdmin } from "./auth/components/RequireAdmin.tsx";
+import { LoadingScreen } from "./components/common/LoadingScreen.tsx";
+
+const AdminLayout = lazy(() => import("./admin/layout/AdminLayout.tsx").then(m => ({ default: m.AdminLayout })));
+const AdminAircraftPage = lazy(() => import("./admin/features/aircraft/pages/AdminAircraftPage.tsx").then(m => ({ default: m.AdminAircraftPage })));
+const AdminRoutesPage = lazy(() => import("./admin/features/routes/pages/AdminRoutesPage.tsx").then(m => ({ default: m.AdminRoutesPage })));
+const AdminAirportsPage = lazy(() => import("./admin/features/airports/pages/AdminAirportsPage.tsx").then(m => ({ default: m.AdminAirportsPage })));
+const AdminFlightGenerationPage = lazy(() => import("./admin/features/flightGeneration/pages/AdminFlightGenerationPage.tsx").then(m => ({ default: m.AdminFlightGenerationPage })));
+const AdminFlightsPage = lazy(() => import("./admin/features/flights/pages/AdminFlightsPage.tsx").then(m => ({ default: m.AdminFlightsPage })));
+const AdminPassengersPage = lazy(() => import("./admin/features/passengers/pages/AdminPassengersPage.tsx").then(m => ({ default: m.AdminPassengersPage })));
+const AdminReservationsPage = lazy(() => import("./admin/features/reservations/pages/AdminReservationsPage.tsx").then(m => ({ default: m.AdminReservationsPage })));
+const AdminUsersPage = lazy(() => import("./admin/features/users/pages/AdminUsersPage").then(m => ({ default: m.AdminUsersPage })));
+const AdminCheckInPage = lazy(() => import("./admin/features/checkin/pages/AdminCheckInPage.tsx").then(m => ({ default: m.AdminCheckInPage })));
+const AdminBoardingPage = lazy(() => import("./admin/features/boarding/pages/AdminBoardingPage.tsx").then(m => ({ default: m.AdminBoardingPage })));
 
 function App() {
   return (
@@ -28,7 +34,9 @@ function App() {
         path="/admin"
         element={
           <RequireAdmin>
-            <AdminLayout />
+            <Suspense fallback={<LoadingScreen />}>
+              <AdminLayout />
+            </Suspense>
           </RequireAdmin>
         }
       >
@@ -43,6 +51,9 @@ function App() {
           element={<AdminFlightGenerationPage />}
         />
         <Route path="reservations" element={<AdminReservationsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="checkin" element={<AdminCheckInPage />} />
+        <Route path="boarding" element={<AdminBoardingPage />} />
       </Route>
     </Routes>
   );

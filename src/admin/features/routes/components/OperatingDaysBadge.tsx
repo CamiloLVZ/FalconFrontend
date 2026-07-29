@@ -19,7 +19,7 @@ export const OperatingDaysBadge = ({ days, schedules }: OperatingDaysBadgeProps)
   }
 
   const sortedDays = hasDays
-    ? [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+    ? days.toSorted((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
     : [];
 
   return (

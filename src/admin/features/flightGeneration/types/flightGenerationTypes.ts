@@ -1,9 +1,5 @@
-export type FlightGenerationStatus =
-  | "PENDING"
-  | "RUNNING"
-  | "COMPLETED"
-  | "FAILED";
-export type FlightGenerationType = "GLOBAL" | "ROUTE";
+export type FlightGenerationStatus = "RUNNING" | "COMPLETED" | "FAILED";
+export type FlightGenerationType = "GLOBAL" | "ROUTE" | "DAILY";
 
 export interface FlightGeneration {
   generationId: number;

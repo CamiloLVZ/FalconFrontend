@@ -66,7 +66,7 @@ export const FlightsPage = () => {
   };
 
   const handleSearch = async (
-    customFilters: FlightSearchParams,
+    customFilters: CleanFilters,
     displayData?: {
       origin: string;
       destination: string;
@@ -82,7 +82,7 @@ export const FlightsPage = () => {
       );
 
       const data = await searchFlights(cleanFilters);
-      setFlights(data.data);
+      setFlights(data);
 
       if (displayData) {
         setAppliedDisplay(displayData);
@@ -91,6 +91,7 @@ export const FlightsPage = () => {
       setHasSearched(true);
     } catch {
       setError("Error buscando vuelos");
+      setFlights([]);
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,10 @@ export const FlightsPage = () => {
     loadOrigins();
   }, []);
 
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect – guarded by `if (ignore) return;` at the top of the .then() callback
   useEffect(() => {
+    let ignore = false;
+
     if (origins.length === 0) {
       return;
     }
@@ -138,6 +142,8 @@ export const FlightsPage = () => {
     setOriginInput(formattedOrigin);
 
     loadDestinations(origin).then((loadedDestinations) => {
+      if (ignore) return;
+
       const destinationAirport = loadedDestinations.find(
         (airport) => airport.iataCode === destination,
       );
@@ -156,6 +162,8 @@ export const FlightsPage = () => {
         date,
       });
     });
+
+    return () => { ignore = true; };
   }, [searchParams, origins]);
 
   return (
@@ -171,16 +179,20 @@ export const FlightsPage = () => {
           setDestinationInput={setDestinationInput}
           onChange={setSearchFilters}
           loadDestinations={loadDestinations}
-          onSearch={() => {
-            setAppliedDisplay({
+          onSearch={async () => {
+            const displayData = {
               origin: originInput,
               destination: destinationInput,
               date: searchFilters.date,
-            });
+            };
 
-            const cleanFilters: Record<string, string> = Object.fromEntries(
+            setAppliedDisplay(displayData);
+
+            const cleanFilters: CleanFilters = Object.fromEntries(
               Object.entries(searchFilters).filter(([, value]) => value !== ""),
             );
+
+            await handleSearch(cleanFilters, displayData);
 
             const params = new URLSearchParams(cleanFilters).toString();
 

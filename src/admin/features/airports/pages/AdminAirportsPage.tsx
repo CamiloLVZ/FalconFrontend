@@ -1,77 +1,134 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useReducer } from "react";
+import type { Reducer } from "react";
 import { AirportTable } from "../components/AirportTable";
 import { AdminDrawer } from "../../../components/AdminDrawer";
 import type { Airport } from "../types/airportTypes";
 import { getAllAirports } from "../services/airportService";
 import { ErrorScreen } from "../../../../components/common/ErrorScreen";
 import { LoadingScreen } from "../../../../components/common/LoadingScreen";
-import { getAirportFieldValue } from "../utils/airport.utils";
-import type { FilterField } from "../utils/airport.utils";
 import { Pagination } from "../../../components/Pagination";
+import { CountryCreateForm } from "../components/CountryCreateForm";
+import { AirportCreateForm } from "../components/AirportCreateForm";
+
+interface State {
+  airports: Airport[];
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+  isCreateOpen: boolean;
+  isCreateCountryOpen: boolean;
+}
+
+type Action =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; payload: { airports: Airport[]; page: number; totalPages: number; totalElements: number } }
+  | { type: "LOAD_ERROR"; payload: string }
+  | { type: "SET_PAGE"; payload: number }
+  | { type: "SET_PAGE_SIZE"; payload: number }
+  | { type: "OPEN_CREATE" }
+  | { type: "CLOSE_CREATE" }
+  | { type: "OPEN_CREATE_COUNTRY" }
+  | { type: "CLOSE_CREATE_COUNTRY" };
+
+const initialState: State = {
+  airports: [],
+  loading: false,
+  error: null,
+  currentPage: 0,
+  pageSize: 10,
+  totalPages: 0,
+  totalElements: 0,
+  isCreateOpen: false,
+  isCreateCountryOpen: false,
+};
+
+const reducer: Reducer<State, Action> = (state, action) => {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true, error: null };
+    case "LOAD_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        airports: action.payload.airports,
+        currentPage: action.payload.page,
+        totalPages: action.payload.totalPages,
+        totalElements: action.payload.totalElements,
+      };
+    case "LOAD_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "SET_PAGE":
+      return { ...state, currentPage: action.payload };
+    case "SET_PAGE_SIZE":
+      return { ...state, pageSize: action.payload, currentPage: 0 };
+    case "OPEN_CREATE":
+      return { ...state, isCreateOpen: true };
+    case "CLOSE_CREATE":
+      return { ...state, isCreateOpen: false };
+    case "OPEN_CREATE_COUNTRY":
+      return { ...state, isCreateCountryOpen: true };
+    case "CLOSE_CREATE_COUNTRY":
+      return { ...state, isCreateCountryOpen: false };
+    default:
+      return state;
+  }
+};
 
 export const AdminAirportsPage = () => {
-  const [airports, setAirports] = useState<Airport[]>([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { airports, loading, error, currentPage, pageSize, totalPages, totalElements, isCreateOpen, isCreateCountryOpen } = state;
+
   const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterField, setFilterField] = useState<FilterField>("iataCode");
-
-  // Estado de paginación
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const loadAirports = async (page: number, size: number) => {
+  const [countryFilter, setCountryFilter] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const loadAirports = async (
+    page: number,
+    size: number,
+    country?: string,
+    search?: string,
+  ) => {
     try {
-      setLoading(true);
-      setError(null);
-      const data = await getAllAirports(size, page);
-      setAirports(data.content);
-      setCurrentPage(data.page);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      dispatch({ type: "LOAD_START" });
+      const data = await getAllAirports(size, page, country, search);
+      dispatch({ type: "LOAD_SUCCESS", payload: { airports: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
     } catch (err) {
       console.error(err);
-      setError(
-        "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde.",
-      );
-    } finally {
-      setLoading(false);
+      dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde." });
     }
   };
 
   useEffect(() => {
-    loadAirports(currentPage, pageSize);
+    let ignore = false;
+    dispatch({ type: "LOAD_START" });
+    getAllAirports(pageSize, currentPage, countryFilter || undefined, searchFilter || undefined)
+      .then((data) => {
+        if (!ignore) dispatch({ type: "LOAD_SUCCESS", payload: { airports: data.content, page: data.page, totalPages: data.totalPages, totalElements: data.totalElements } });
+      })
+      .catch((err) => {
+        if (!ignore) {
+          console.error(err);
+          dispatch({ type: "LOAD_ERROR", payload: "No se han podido cargar los aeropuertos. Por favor, inténtalo de nuevo más tarde." });
+        }
+      });
+    return () => { ignore = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleSearch = () => {
+    dispatch({ type: "SET_PAGE", payload: 0 });
+    loadAirports(0, pageSize, countryFilter || undefined, searchFilter || undefined);
   };
 
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(0); // Volver a la primera página al cambiar el tamaño
+  const handleClearFilters = () => {
+    setCountryFilter("");
+    setSearchFilter("");
+    dispatch({ type: "SET_PAGE", payload: 0 });
+    loadAirports(0, pageSize);
   };
-
-  // El filtro se aplica sobre los registros de la página actual
-  const filteredAirports = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-    if (!search)
-      return [...airports].sort((a, b) => a.iataCode.localeCompare(b.iataCode));
-
-    return airports
-      .filter((airport) =>
-        getAirportFieldValue(airport, filterField)
-          .toLowerCase()
-          .includes(search),
-      )
-      .sort((a, b) => a.iataCode.localeCompare(b.iataCode));
-  }, [airports, searchTerm, filterField]);
-
   if (error) {
     return (
       <ErrorScreen messageTitle="Error al cargar aeropuertos" message={error} />
@@ -80,41 +137,81 @@ export const AdminAirportsPage = () => {
 
   return (
     <section className="min-h-[calc(100vh-136px)]">
-      <h1 className="text-2xl font-bold">Airports</h1>
-
-      <div className="mt-4 flex flex-col gap-3 md:flex-row">
-        <select
-          value={filterField}
-          onChange={(e) => {
-            setFilterField(e.target.value as FilterField);
-            setSearchTerm("");
-          }}
-          className="rounded-lg border px-4 py-2"
-        >
-          <option value="iataCode">IATA</option>
-          <option value="name">Nombre del Aeropuerto</option>
-          <option value="city">Ciudad</option>
-          <option value="country">País</option>
-        </select>
-
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={`Buscar por ${filterField}…`}
-          className="flex-1 rounded-lg border px-4 py-2"
-        />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Airports</h1>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "OPEN_CREATE_COUNTRY" })}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
+          >
+            + Crear País
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "OPEN_CREATE" })}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium"
+          >
+            + Crear Aeropuerto
+          </button>
+          <button
+            type="button"
+            onClick={() => loadAirports(currentPage, pageSize, countryFilter || undefined, searchFilter || undefined)}
+            disabled={loading}
+            title="Refrescar"
+            className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {searchTerm.trim() && (
-        <p className="mt-1 text-xs text-amber-600">
-          ⚠ El filtro aplica sobre los {pageSize} registros de esta página.
-          Cambia de página para buscar en otros registros.
-        </p>
-      )}
-
-      <div className="mt-1 text-sm text-gray-500">
-        {filteredAirports.length} aeropuertos en esta página
+      <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
+          <label className="text-sm font-medium text-gray-700">Buscar</label>
+          <input
+            type="text"
+            aria-label="Buscar"
+            placeholder="Nombre o código IATA"
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700">País (ISO)</label>
+          <input
+            type="text"
+            aria-label="País (ISO)"
+            maxLength={2}
+            placeholder="Ej: CO"
+            value={countryFilter}
+            onChange={(e) => setCountryFilter(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary uppercase"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Buscar
+          </button>
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-medium disabled:opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto">
@@ -122,7 +219,7 @@ export const AdminAirportsPage = () => {
           <LoadingScreen />
         ) : (
           <AirportTable
-            airports={filteredAirports}
+            airports={airports}
             onEdit={(a) => {
               setSelectedAirport(a);
               setIsDrawerOpen(true);
@@ -146,7 +243,7 @@ export const AdminAirportsPage = () => {
               <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">
                 Detalles
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500 font-medium">IATA</p>
                   <p className="text-gray-900">{selectedAirport.iataCode}</p>
@@ -175,13 +272,35 @@ export const AdminAirportsPage = () => {
         )}
       </AdminDrawer>
 
+      <AdminDrawer
+        title="Crear País"
+        isOpen={isCreateCountryOpen}
+        onClose={() => dispatch({ type: "CLOSE_CREATE_COUNTRY" })}
+      >
+        <CountryCreateForm
+          onClose={() => dispatch({ type: "CLOSE_CREATE_COUNTRY" })}
+          onCreated={() => loadAirports(0, pageSize)}
+        />
+      </AdminDrawer>
+
+      <AdminDrawer
+        title="Crear Aeropuerto"
+        isOpen={isCreateOpen}
+        onClose={() => dispatch({ type: "CLOSE_CREATE" })}
+      >
+        <AirportCreateForm
+          onClose={() => dispatch({ type: "CLOSE_CREATE" })}
+          onCreated={() => { loadAirports(0, pageSize); dispatch({ type: "SET_PAGE", payload: 0 }); }}
+        />
+      </AdminDrawer>
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalElements={totalElements}
         pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
+        onPageChange={(page) => dispatch({ type: "SET_PAGE", payload: page })}
+        onPageSizeChange={(size) => dispatch({ type: "SET_PAGE_SIZE", payload: size })}
       />
     </section>
   );

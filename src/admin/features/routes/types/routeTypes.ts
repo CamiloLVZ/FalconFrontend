@@ -29,6 +29,8 @@ export interface Route {
   // Backwards-compatible alias used in some API responses
   lengthMinutes?: number;
   status: RouteStatus;
+  basePriceEconomy: number;
+  basePriceFirstClass: number;
 }
 
 /** Route enriched with schedule data (not from backend ResponseRouteDto — local join) */
@@ -54,6 +56,8 @@ export interface CreateRouteRequest {
   airportDestinationIataCode: string;
   idDefaultAirplaneType: number;
   durationMinutes: number;
+  basePriceEconomy: number;
+  basePriceFirstClass: number;
 }
 
 /** UpdateRouteDto */
@@ -62,8 +66,8 @@ export interface UpdateRouteRequest {
   airportDestinationIataCode?: string;
   idDefaultAirplaneType?: number;
   durationMinutes?: number;
-  // Backwards-compatible alias
-  lengthMinutes?: number;
+  basePriceEconomy?: number;
+  basePriceFirstClass?: number;
 }
 
 /** AddRouteScheduleRequestDto */

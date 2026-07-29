@@ -1,21 +1,45 @@
-import type { Flight } from "../../flights/types/flightTypes";
+import type { ResponseFlightDto } from "../../flights/types/flightTypes";
 import type { Passenger } from "../../passengers/types/passengerTypes";
 
-export type ReservationStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "CANCELLED"
-  | "COMPLETED";
+export type ReservationStatus = "RESERVED" | "COMPLETED" | "CANCELED";
 export type PassengerReservationStatus =
-  | "CONFIRMED"
+  | "RESERVED"
   | "CHECKED_IN"
+  | "CANCELED"
   | "BOARDED"
-  | "CANCELLED";
+  | "EXPIRED";
+
+export type SeatClass = "FIRST_CLASS" | "ECONOMY";
 
 export interface PassengerReservation {
   passenger: Passenger;
   seatNumber: number;
+  seatClass: SeatClass;
   status: PassengerReservationStatus;
+  seatLabel: string;
+}
+
+export interface ResponsePassengerReservationDto {
+  id: number;
+  passenger: Passenger;
+  seatNumber: number;
+  seatLabel: string;
+  seatClass: SeatClass;
+  status: PassengerReservationStatus;
+}
+
+export interface CheckInResponse extends PassengerReservation {
+  id: number;
+}
+
+export interface ResponseReservationDto {
+  id: number;
+  number: string;
+  contactEmail: string;
+  reservationDatetime: string;
+  status: ReservationStatus;
+  flight: ResponseFlightDto;
+  passengers: PassengerReservation[];
 }
 
 export interface Reservation {
@@ -23,25 +47,6 @@ export interface Reservation {
   contactEmail: string;
   reservationDatetime: string; // Instant → ISO string
   status: ReservationStatus;
-  flight: Flight;
+  flight: ResponseFlightDto;
   passengers: PassengerReservation[];
-}
-
-export interface AddPassengerToReservationRequest {
-  passenger: {
-    firstName: string;
-    lastName: string;
-    gender: string;
-    nationalityIsoCode: string;
-    dateOfBirth: string;
-    passportNumber?: string;
-    identificationNumber: string;
-  };
-  seatNumber: number;
-}
-
-export interface CreateReservationRequest {
-  idFlight: number;
-  contactEmail: string;
-  passengers: AddPassengerToReservationRequest[];
 }

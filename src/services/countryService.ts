@@ -1,6 +1,6 @@
 import { apiClient } from "../api/axios";
 import type { Country } from "../types/country";
-import type { AirportSearchOption } from "../types/airportSearch";
+import type { PagedResponse } from "../types/pagedResponse";
 
 export const getCountryByIsoCode = async (
   isoCode: string,
@@ -16,9 +16,12 @@ export const getAllCountries = async (): Promise<Country[]> => {
 
 export const getAirportsByCountry = async (
   isoCode: string,
-): Promise<AirportSearchOption[]> => {
-  const response = await apiClient.get<AirportSearchOption[]>(
+  size = 10,
+  page = 0,
+): Promise<PagedResponse<Country>> => {
+  const response = await apiClient.get<PagedResponse<Country>>(
     `/v1/countries/${isoCode}/airports`,
+    { params: { size, page } },
   );
   return response.data;
 };

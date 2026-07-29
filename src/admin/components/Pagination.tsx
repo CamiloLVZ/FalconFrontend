@@ -67,6 +67,7 @@ export const Pagination = ({
           onChange={(e) => {
             onPageSizeChange(Number(e.target.value));
           }}
+          aria-label="Registros por página"
           className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           {pageSizeOptions.map((opt) => (
@@ -89,6 +90,7 @@ export const Pagination = ({
       <div className="flex items-center gap-1">
         {/* Primera página */}
         <button
+          type="button"
           onClick={() => onPageChange(0)}
           disabled={currentPage === 0}
           title="Primera página"
@@ -99,6 +101,7 @@ export const Pagination = ({
 
         {/* Anterior */}
         <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 0}
           title="Página anterior"
@@ -119,6 +122,7 @@ export const Pagination = ({
           ) : (
             <button
               key={page}
+              type="button"
               onClick={() => onPageChange(page)}
               className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
                 page === currentPage
@@ -133,6 +137,7 @@ export const Pagination = ({
 
         {/* Siguiente */}
         <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages - 1}
           title="Página siguiente"
@@ -143,6 +148,7 @@ export const Pagination = ({
 
         {/* Última página */}
         <button
+          type="button"
           onClick={() => onPageChange(totalPages - 1)}
           disabled={currentPage >= totalPages - 1}
           title="Última página"
