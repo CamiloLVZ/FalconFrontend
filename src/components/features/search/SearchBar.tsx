@@ -86,6 +86,7 @@ export const SearchBar = ({
         <input
           type="date"
           aria-label="Fecha"
+          min={new Date().toISOString().split("T")[0]}
           onClick={(e) => e.currentTarget.showPicker()}
           className="rounded-xl border border-gray-300 w-full px-4 py-3 cursor-pointer"
           value={filters.date}
