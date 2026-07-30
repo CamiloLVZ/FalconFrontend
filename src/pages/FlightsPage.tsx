@@ -38,6 +38,10 @@ export const FlightsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const handleBook = (flightId: number) => {
+    navigate(`/booking/${flightId}`);
+  };
+
   const formatAirportLabel = (airport: AirportSearchOption) => {
     return `${airport.city} (${airport.iataCode})`;
   };
@@ -239,7 +243,7 @@ export const FlightsPage = () => {
 
       <div className="w-full flex flex-col gap-5">
         {flights.map((flight) => (
-          <FlightCard key={flight.id} flight={flight} />
+          <FlightCard key={flight.id} flight={flight} onBook={handleBook} />
         ))}
       </div>
     </div>

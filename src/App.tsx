@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/Homepage.tsx";
 import { FlightsPage } from "./pages/FlightsPage.tsx";
+import { BookingPage } from "./pages/BookingPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { MainLayout } from "./layouts/MainLayout.tsx";
 import { LoginPage } from "./auth/pages/LoginPage.tsx";
@@ -26,6 +27,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="flights" element={<FlightsPage />} />
+        <Route path="booking/:flightId" element={<BookingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
