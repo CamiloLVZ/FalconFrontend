@@ -4,6 +4,7 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { createAircraft } from "../services/aircraftService";
 import type { CreateAirplaneTypeRequest } from "../types/airplaneTypeTypes";
 import { SuccessMessage } from "../../../components/SuccessMessage";
+import { SEAT_COLUMN_OPTIONS } from "../constants/aircraft.constants";
 
 interface AircraftCreateFormProps {
   onSuccess: () => void;
@@ -31,7 +32,7 @@ export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormPro
       model: (form.elements.namedItem("model") as HTMLInputElement).value.toUpperCase(),
       economySeats: parseInt((form.elements.namedItem("economySeats") as HTMLInputElement).value),
       firstClassSeats: firstClassVal ? parseInt(firstClassVal) : undefined,
-      seatColumns: (form.elements.namedItem("seatColumns") as HTMLInputElement).value.toUpperCase(),
+      seatColumns: (form.elements.namedItem("seatColumns") as HTMLSelectElement).value.toUpperCase(),
     };
     try {
       setSubmitting(true);
@@ -66,7 +67,11 @@ export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormPro
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700">Columnas de asientos <span className="text-red-500">*</span></label>
-        <input name="seatColumns" aria-label="Columnas de asientos" required pattern="[A-Z]+" title="Solo letras mayúsculas, sin repetir" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <select name="seatColumns" aria-label="Columnas de asientos" required defaultValue={SEAT_COLUMN_OPTIONS[0]} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+          {SEAT_COLUMN_OPTIONS.map((columns) => (
+            <option key={columns} value={columns}>{columns}</option>
+          ))}
+        </select>
       </div>
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
