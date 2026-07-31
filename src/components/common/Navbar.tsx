@@ -4,9 +4,9 @@ import { NavLink } from "react-router-dom";
 export const Navbar = () => {
   const tabs = [
     { label: "Reservar", path: "/" },
-    { label: "Gestionar", path: "/booking" },
+    { label: "Gestionar", path: "/manage" },
     { label: "Check-in", path: "/check-in" },
-    { label: "Estado del vuelo", path: "/status" },
+    { label: "Abordaje", path: "/boarding" },
   ];
 
   return (

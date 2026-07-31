@@ -3,6 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/Homepage.tsx";
 import { FlightsPage } from "./pages/FlightsPage.tsx";
 import { BookingPage } from "./pages/BookingPage.tsx";
+import { ManageReservationPage } from "./pages/ManageReservationPage.tsx";
+import { CheckInPage } from "./pages/CheckInPage.tsx";
+import { BoardingPage } from "./pages/BoardingPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { MainLayout } from "./layouts/MainLayout.tsx";
 import { LoginPage } from "./auth/pages/LoginPage.tsx";
@@ -28,6 +31,9 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="flights" element={<FlightsPage />} />
         <Route path="booking/:flightId" element={<BookingPage />} />
+        <Route path="manage" element={<ManageReservationPage />} />
+        <Route path="check-in" element={<CheckInPage />} />
+        <Route path="boarding" element={<BoardingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

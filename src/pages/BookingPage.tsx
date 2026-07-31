@@ -11,6 +11,7 @@ import { AirplaneArrivalIcon } from "../components/icons/AirplaneArrivalIcon";
 import { AirplaneIcon } from "../components/icons/AirplaneIcon";
 import { TrashIcon } from "../components/icons/TrashIcon";
 import { LoadingScreen } from "../components/common/LoadingScreen";
+import imgLogo from "../assets/logo/logo.png";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -65,6 +66,15 @@ export const BookingPage = () => {
     };
     load();
   }, [flightId]);
+
+  const hasFirstClass = (flight?.airplaneType.firstClassSeats ?? 0) > 0;
+
+  useEffect(() => {
+    if (!hasFirstClass && seatClass === "FIRST_CLASS") {
+      setSeatClass("ECONOMY");
+      setPassengers((prev) => prev.map((p) => ({ ...p, seatClass: "ECONOMY" as SeatClass })));
+    }
+  }, [hasFirstClass, seatClass]);
 
   const updatePassenger = (index: number, field: keyof BookingPassenger, value: string) => {
     setPassengers((prev) => {
@@ -228,11 +238,8 @@ export const BookingPage = () => {
 
               {flight && (
                 <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3">
                     <span className="text-sm text-gray-500">{flight.flightNumber}</span>
-                    <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                      {flight.status === "SCHEDULED" ? "Programado" : flight.status}
-                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -286,19 +293,21 @@ export const BookingPage = () => {
                       ${quote?.priceEconomy?.toLocaleString() ?? "—"}
                     </p>
                   </button>
-                  <button
-                    onClick={() => handleSeatClassChange("FIRST_CLASS")}
-                    className={`flex-1 p-3 rounded-xl border-2 text-center cursor-pointer transition ${
-                      seatClass === "FIRST_CLASS"
-                        ? "border-yellow-400 bg-yellow-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <p className="font-semibold">Primera clase</p>
-                    <p className="text-lg font-bold text-yellow-600">
-                      ${quote?.priceFirstClass?.toLocaleString() ?? "—"}
-                    </p>
-                  </button>
+                  {hasFirstClass && (
+                    <button
+                      onClick={() => handleSeatClassChange("FIRST_CLASS")}
+                      className={`flex-1 p-3 rounded-xl border-2 text-center cursor-pointer transition ${
+                        seatClass === "FIRST_CLASS"
+                          ? "border-yellow-400 bg-yellow-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <p className="font-semibold">Primera clase</p>
+                      <p className="text-lg font-bold text-yellow-600">
+                        ${quote?.priceFirstClass?.toLocaleString() ?? "—"}
+                      </p>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -337,9 +346,9 @@ export const BookingPage = () => {
                 <h2 className="text-2xl font-bold">Pasajeros</h2>
                 <button
                   onClick={addPassenger}
-                  disabled={passengers.length >= 3}
+                  disabled={passengers.length >= 9}
                   className={`px-4 py-2 text-sm rounded-xl transition font-medium cursor-pointer ${
-                    passengers.length >= 3
+                    passengers.length >= 9
                       ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-gray-100 hover:bg-gray-200"
                   }`}
@@ -580,6 +589,22 @@ export const BookingPage = () => {
           )}
         </div>
       </div>
+
+      {submitting && (
+        <div className="fixed inset-0 z-50 bg-white/80 flex flex-col items-center justify-center">
+          <div className="relative w-32 h-32">
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 border-r-blue-600 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative w-24 h-24 overflow-hidden rounded-xl">
+                <img src={imgLogo} alt="Falcon logo" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-blue-600 opacity-30 animate-pulse" style={{ animation: "fillAnimation 2s ease-in-out infinite" }} />
+              </div>
+            </div>
+          </div>
+          <p className="text-lg font-semibold text-gray-700 mt-4">Procesando pago...</p>
+          <style>{`@keyframes fillAnimation { 0%,100% { opacity: 0.1; } 50% { opacity: 0.4; } }`}</style>
+        </div>
+      )}
     </div>
   );
 };

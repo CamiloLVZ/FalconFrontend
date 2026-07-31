@@ -18,6 +18,14 @@ interface Props {
   onSearch: () => void;
 }
 
+const todayLocal = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 export const SearchBar = ({
   filters,
   origins,
@@ -86,7 +94,7 @@ export const SearchBar = ({
         <input
           type="date"
           aria-label="Fecha"
-          min={new Date().toISOString().split("T")[0]}
+          min={todayLocal()}
           onClick={(e) => e.currentTarget.showPicker()}
           className="rounded-xl border border-gray-300 w-full px-4 py-3 cursor-pointer"
           value={filters.date}
