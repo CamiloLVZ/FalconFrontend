@@ -12,6 +12,7 @@ export type PassengerReservationStatus =
 export type SeatClass = "FIRST_CLASS" | "ECONOMY";
 
 export interface PassengerReservation {
+  id: number;
   passenger: Passenger;
   seatNumber: number;
   seatClass: SeatClass;
@@ -28,9 +29,7 @@ export interface ResponsePassengerReservationDto {
   status: PassengerReservationStatus;
 }
 
-export interface CheckInResponse extends PassengerReservation {
-  id: number;
-}
+export type CheckInResponse = PassengerReservation;
 
 export interface ResponseReservationDto {
   id: number;

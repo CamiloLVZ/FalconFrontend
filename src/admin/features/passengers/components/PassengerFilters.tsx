@@ -58,9 +58,10 @@ export const PassengerFilters = ({
       {searchMode === "by-flight" && (
         <div className="flex gap-2 items-end flex-wrap">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">ID del Vuelo</label>
+            <label htmlFor="passenger-flightId" className="block text-sm font-medium text-gray-700 mb-1">ID del Vuelo</label>
             <input
               type="number"
+              id="passenger-flightId"
               aria-label="ID del Vuelo"
               placeholder="Ej: 12"
               value={flightIdInput}
@@ -82,9 +83,10 @@ export const PassengerFilters = ({
       {searchMode === "by-passport" && (
         <div className="flex gap-2 items-end flex-wrap">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Número de Pasaporte</label>
+            <label htmlFor="passenger-passport" className="block text-sm font-medium text-gray-700 mb-1">Número de Pasaporte</label>
             <input
               type="text"
+              id="passenger-passport"
               aria-label="Número de Pasaporte"
               placeholder="Ej: A1234567"
               value={passportInput}
@@ -106,9 +108,10 @@ export const PassengerFilters = ({
       {searchMode === "by-identification" && (
         <div className="flex gap-2 items-end flex-wrap">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Número de Identificación</label>
+            <label htmlFor="passenger-identification" className="block text-sm font-medium text-gray-700 mb-1">Número de Identificación</label>
             <input
               type="text"
+              id="passenger-identification"
               aria-label="Número de Identificación"
               placeholder="Ej: 1032456789"
               value={identificationInput}
@@ -118,9 +121,10 @@ export const PassengerFilters = ({
             />
           </div>
           <div className="w-28">
-            <label className="block text-sm font-medium text-gray-700 mb-1">País (ISO)</label>
+            <label htmlFor="passenger-countryCode" className="block text-sm font-medium text-gray-700 mb-1">País (ISO)</label>
             <input
               type="text"
+              id="passenger-countryCode"
               aria-label="País (ISO)"
               placeholder="Ej: CO"
               maxLength={2}

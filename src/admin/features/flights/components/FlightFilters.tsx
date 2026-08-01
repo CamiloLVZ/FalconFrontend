@@ -41,11 +41,12 @@ export const FlightFilters = ({
   return (
     <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
       <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-        <label className="text-sm font-medium text-gray-700">
+        <label htmlFor="flightfilters-flightId" className="text-sm font-medium text-gray-700">
           ID de Vuelo
         </label>
         <input
           type="text"
+          id="flightfilters-flightId"
           aria-label="ID de Vuelo"
           placeholder="Ej: 123"
           value={flightIdInput}
@@ -56,11 +57,12 @@ export const FlightFilters = ({
       </div>
 
       <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-        <label className="text-sm font-medium text-gray-700">
+        <label htmlFor="flightfilters-flightNumber" className="text-sm font-medium text-gray-700">
           Número de Vuelo (Ruta)
         </label>
         <input
           type="text"
+          id="flightfilters-flightNumber"
           aria-label="Número de Vuelo (Ruta)"
           placeholder="Ej: AV1234"
           value={flightNumberInput}
@@ -71,7 +73,7 @@ export const FlightFilters = ({
       </div>
 
       <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-        <label className="text-sm font-medium text-gray-700">Estado</label>
+        <label htmlFor="flightfilters-status" className="text-sm font-medium text-gray-700">Estado</label>
         <select
           value={statusInput}
           onChange={(e) => onStatusChange(e.target.value)}
@@ -88,11 +90,12 @@ export const FlightFilters = ({
       </div>
 
       <div className="flex flex-col gap-1 min-w-[160px]">
-        <label className="text-sm font-medium text-gray-700">
+        <label htmlFor="flightfilters-dateFrom" className="text-sm font-medium text-gray-700">
           Fecha Desde
         </label>
         <input
           type="date"
+          id="flightfilters-dateFrom"
           aria-label="Fecha Desde"
           value={dateFromInput}
           onChange={(e) => onDateFromChange(e.target.value)}
@@ -101,11 +104,12 @@ export const FlightFilters = ({
       </div>
 
       <div className="flex flex-col gap-1 min-w-[160px]">
-        <label className="text-sm font-medium text-gray-700">
+        <label htmlFor="flightfilters-dateTo" className="text-sm font-medium text-gray-700">
           Fecha Hasta
         </label>
         <input
           type="date"
+          id="flightfilters-dateTo"
           aria-label="Fecha Hasta"
           value={dateToInput}
           onChange={(e) => onDateToChange(e.target.value)}

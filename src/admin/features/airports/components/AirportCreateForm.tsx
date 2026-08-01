@@ -57,11 +57,12 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="airport-iataCode" className="block text-sm font-medium text-gray-700 mb-1">
           Código IATA <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="airport-iataCode"
           aria-label="Código IATA"
           maxLength={3}
           required
@@ -75,11 +76,12 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="airport-name" className="block text-sm font-medium text-gray-700 mb-1">
           Nombre <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="airport-name"
           aria-label="Nombre"
           maxLength={150}
           required
@@ -91,11 +93,12 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="airport-city" className="block text-sm font-medium text-gray-700 mb-1">
           Ciudad <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="airport-city"
           aria-label="Ciudad"
           maxLength={150}
           required
@@ -107,11 +110,12 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="airport-countryIsoCode" className="block text-sm font-medium text-gray-700 mb-1">
           País (ISO) <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="airport-countryIsoCode"
           aria-label="País (ISO)"
           maxLength={2}
           required
@@ -125,11 +129,12 @@ export const AirportCreateForm = ({ onClose, onCreated }: AirportCreateFormProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="airport-timezone" className="block text-sm font-medium text-gray-700 mb-1">
           Zona Horaria <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="airport-timezone"
           aria-label="Zona Horaria"
           maxLength={20}
           required

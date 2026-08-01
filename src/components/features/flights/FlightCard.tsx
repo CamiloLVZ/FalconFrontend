@@ -6,18 +6,22 @@ import { AirplaneArrivalIcon } from "../../icons/AirplaneArrivalIcon.tsx";
 
 interface Props {
   flight: Flight;
+  onBook?: (flightId: number) => void;
 }
 
-export const FlightCard = ({ flight }: Props) => {
+export const FlightCard = ({ flight, onBook }: Props) => {
   const departureTime = flight.localDepartureDateTime.slice(11, 16);
   const arrivalTime = getArrivalTime(
     flight.localDepartureDateTime,
     flight.durationMinutes,
   );
 
+  const handleBook = () => {
+    onBook?.(flight.id);
+  };
+
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition cursor-pointer h-35 flex flex-col justify-center">
-      {/* Main row */}
+    <div className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition">
       <div className="flex items-center justify-between">
         {/* Departure */}
         <div className="text-center min-w-[60px]">
@@ -55,6 +59,16 @@ export const FlightCard = ({ flight }: Props) => {
           <p className="text-xl font-semibold">{arrivalTime}</p>
           <p className="text-base text-gray-800 bold">{flight.destination}</p>
         </div>
+      </div>
+
+      <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
+        <button
+          type="button"
+          onClick={handleBook}
+          className="px-5 py-2 bg-yellow-400 text-black rounded-xl font-semibold text-sm hover:bg-yellow-300 transition cursor-pointer"
+        >
+          Reservar
+        </button>
       </div>
     </div>
   );

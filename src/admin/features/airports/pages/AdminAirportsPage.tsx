@@ -170,9 +170,10 @@ export const AdminAirportsPage = () => {
 
       <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-          <label className="text-sm font-medium text-gray-700">Buscar</label>
+          <label htmlFor="airport-search" className="text-sm font-medium text-gray-700">Buscar</label>
           <input
             type="text"
+            id="airport-search"
             aria-label="Buscar"
             placeholder="Nombre o código IATA"
             value={searchFilter}
@@ -182,9 +183,10 @@ export const AdminAirportsPage = () => {
           />
         </div>
         <div className="flex flex-col gap-1 min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700">País (ISO)</label>
+          <label htmlFor="airport-countryFilter" className="text-sm font-medium text-gray-700">País (ISO)</label>
           <input
             type="text"
+            id="airport-countryFilter"
             aria-label="País (ISO)"
             maxLength={2}
             placeholder="Ej: CO"

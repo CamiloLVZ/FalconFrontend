@@ -169,12 +169,12 @@ export const UserDetailsDrawer = ({ user, loading: pageLoading, onUpdated }: Use
         <h3 className="font-semibold text-gray-800 border-b pb-2 mb-3">Actualizar Credenciales</h3>
         <form onSubmit={handleUpdateCredentials} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nuevo Email</label>
-            <input type="email" aria-label="Nuevo Email" placeholder="Dejar en blanco para no cambiar" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary text-sm" />
+            <label htmlFor="drawer-newEmail" className="block text-sm font-medium text-gray-700 mb-1">Nuevo Email</label>
+            <input type="email" id="drawer-newEmail" aria-label="Nuevo Email" placeholder="Dejar en blanco para no cambiar" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
-            <input type="password" aria-label="Nueva Contraseña" placeholder="Dejar en blanco para no cambiar" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary text-sm" />
+            <label htmlFor="drawer-newPassword" className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
+            <input type="password" id="drawer-newPassword" aria-label="Nueva Contraseña" placeholder="Dejar en blanco para no cambiar" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary text-sm" />
           </div>
           <button type="submit" disabled={isSubmitting} className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{isSubmitting ? "Guardando..." : "Guardar Cambios"}</button>
         </form>
