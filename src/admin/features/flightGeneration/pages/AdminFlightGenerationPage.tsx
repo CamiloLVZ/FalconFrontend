@@ -177,7 +177,7 @@ export const AdminFlightGenerationPage = () => {
 
       <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div className="flex flex-col gap-1 min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700">Tipo</label>
+          <label htmlFor="flgen-type" className="text-sm font-medium text-gray-700">Tipo</label>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -191,7 +191,7 @@ export const AdminFlightGenerationPage = () => {
           </select>
         </div>
         <div className="flex flex-col gap-1 min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700">Estado</label>
+          <label htmlFor="flgen-status" className="text-sm font-medium text-gray-700">Estado</label>
           <select
             value={genStatusFilter}
             onChange={(e) => setGenStatusFilter(e.target.value)}
@@ -205,9 +205,10 @@ export const AdminFlightGenerationPage = () => {
           </select>
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-          <label className="text-sm font-medium text-gray-700">Ruta</label>
+          <label htmlFor="flgen-route" className="text-sm font-medium text-gray-700">Ruta</label>
           <input
             type="text"
+            id="flgen-route"
             aria-label="Ruta"
             placeholder="Ej: AV1234"
             value={genRouteFilter}

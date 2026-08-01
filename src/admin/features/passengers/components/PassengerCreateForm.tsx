@@ -51,16 +51,16 @@ export const PassengerCreateForm = ({ onClose, onCreated }: PassengerCreateFormP
       }}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-700">Nombre <span className="text-red-500">*</span></label>
-        <input name="firstName" aria-label="Nombre" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">Nombre <span className="text-red-500">*</span></label>
+        <input name="firstName" id="firstName" aria-label="Nombre" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Apellido <span className="text-red-500">*</span></label>
-        <input name="lastName" aria-label="Apellido" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Apellido <span className="text-red-500">*</span></label>
+        <input name="lastName" id="lastName" aria-label="Apellido" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Género <span className="text-red-500">*</span></label>
-        <select name="gender" aria-label="Género" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm">
+        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Género <span className="text-red-500">*</span></label>
+        <select name="gender" id="gender" aria-label="Género" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm">
           <option value="">Seleccionar</option>
           <option value="M">Masculino</option>
           <option value="F">Femenino</option>
@@ -68,20 +68,20 @@ export const PassengerCreateForm = ({ onClose, onCreated }: PassengerCreateFormP
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Nacionalidad (ISO) <span className="text-red-500">*</span></label>
-        <input name="nationality" aria-label="Nacionalidad (ISO)" placeholder="Ej: CO" maxLength={2} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 uppercase" />
+        <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">Nacionalidad (ISO) <span className="text-red-500">*</span></label>
+        <input name="nationality" id="nationality" aria-label="Nacionalidad (ISO)" placeholder="Ej: CO" maxLength={2} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 uppercase" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Fecha de nacimiento <span className="text-red-500">*</span></label>
-        <input name="dateOfBirth" aria-label="Fecha de nacimiento" type="date" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Fecha de nacimiento <span className="text-red-500">*</span></label>
+        <input name="dateOfBirth" id="dateOfBirth" aria-label="Fecha de nacimiento" type="date" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Número de identificación <span className="text-red-500">*</span></label>
-        <input name="identificationNumber" aria-label="Número de identificación" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="identificationNumber" className="block text-sm font-medium text-gray-700">Número de identificación <span className="text-red-500">*</span></label>
+        <input name="identificationNumber" id="identificationNumber" aria-label="Número de identificación" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Número de pasaporte</label>
-        <input name="passportNumber" aria-label="Número de pasaporte" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="passportNumber" className="block text-sm font-medium text-gray-700">Número de pasaporte</label>
+        <input name="passportNumber" id="passportNumber" aria-label="Número de pasaporte" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>

@@ -13,3 +13,11 @@ export const registerUser = async (data: RegisterRequest): Promise<void> => {
 export const registerAdmin = async (data: RegisterRequest): Promise<void> => {
   await apiClient.post("/v1/auth/register-admin", data);
 };
+
+export const requestPasswordReset = async (email: string): Promise<void> => {
+  await apiClient.post("/v1/auth/password-reset/request", { email });
+};
+
+export const resetPassword = async (code: string, password: string): Promise<void> => {
+  await apiClient.post("/v1/auth/password-reset", { code, password });
+};

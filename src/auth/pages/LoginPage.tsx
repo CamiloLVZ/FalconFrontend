@@ -1,26 +1,27 @@
 import { useState } from "react";
 import axios from "axios";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import bgImage from "../../assets/backgrounds/sky-background.png";
 import type { ApiErrorResponse } from "../../types/ApiError";
 import { LoginBrandPanel } from "../components/LoginBrandPanel";
 import { LoginForm } from "../components/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginRequestDTO } from "../types/auth";
+import { decodeJWT } from "../utils/tokens.utils";
+import { AUTH_TOKEN_KEY } from "../constants/auth.constants";
+
+const getDefaultPathForUser = (roles?: string[]): string =>
+  roles?.includes("ADMIN") ? "/admin" : "/profile";
 
 export const LoginPage = () => {
-  const { isAuthenticated, login } = useAuth();
+  const { user, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectTo =
-    (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname ?? "/admin";
-
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    const destination = getDefaultPathForUser(user?.roles);
+    return <Navigate to={destination} replace />;
   }
 
   const handleSubmit = async (credentials: LoginRequestDTO) => {
@@ -28,7 +29,20 @@ export const LoginPage = () => {
       setIsSubmitting(true);
       setError(null);
       await login(credentials);
-      navigate(redirectTo, { replace: true });
+
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      let userRoles: string[] = [];
+      if (token) {
+        try {
+          const decoded = decodeJWT(token);
+          userRoles = decoded.roles;
+        } catch {
+          // ignore error
+        }
+      }
+
+      const destination = getDefaultPathForUser(userRoles);
+      navigate(destination, { replace: true });
     } catch (unknownError) {
       if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
         setError(

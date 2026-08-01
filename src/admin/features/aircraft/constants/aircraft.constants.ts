@@ -21,15 +21,22 @@ export const ACTION_LABELS: Record<AircraftStatusAction, string> = {
   RETIRE: "Retirar",
 };
 
-export const AVAILABLE_ACTIONS: Record<AirplaneTypeStatus, AircraftStatusAction[]> =
-  {
-    ACTIVE: ["DEACTIVATE"],
-    INACTIVE: ["ACTIVATE", "RETIRE"],
-    RETIRED: [],
-  };
+export const AVAILABLE_ACTIONS: Record<
+  AirplaneTypeStatus,
+  AircraftStatusAction[]
+> = {
+  ACTIVE: ["DEACTIVATE"],
+  INACTIVE: ["ACTIVATE", "RETIRE"],
+  RETIRED: [],
+};
 
-export const ACTION_TO_STATUS: Record<AircraftStatusAction, AirplaneTypeStatus> = {
+export const ACTION_TO_STATUS: Record<
+  AircraftStatusAction,
+  AirplaneTypeStatus
+> = {
   ACTIVATE: "ACTIVE",
   DEACTIVATE: "INACTIVE",
   RETIRE: "RETIRED",
 };
+
+export const SEAT_COLUMN_OPTIONS = ["ABCD", "ABCDEF", "ABCDEFGHI"];

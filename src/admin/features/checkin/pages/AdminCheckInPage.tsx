@@ -4,6 +4,13 @@ import type { ApiErrorResponse } from "../../../../types/ApiError";
 import { checkInPassenger } from "../../reservations/services/reservationService";
 import type { CheckInResponse } from "../../reservations/types/reservationTypes";
 
+const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+  if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+    return unknownError.response?.data.message ?? fallback;
+  }
+  return "Ha ocurrido un error inesperado.";
+};
+
 export const AdminCheckInPage = () => {
   const [reservationNumber, setReservationNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -14,13 +21,6 @@ export const AdminCheckInPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<CheckInResponse | null>(null);
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-    return "Ha ocurrido un error inesperado.";
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +56,12 @@ export const AdminCheckInPage = () => {
       <div className="bg-white p-6 rounded-lg border shadow-sm max-w-xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="checkin-reservationNumber" className="block text-sm font-medium text-gray-700 mb-1">
               Número de Reserva
             </label>
             <input
               type="text"
+              id="checkin-reservationNumber"
               value={reservationNumber}
               onChange={(e) => setReservationNumber(e.target.value)}
               aria-label="Número de Reserva"
@@ -71,11 +72,12 @@ export const AdminCheckInPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="checkin-contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
               Email de Contacto
             </label>
             <input
               type="email"
+              id="checkin-contactEmail"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
               aria-label="Email de Contacto"
@@ -86,11 +88,12 @@ export const AdminCheckInPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="checkin-identificationNumber" className="block text-sm font-medium text-gray-700 mb-1">
               Número de Identificación del Pasajero
             </label>
             <input
               type="text"
+              id="checkin-identificationNumber"
               value={identificationNumber}
               onChange={(e) => setIdentificationNumber(e.target.value)}
               aria-label="Número de Identificación del Pasajero"
@@ -101,11 +104,12 @@ export const AdminCheckInPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="checkin-countryIsoCode" className="block text-sm font-medium text-gray-700 mb-1">
               País (Código ISO)
             </label>
             <input
               type="text"
+              id="checkin-countryIsoCode"
               value={countryIsoCode}
               onChange={(e) => setCountryIsoCode(e.target.value.toUpperCase())}
               aria-label="País (Código ISO)"
@@ -117,11 +121,12 @@ export const AdminCheckInPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="checkin-seatNumber" className="block text-sm font-medium text-gray-700 mb-1">
               Número de Asiento <span className="text-gray-400 font-normal">(opcional)</span>
             </label>
             <input
               type="number"
+              id="checkin-seatNumber"
               value={seatNumber}
               onChange={(e) => setSeatNumber(e.target.value)}
               aria-label="Número de Asiento"

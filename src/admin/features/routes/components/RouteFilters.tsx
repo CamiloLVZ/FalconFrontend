@@ -28,9 +28,10 @@ export const RouteFilters = ({
   return (
     <div className="bg-white border rounded-lg p-4 mt-4 flex flex-wrap gap-3 items-end">
       <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-        <label className="text-sm font-medium text-gray-700">Origen (IATA)</label>
+        <label htmlFor="routefilters-origin" className="text-sm font-medium text-gray-700">Origen (IATA)</label>
         <input
           type="text"
+          id="routefilters-origin"
           aria-label="Origen (IATA)"
           maxLength={3}
           placeholder="Ej: BOG"
@@ -41,9 +42,10 @@ export const RouteFilters = ({
         />
       </div>
       <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-        <label className="text-sm font-medium text-gray-700">Destino (IATA)</label>
+        <label htmlFor="routefilters-dest" className="text-sm font-medium text-gray-700">Destino (IATA)</label>
         <input
           type="text"
+          id="routefilters-dest"
           aria-label="Destino (IATA)"
           maxLength={3}
           placeholder="Ej: MIA"
@@ -54,7 +56,7 @@ export const RouteFilters = ({
         />
       </div>
       <div className="flex flex-col gap-1 min-w-[140px]">
-        <label className="text-sm font-medium text-gray-700">Estado</label>
+        <label htmlFor="routefilters-status" className="text-sm font-medium text-gray-700">Estado</label>
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
@@ -68,9 +70,10 @@ export const RouteFilters = ({
         </select>
       </div>
       <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-        <label className="text-sm font-medium text-gray-700">Número de Vuelo</label>
+        <label htmlFor="routefilters-flightNumber" className="text-sm font-medium text-gray-700">Número de Vuelo</label>
         <input
           type="text"
+          id="routefilters-flightNumber"
           aria-label="Número de Vuelo"
           placeholder="Ej: AV"
           value={flightNumberFilter}

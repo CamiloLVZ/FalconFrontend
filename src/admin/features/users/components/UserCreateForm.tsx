@@ -50,16 +50,17 @@ export const UserCreateForm = ({ onClose, onCreated }: UserCreateFormProps) => {
       }}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
-        <input name="email" aria-label="Email" type="email" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+        <input name="email" id="email" aria-label="Email" type="email" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Contraseña <span className="text-red-500">*</span></label>
-        <input name="password" aria-label="Contraseña" type="password" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña <span className="text-red-500">*</span></label>
+        <input name="password" id="password" aria-label="Contraseña" type="password" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Tipo de usuario <span className="text-red-500">*</span></label>
+        <label htmlFor="user-role" className="block text-sm font-medium text-gray-700">Tipo de usuario <span className="text-red-500">*</span></label>
         <select
+          id="user-role"
           value={role}
           onChange={(e) => setRole(e.target.value as "CLIENT" | "ADMIN")}
           aria-label="Tipo de usuario"

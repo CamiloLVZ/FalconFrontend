@@ -53,9 +53,10 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
       }}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-700">Número de vuelo <span className="text-red-500">*</span></label>
+        <label htmlFor="route-flightNumber" className="block text-sm font-medium text-gray-700">Número de vuelo <span className="text-red-500">*</span></label>
         <input
           type="text"
+          id="route-flightNumber"
           aria-label="Número de vuelo"
           placeholder="Ej: AV5678"
           value={formData.flightNumber}
@@ -65,8 +66,9 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Aeropuerto de origen <span className="text-red-500">*</span></label>
+        <label htmlFor="route-airportOriginIataCode" className="block text-sm font-medium text-gray-700">Aeropuerto de origen <span className="text-red-500">*</span></label>
         <select
+          id="route-airportOriginIataCode"
           value={formData.airportOriginIataCode}
           onChange={(e) => setFormData({ ...formData, airportOriginIataCode: e.target.value })}
           aria-label="Aeropuerto de origen"
@@ -80,8 +82,9 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Aeropuerto de destino <span className="text-red-500">*</span></label>
+        <label htmlFor="route-airportDestinationIataCode" className="block text-sm font-medium text-gray-700">Aeropuerto de destino <span className="text-red-500">*</span></label>
         <select
+          id="route-airportDestinationIataCode"
           value={formData.airportDestinationIataCode}
           onChange={(e) => setFormData({ ...formData, airportDestinationIataCode: e.target.value })}
           aria-label="Aeropuerto de destino"
@@ -95,8 +98,9 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Tipo de aeronave <span className="text-red-500">*</span></label>
+        <label htmlFor="route-idDefaultAirplaneType" className="block text-sm font-medium text-gray-700">Tipo de aeronave <span className="text-red-500">*</span></label>
         <select
+          id="route-idDefaultAirplaneType"
           value={formData.idDefaultAirplaneType}
           onChange={(e) => setFormData({ ...formData, idDefaultAirplaneType: parseInt(e.target.value) })}
           aria-label="Tipo de aeronave"
@@ -110,9 +114,10 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Duración (minutos) <span className="text-red-500">*</span></label>
+        <label htmlFor="route-durationMinutes" className="block text-sm font-medium text-gray-700">Duración (minutos) <span className="text-red-500">*</span></label>
         <input
           type="number"
+          id="route-durationMinutes"
           aria-label="Duración (minutos)"
           min={1}
           value={formData.durationMinutes}
@@ -122,9 +127,10 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Precio base (Economy) <span className="text-red-500">*</span></label>
+        <label htmlFor="route-basePriceEconomy" className="block text-sm font-medium text-gray-700">Precio base (Economy) <span className="text-red-500">*</span></label>
         <input
           type="number"
+          id="route-basePriceEconomy"
           aria-label="Precio base (Economy)"
           step="0.01"
           min={0}
@@ -135,9 +141,10 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Precio base (First Class) <span className="text-red-500">*</span></label>
+        <label htmlFor="route-basePriceFirstClass" className="block text-sm font-medium text-gray-700">Precio base (First Class) <span className="text-red-500">*</span></label>
         <input
           type="number"
+          id="route-basePriceFirstClass"
           aria-label="Precio base (First Class)"
           step="0.01"
           min={0}

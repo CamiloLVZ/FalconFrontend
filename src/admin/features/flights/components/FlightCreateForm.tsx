@@ -49,9 +49,10 @@ export const FlightCreateForm = ({ onClose, onCreated }: FlightCreateFormProps) 
       }}
     >
       <div>
-        <label className="block text-sm font-medium text-gray-700">Número de Ruta <span className="text-red-500">*</span></label>
+        <label htmlFor="flight-routeNumber" className="block text-sm font-medium text-gray-700">Número de Ruta <span className="text-red-500">*</span></label>
         <input
           type="text"
+          id="flight-routeNumber"
           aria-label="Número de Ruta"
           placeholder="Ej: AV1234"
           value={routeNumber}
@@ -61,9 +62,10 @@ export const FlightCreateForm = ({ onClose, onCreated }: FlightCreateFormProps) 
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Fecha y hora de salida <span className="text-red-500">*</span></label>
+        <label htmlFor="flight-departure" className="block text-sm font-medium text-gray-700">Fecha y hora de salida <span className="text-red-500">*</span></label>
         <input
           type="datetime-local"
+          id="flight-departure"
           aria-label="Fecha y hora de salida"
           value={departure}
           onChange={(e) => setDeparture(e.target.value)}
