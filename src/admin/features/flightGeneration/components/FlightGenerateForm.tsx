@@ -50,11 +50,12 @@ export const FlightGenerateForm = ({ onClose, onGenerated }: FlightGenerateFormP
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="flightgen-route" className="block text-sm font-medium text-gray-700 mb-1">
           Ruta (Opcional)
         </label>
         <input
           type="text"
+          id="flightgen-route"
           value={routeFlightNumber}
           onChange={(e) => setRouteFlightNumber(e.target.value)}
           aria-label="Ruta"

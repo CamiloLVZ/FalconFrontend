@@ -53,6 +53,19 @@ const actionReducer: Reducer<ActionState, ActionAction> = (_state, action): Acti
   }
 };
 
+const extractToken = (value: string): string => {
+  const trimmed = value.trim();
+  try {
+    const url = new URL(trimmed);
+    const parts = url.pathname.split("/").filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (/^[0-9a-f-]{36}$/i.test(last)) return last;
+    return url.searchParams.get("token") || last;
+  } catch {
+    return trimmed;
+  }
+};
+
 export const AdminBoardingPage = () => {
   const [qrInput, setQrInput] = useState("");
   const [showScanner, setShowScanner] = useState(false);
@@ -60,19 +73,6 @@ export const AdminBoardingPage = () => {
   const [aState, aDispatch] = useReducer(actionReducer, { isSubmitting: false, actionError: null, successMsg: null });
   const { loading, error, boardingPass } = vState;
   const { isSubmitting, actionError, successMsg } = aState;
-
-  const extractToken = (value: string): string => {
-    const trimmed = value.trim();
-    try {
-      const url = new URL(trimmed);
-      const parts = url.pathname.split("/").filter(Boolean);
-      const last = parts[parts.length - 1];
-      if (/^[0-9a-f-]{36}$/i.test(last)) return last;
-      return url.searchParams.get("token") || last;
-    } catch {
-      return trimmed;
-    }
-  };
 
   const handleValidate = async (token: string) => {
     vDispatch({ type: "VALIDATE_START" });
@@ -138,11 +138,12 @@ export const AdminBoardingPage = () => {
 
         <form onSubmit={handleSubmit} className="flex gap-3 items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="boarding-token" className="block text-sm font-medium text-gray-700 mb-1">
               Token o Enlace del Boarding Pass
             </label>
             <input
               type="text"
+              id="boarding-token"
               value={qrInput}
               onChange={(e) => setQrInput(e.target.value)}
               aria-label="Token o Enlace del Boarding Pass"

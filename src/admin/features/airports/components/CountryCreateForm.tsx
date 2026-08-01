@@ -49,11 +49,12 @@ export const CountryCreateForm = ({ onClose, onCreated }: CountryCreateFormProps
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="country-name" className="block text-sm font-medium text-gray-700 mb-1">
           Nombre <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="country-name"
           aria-label="Nombre"
           maxLength={100}
           required
@@ -67,11 +68,12 @@ export const CountryCreateForm = ({ onClose, onCreated }: CountryCreateFormProps
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="country-isoCode" className="block text-sm font-medium text-gray-700 mb-1">
           Código ISO <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
+          id="country-isoCode"
           aria-label="Código ISO"
           maxLength={2}
           required

@@ -50,24 +50,24 @@ export const AircraftCreateForm = ({ onSuccess, onClose }: AircraftCreateFormPro
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Fabricante <span className="text-red-500">*</span></label>
-        <input name="producer" aria-label="Fabricante" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="producer" className="block text-sm font-medium text-gray-700">Fabricante <span className="text-red-500">*</span></label>
+        <input name="producer" id="producer" aria-label="Fabricante" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Modelo <span className="text-red-500">*</span></label>
-        <input name="model" aria-label="Modelo" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="model" className="block text-sm font-medium text-gray-700">Modelo <span className="text-red-500">*</span></label>
+        <input name="model" id="model" aria-label="Modelo" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Asientos clase económica <span className="text-red-500">*</span></label>
-        <input name="economySeats" aria-label="Asientos clase económica" type="number" min={1} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="economySeats" className="block text-sm font-medium text-gray-700">Asientos clase económica <span className="text-red-500">*</span></label>
+        <input name="economySeats" id="economySeats" aria-label="Asientos clase económica" type="number" min={1} required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Asientos primera clase</label>
-        <input name="firstClassSeats" aria-label="Asientos primera clase" type="number" min={0} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+        <label htmlFor="firstClassSeats" className="block text-sm font-medium text-gray-700">Asientos primera clase</label>
+        <input name="firstClassSeats" id="firstClassSeats" aria-label="Asientos primera clase" type="number" min={0} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Columnas de asientos <span className="text-red-500">*</span></label>
-        <select name="seatColumns" aria-label="Columnas de asientos" required defaultValue={SEAT_COLUMN_OPTIONS[0]} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+        <label htmlFor="seatColumns" className="block text-sm font-medium text-gray-700">Columnas de asientos <span className="text-red-500">*</span></label>
+        <select name="seatColumns" id="seatColumns" aria-label="Columnas de asientos" required defaultValue={SEAT_COLUMN_OPTIONS[0]} className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
           {SEAT_COLUMN_OPTIONS.map((columns) => (
             <option key={columns} value={columns}>{columns}</option>
           ))}

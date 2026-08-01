@@ -6,10 +6,12 @@ import { BookingPage } from "./pages/BookingPage.tsx";
 import { ManageReservationPage } from "./pages/ManageReservationPage.tsx";
 import { CheckInPage } from "./pages/CheckInPage.tsx";
 import { BoardingPage } from "./pages/BoardingPage.tsx";
+import { UserProfilePage } from "./pages/UserProfilePage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { MainLayout } from "./layouts/MainLayout.tsx";
 import { LoginPage } from "./auth/pages/LoginPage.tsx";
 import { RequireAdmin } from "./auth/components/RequireAdmin.tsx";
+import { RequireAuth } from "./auth/components/RequireAuth.tsx";
 import { LoadingScreen } from "./components/common/LoadingScreen.tsx";
 
 const AdminLayout = lazy(() => import("./admin/layout/AdminLayout.tsx").then(m => ({ default: m.AdminLayout })));
@@ -34,6 +36,14 @@ function App() {
         <Route path="manage" element={<ManageReservationPage />} />
         <Route path="check-in" element={<CheckInPage />} />
         <Route path="boarding" element={<BoardingPage />} />
+        <Route
+          path="profile"
+          element={
+            <RequireAuth>
+              <UserProfilePage />
+            </RequireAuth>
+          }
+        />
         <Route path="login" element={<LoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

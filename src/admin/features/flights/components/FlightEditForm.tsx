@@ -112,8 +112,12 @@ export const FlightEditForm = ({ flight, onUpdated }: FlightEditFormProps) => {
           Cambiar Aeronave
         </h3>
         <div className="space-y-3">
+          <label htmlFor="flight-edit-airplaneTypeId" className="block text-sm font-medium text-gray-700">
+            ID del Tipo de Aeronave
+          </label>
           <input
             type="number"
+            id="flight-edit-airplaneTypeId"
             placeholder="ID del Tipo de Aeronave"
             value={airplaneTypeId}
             onChange={(e) => setAirplaneTypeId(e.target.value)}

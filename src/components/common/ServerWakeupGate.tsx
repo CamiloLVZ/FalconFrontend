@@ -32,6 +32,7 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -53,12 +54,11 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
 
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10_000);
+          fetchTimeoutRef.current = setTimeout(() => controller.abort(), 10_000);
 
           const res = await fetch(HEALTH_ENDPOINT, {
             signal: controller.signal,
           });
-          clearTimeout(timeoutId);
 
           if (res.ok) {
             sessionStorage.setItem(SESSION_KEY, JSON.stringify({ at: Date.now() }));
@@ -67,6 +67,11 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
           }
         } catch {
           // server not ready yet, retry
+        } finally {
+          if (fetchTimeoutRef.current) {
+            clearTimeout(fetchTimeoutRef.current);
+            fetchTimeoutRef.current = null;
+          }
         }
 
         await new Promise((resolve) => {
@@ -81,6 +86,7 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
       mountedRef.current = false;
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
     };
   }, [status]);
 

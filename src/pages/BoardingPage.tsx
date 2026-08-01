@@ -22,19 +22,19 @@ const statusColor: Record<string, string> = {
   EXPIRED: "bg-red-100 text-red-700",
 };
 
+const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
+  if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
+    return unknownError.response?.data.message ?? fallback;
+  }
+  return "Ha ocurrido un error inesperado.";
+};
+
 export const BoardingPage = () => {
   const [view, setView] = useState<View>("scan");
   const [loading, setLoading] = useState(false);
   const [boarding, setBoarding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BoardingPassValidationResponse | null>(null);
-
-  const getApiErrorMessage = (unknownError: unknown, fallback: string) => {
-    if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {
-      return unknownError.response?.data.message ?? fallback;
-    }
-    return "Ha ocurrido un error inesperado.";
-  };
 
   const handleScan = async (token: string) => {
     try {
@@ -82,6 +82,7 @@ export const BoardingPage = () => {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold">Tarjeta de embarque</h1>
             <button
+              type="button"
               onClick={handleNewScan}
               className="px-4 py-2 text-sm bg-gray-200 rounded-xl hover:bg-gray-300 transition cursor-pointer font-medium"
             >
@@ -152,6 +153,7 @@ export const BoardingPage = () => {
             {data.status === "ISSUED" && (
               <div className="px-6 pb-5">
                 <button
+                  type="button"
                   onClick={handleBoard}
                   disabled={boarding}
                   className={`w-full py-3 rounded-xl font-semibold transition cursor-pointer ${

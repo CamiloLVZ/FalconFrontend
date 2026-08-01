@@ -12,6 +12,10 @@ import { SearchBar } from "../components/features/search/SearchBar";
 import { LoadingScreen } from "../components/common/LoadingScreen.tsx";
 import { ErrorScreen } from "../components/common/ErrorScreen.tsx";
 
+const formatAirportLabel = (airport: AirportSearchOption) => {
+  return `${airport.city} (${airport.iataCode})`;
+};
+
 export const FlightsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -40,10 +44,6 @@ export const FlightsPage = () => {
 
   const handleBook = (flightId: number) => {
     navigate(`/booking/${flightId}`);
-  };
-
-  const formatAirportLabel = (airport: AirportSearchOption) => {
-    return `${airport.city} (${airport.iataCode})`;
   };
 
   const loadOrigins = async () => {

@@ -29,7 +29,7 @@ export interface ResponsePassengerReservationDto {
   status: PassengerReservationStatus;
 }
 
-export interface CheckInResponse extends PassengerReservation {}
+export type CheckInResponse = PassengerReservation;
 
 export interface ResponseReservationDto {
   id: number;

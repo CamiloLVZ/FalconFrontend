@@ -63,6 +63,7 @@ export const FlightCard = ({ flight, onBook }: Props) => {
 
       <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
         <button
+          type="button"
           onClick={handleBook}
           className="px-5 py-2 bg-yellow-400 text-black rounded-xl font-semibold text-sm hover:bg-yellow-300 transition cursor-pointer"
         >

@@ -177,9 +177,10 @@ export const AdminUsersPage = () => {
 
       <div className="bg-white border rounded-lg p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-          <label className="text-sm font-medium text-gray-700">Email</label>
+          <label htmlFor="users-email" className="text-sm font-medium text-gray-700">Email</label>
           <input
             type="text"
+            id="users-email"
             aria-label="Email"
             placeholder="Filtrar por email"
             value={emailFilter}
@@ -189,8 +190,9 @@ export const AdminUsersPage = () => {
           />
         </div>
         <div className="flex flex-col gap-1 min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700">Rol</label>
+          <label htmlFor="users-role" className="text-sm font-medium text-gray-700">Rol</label>
           <select
+            id="users-role"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             aria-label="Rol"
@@ -202,8 +204,9 @@ export const AdminUsersPage = () => {
           </select>
         </div>
         <div className="flex flex-col gap-1 min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700">Estado</label>
+          <label htmlFor="users-disabled" className="text-sm font-medium text-gray-700">Estado</label>
           <select
+            id="users-disabled"
             value={disabledFilter}
             onChange={(e) => setDisabledFilter(e.target.value)}
             aria-label="Estado"
