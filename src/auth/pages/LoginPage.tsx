@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import bgImage from "../../assets/backgrounds/sky-background.png";
 import type { ApiErrorResponse } from "../../types/ApiError";
 import { LoginBrandPanel } from "../components/LoginBrandPanel";
@@ -10,24 +10,17 @@ import type { LoginRequestDTO } from "../types/auth";
 import { decodeJWT } from "../utils/tokens.utils";
 import { AUTH_TOKEN_KEY } from "../constants/auth.constants";
 
-const getDefaultPathForUser = (roles?: string[]) => {
-  if (roles?.includes("ADMIN")) {
-    return "/admin";
-  }
-  return "/profile";
-};
+const getDefaultPathForUser = (roles?: string[]): string =>
+  roles?.includes("ADMIN") ? "/admin" : "/profile";
 
 export const LoginPage = () => {
   const { user, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-
   if (isAuthenticated) {
-    const destination = fromPath ?? getDefaultPathForUser(user?.roles);
+    const destination = getDefaultPathForUser(user?.roles);
     return <Navigate to={destination} replace />;
   }
 
@@ -48,7 +41,7 @@ export const LoginPage = () => {
         }
       }
 
-      const destination = fromPath ?? getDefaultPathForUser(userRoles);
+      const destination = getDefaultPathForUser(userRoles);
       navigate(destination, { replace: true });
     } catch (unknownError) {
       if (axios.isAxiosError<ApiErrorResponse>(unknownError)) {

@@ -9,6 +9,7 @@ export interface FlightQuote {
 }
 
 export interface BookingPassenger {
+  clientId: string;
   firstName: string;
   lastName: string;
   gender: "M" | "F" | "O" | "";

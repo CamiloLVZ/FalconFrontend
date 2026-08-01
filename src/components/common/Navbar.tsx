@@ -1,5 +1,5 @@
 import { Logo } from "../icons/Logo.tsx";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 
 const TABS = [
@@ -11,9 +11,15 @@ const TABS = [
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const isAdmin = user?.roles.includes("ADMIN");
   const initial = user?.email?.[0]?.toUpperCase() ?? "U";
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true, state: null });
+  };
 
   return (
     <header className="bg-[#0B1C2C] text-white sticky top-0 z-20 shadow-md">
@@ -86,7 +92,7 @@ export const Navbar = () => {
               {/* Logout — arrow-right-from-door icon */}
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 title="Cerrar sesión"
                 aria-label="Cerrar sesión"
                 className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-600 text-slate-400 hover:border-rose-500 hover:text-rose-400 transition cursor-pointer"

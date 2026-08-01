@@ -214,8 +214,8 @@ export const ManageReservationPage = () => {
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
             <h2 className="text-lg font-bold mb-3">Pasajeros</h2>
             <div className="space-y-3">
-              {reservation.passengers.map((pr, i) => (
-                <div key={i} className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+              {reservation.passengers.map((pr) => (
+                <div key={pr.id} className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-800">
                       {pr.passenger.firstName} {pr.passenger.lastName}

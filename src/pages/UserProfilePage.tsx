@@ -34,6 +34,27 @@ const isCheckInAllowed = (departureDateTimeStr: string, flightStatus: string) =>
   return diffInHours >= 1 && diffInHours <= 24;
 };
 
+// Cancellation is only allowed up to 24 hours before departure
+const canCancelReservation = (res: Reservation): boolean => {
+  if (res.status !== "RESERVED") return false;
+
+  const departureDateTimeStr =
+    res.flight.departureDateTime || res.flight.localDepartureDateTime;
+  if (!departureDateTimeStr) return false;
+
+  const now = new Date();
+  const departure = new Date(departureDateTimeStr);
+  const diffInHours = (departure.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  return diffInHours >= 24;
+};
+
+const hasAllPassengersCheckedIn = (res: Reservation): boolean =>
+  res.passengers.length > 0 &&
+  res.passengers.every(
+    (p) => p.status === "CHECKED_IN" || p.status === "BOARDED",
+  );
+
 const getStatusBadge = (status: ReservationStatus) => {
   switch (status) {
     case "RESERVED":
@@ -389,6 +410,8 @@ const ReservationsTab = ({
             res.flight.departureDateTime || res.flight.localDepartureDateTime,
             res.flight.status
           );
+          const allCheckedIn = hasAllPassengersCheckedIn(res);
+          const cancelAllowed = canCancelReservation(res);
 
           return (
             <div
@@ -435,6 +458,14 @@ const ReservationsTab = ({
                     })}
                   </p>
                 </div>
+              </div>
+
+              {/* Boarding note */}
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 italic">
+                <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>El abordaje comienza 40 minutos antes de la salida del vuelo.</span>
               </div>
 
               {/* Passengers */}
@@ -506,7 +537,7 @@ const ReservationsTab = ({
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-3 pt-2">
-                {res.status === "RESERVED" && (
+                {res.status === "RESERVED" && !allCheckedIn && (
                   <>
                     {checkInOpen ? (
                       <Link
@@ -531,14 +562,16 @@ const ReservationsTab = ({
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={() => onCancelReservation(res.number, res.contactEmail)}
-                      disabled={cancelingNumber === res.number}
-                      className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-4 py-2 rounded-lg transition cursor-pointer"
-                    >
-                      {cancelingNumber === res.number ? "Cancelando..." : "Cancelar Reserva"}
-                    </button>
+                    {cancelAllowed && (
+                      <button
+                        type="button"
+                        onClick={() => onCancelReservation(res.number, res.contactEmail)}
+                        disabled={cancelingNumber === res.number}
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-4 py-2 rounded-lg transition cursor-pointer"
+                      >
+                        {cancelingNumber === res.number ? "Cancelando..." : "Cancelar Reserva"}
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -873,15 +906,30 @@ export const UserProfilePage = () => {
     }
   };
 
+  // Initial load of profile and reservations on mount
+  // react-doctor-disable-next-line no-fetch-in-effect – initial data load on mount; a data-fetching layer is out of scope for this SPA
   useEffect(() => {
     fetchProfile();
+    fetchReservations(reservations.statusFilter, reservations.page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (activeTab === "reservations") {
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === "reservations") {
       fetchReservations(reservations.statusFilter, reservations.page);
     }
-  }, [activeTab, reservations.statusFilter, reservations.page]);
+  };
+
+  const handleFilterChange = (status: ReservationStatus | "") => {
+    reservationsDispatch({ type: "SET_FILTER", status });
+    fetchReservations(status, 0);
+  };
+
+  const handlePageChange = (page: number) => {
+    reservationsDispatch({ type: "SET_PAGE", page });
+    fetchReservations(reservations.statusFilter, page);
+  };
 
   // Submit Profile (Create or Update)
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -969,7 +1017,7 @@ export const UserProfilePage = () => {
 
         <TabNav
           activeTab={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
         />
 
         {activeTab === "reservations" && (
@@ -982,8 +1030,8 @@ export const UserProfilePage = () => {
             totalPages={reservations.totalPages}
             cancelingNumber={canceling.cancelingNumber}
             cancelingPassengerId={canceling.cancelingPassengerId}
-            onFilterChange={(status) => reservationsDispatch({ type: "SET_FILTER", status })}
-            onPageChange={(page) => reservationsDispatch({ type: "SET_PAGE", page })}
+            onFilterChange={handleFilterChange}
+            onPageChange={handlePageChange}
             onCancelReservation={handleCancelReservation}
             onCancelPassenger={handleCancelPassenger}
           />

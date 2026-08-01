@@ -14,6 +14,57 @@ interface ServerWakeupGateProps {
 
 type Status = "checking" | "ready" | "error";
 
+interface HealthPollCallbacks {
+  onReady: () => void;
+  onError: () => void;
+}
+
+const startHealthPolling = (callbacks: HealthPollCallbacks): (() => void) => {
+  let cancelled = false;
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const startTime = Date.now();
+
+  const attempt = async (): Promise<void> => {
+    while (!cancelled) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= MAX_WAIT_MS) {
+        if (!cancelled) callbacks.onError();
+        return;
+      }
+
+      try {
+        const controller = new AbortController();
+        const abortTimer = setTimeout(() => controller.abort(), 10_000);
+        timers.push(abortTimer);
+
+        const res = await fetch(HEALTH_ENDPOINT, {
+          signal: controller.signal,
+        });
+        clearTimeout(abortTimer);
+
+        if (res.ok) {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ at: Date.now() }));
+          if (!cancelled) callbacks.onReady();
+          return;
+        }
+      } catch {
+        // server not ready yet, retry
+      }
+
+      await new Promise((resolve) => {
+        timers.push(setTimeout(resolve, RETRY_INTERVAL_MS));
+      });
+    }
+  };
+
+  attempt();
+
+  return () => {
+    cancelled = true;
+    timers.forEach(clearTimeout);
+  };
+};
+
 export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
   const [status, setStatus] = useState<Status>(() => {
     try {
@@ -30,11 +81,10 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
   });
   const [showLoader, setShowLoader] = useState(false);
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
+  // react-doctor-disable-next-line no-fetch-in-effect – intentional server health polling on mount/retry; fetching lives in module-level startHealthPolling with AbortController + cancellation guards
   useEffect(() => {
     if (status === "ready") return;
 
@@ -42,51 +92,19 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
       if (mountedRef.current) setShowLoader(true);
     }, SHOW_DELAY_MS);
 
-    const startTime = Date.now();
-
-    const attempt = async (): Promise<void> => {
-      while (mountedRef.current) {
-        const elapsed = Date.now() - startTime;
-        if (elapsed >= MAX_WAIT_MS) {
-          if (mountedRef.current) setStatus("error");
-          return;
-        }
-
-        try {
-          const controller = new AbortController();
-          fetchTimeoutRef.current = setTimeout(() => controller.abort(), 10_000);
-
-          const res = await fetch(HEALTH_ENDPOINT, {
-            signal: controller.signal,
-          });
-
-          if (res.ok) {
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ at: Date.now() }));
-            if (mountedRef.current) setStatus("ready");
-            return;
-          }
-        } catch {
-          // server not ready yet, retry
-        } finally {
-          if (fetchTimeoutRef.current) {
-            clearTimeout(fetchTimeoutRef.current);
-            fetchTimeoutRef.current = null;
-          }
-        }
-
-        await new Promise((resolve) => {
-          timerRef.current = setTimeout(resolve, RETRY_INTERVAL_MS);
-        });
-      }
-    };
-
-    attempt();
+    const stopPolling = startHealthPolling({
+      onReady: () => {
+        if (mountedRef.current) setStatus("ready");
+      },
+      onError: () => {
+        if (mountedRef.current) setStatus("error");
+      },
+    });
 
     return () => {
       mountedRef.current = false;
+      stopPolling();
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
     };
   }, [status]);
 

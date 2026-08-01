@@ -16,6 +16,14 @@ const formatAirportLabel = (airport: AirportSearchOption) => {
   return `${airport.city} (${airport.iataCode})`;
 };
 
+const shiftDate = (dateStr: string, days: number): string => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day + days);
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${mm}-${dd}`;
+};
+
 export const FlightsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -44,6 +52,34 @@ export const FlightsPage = () => {
 
   const handleBook = (flightId: number) => {
     navigate(`/booking/${flightId}`);
+  };
+
+  const handleShiftDate = async (days: number) => {
+    const currentDate = appliedDisplay.date || searchFilters.date;
+    if (!currentDate) return;
+
+    const newDate = shiftDate(currentDate, days);
+    const updatedFilters: FlightSearchParams = {
+      ...searchFilters,
+      date: newDate,
+    };
+
+    setSearchFilters(updatedFilters);
+
+    const displayData = {
+      origin: appliedDisplay.origin,
+      destination: appliedDisplay.destination,
+      date: newDate,
+    };
+
+    const cleanFilters: CleanFilters = Object.fromEntries(
+      Object.entries(updatedFilters).filter(([, value]) => value !== ""),
+    );
+
+    await handleSearch(cleanFilters, displayData);
+
+    const params = new URLSearchParams(cleanFilters).toString();
+    navigate(`/flights?${params}`);
   };
 
   const loadOrigins = async () => {
@@ -219,6 +255,27 @@ export const FlightsPage = () => {
         <p className="text-lg text-gray-500 opacity-75">
           {appliedDisplay.date}
         </p>
+
+        {hasSearched && appliedDisplay.date && (
+          <div className="flex items-center gap-2 ml-4">
+            <button
+              type="button"
+              onClick={() => handleShiftDate(-1)}
+              className="px-3 py-1.5 text-sm bg-gray-200 rounded-xl hover:bg-gray-300 transition cursor-pointer font-medium"
+              aria-label="Día anterior"
+            >
+              ← Día anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => handleShiftDate(1)}
+              className="px-3 py-1.5 text-sm bg-gray-200 rounded-xl hover:bg-gray-300 transition cursor-pointer font-medium"
+              aria-label="Día siguiente"
+            >
+              Día siguiente →
+            </button>
+          </div>
+        )}
       </div>
 
       {loading && <LoadingScreen />}

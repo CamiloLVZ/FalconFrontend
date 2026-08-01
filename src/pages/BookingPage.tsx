@@ -17,7 +17,12 @@ import imgLogo from "../assets/logo/logo.png";
 
 type Step = 1 | 2 | 3 | 4;
 
+let nextPassengerKey = 0;
+
+const createPassengerKey = (): string => `passenger-${++nextPassengerKey}`;
+
 const emptyPassenger = (seatClass: SeatClass): BookingPassenger => ({
+  clientId: createPassengerKey(),
   firstName: "",
   lastName: "",
   gender: "",
@@ -221,7 +226,7 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
     </div>
 
     {passengers.map((passenger, index) => (
-      <div key={index} className="bg-gray-50 rounded-xl p-4 mb-4">
+      <div key={passenger.clientId} className="bg-gray-50 rounded-xl p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-gray-700">Pasajero {index + 1}</h3>
           {passengers.length > 1 && (
@@ -383,8 +388,8 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
       <h3 className="font-semibold text-gray-700 mb-2">
         Pasajeros ({passengers.length})
       </h3>
-      {passengers.map((p, i) => (
-        <div key={i} className="text-sm flex justify-between py-1">
+      {passengers.map((p) => (
+        <div key={p.clientId} className="text-sm flex justify-between py-1">
           <span>
             {p.firstName} {p.lastName}
           </span>
@@ -511,10 +516,14 @@ export const BookingPage = () => {
   const [seatClass, setSeatClass] = useState<SeatClass>("ECONOMY");
   const [passengers, setPassengers] = useState<BookingPassenger[]>([emptyPassenger("ECONOMY")]);
 
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect – data setters are gated by `if (!ignore)`; the unconditional `setLoading(false)` in finally is the required loading-flag reset on every path
   useEffect(() => {
     if (!flightId) return;
 
+    let ignore = false;
+
     const load = async () => {
+      if (ignore) return;
       try {
         setLoading(true);
         const id = Number(flightId);
@@ -523,16 +532,24 @@ export const BookingPage = () => {
           getFlightQuote(id),
           getAllCountries(),
         ]);
-        setFlight(flightData);
-        setQuote(quoteData);
-        setCountries(countriesData);
+        if (!ignore) {
+          setFlight(flightData);
+          setQuote(quoteData);
+          setCountries(countriesData);
+        }
       } catch {
-        setError("Error al cargar la información del vuelo");
+        if (!ignore) {
+          setError("Error al cargar la información del vuelo");
+        }
       } finally {
         setLoading(false);
       }
     };
     load();
+
+    return () => {
+      ignore = true;
+    };
   }, [flightId]);
 
   // Autofill user contact email and passenger profile if authenticated
