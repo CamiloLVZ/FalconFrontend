@@ -10,6 +10,7 @@ export const ServicesSection = () => {
                     title="Check-in"
                     description="Listo para el despegue? Completa tu check-in digital."
                     action="Realizar Check-in"
+                    to="/check-in"
                     dark
                 />
 
@@ -17,6 +18,7 @@ export const ServicesSection = () => {
                     title="Gestionar Reserva"
                     description="Consulta o modifica tu reserva, actualiza información de pasajeros, y accede a tu itinerario."
                     action="Gestionar Reserva"
+                    to="/manage"
                 />
             </div>
         </section>
