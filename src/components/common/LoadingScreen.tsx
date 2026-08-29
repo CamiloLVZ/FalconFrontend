@@ -15,6 +15,7 @@ export const LoadingScreen = () => {
               src={imgLogo}
               alt="Falcon logo"
               className="w-full h-full object-cover"
+              data-testid="wake-up-image"
             />
 
             {/* Animated fill effect */}

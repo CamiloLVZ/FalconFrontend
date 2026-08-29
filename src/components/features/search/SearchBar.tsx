@@ -109,6 +109,7 @@ export const SearchBar = ({
 
       <button
         type="button"
+        data-testid="search-button"
         onClick={onSearch}
         disabled={isSearchDisabled}
         className={`px-6 py-2 rounded-3xl font-semibold transition h-fit w-fit md:w-auto flex-1 text-[20px] ${
