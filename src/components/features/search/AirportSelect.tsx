@@ -57,6 +57,11 @@ export const AirportSelect = ({
 
       <input
         type="text"
+        data-testid={
+          placeholder === "Origen"
+            ? "search-bar-origin-input"
+            : "search-bar-destination-input"
+        }
         placeholder={placeholder}
         className="focus:outline-none border-0 rounded-lg px-3 w-full bg-transparent disabled:cursor-not-allowed font-semibold"
         value={value}
@@ -75,6 +80,7 @@ export const AirportSelect = ({
             filteredOptions.map((airport) => (
               <button
                 key={airport.iataCode}
+                data-testid={`airport-option-${airport.iataCode}`}
                 type="button"
                 onClick={() => {
                   onSelect(airport);

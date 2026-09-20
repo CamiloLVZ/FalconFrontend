@@ -6,9 +6,10 @@ interface AdminDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  testId?: string;
 }
 
-export const AdminDrawer = ({ title, isOpen, onClose, children }: AdminDrawerProps) => {
+export const AdminDrawer = ({ title, isOpen, onClose, children, testId }: AdminDrawerProps) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -33,7 +34,10 @@ export const AdminDrawer = ({ title, isOpen, onClose, children }: AdminDrawerPro
       />
       
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-md sm:max-w-md transform bg-white shadow-2xl transition-transform h-full flex flex-col">
+      <div
+        className="relative w-full max-w-md sm:max-w-md transform bg-white shadow-2xl transition-transform h-full flex flex-col"
+        data-testid={testId}
+      >
         <div className="flex items-center justify-between border-b px-4 sm:px-6 py-4">
           <h2 className="text-lg sm:text-xl font-bold truncate pr-2">{title}</h2>
           <button
@@ -51,3 +55,4 @@ export const AdminDrawer = ({ title, isOpen, onClose, children }: AdminDrawerPro
     </div>
   );
 };
+

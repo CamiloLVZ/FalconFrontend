@@ -148,7 +148,7 @@ export const AdminFlightGenerationPage = () => {
   return (
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Generación de Vuelos</h1>
+        <h1 className="text-2xl font-bold" data-testid="flight-generation-page-heading">Generación de Vuelos</h1>
         <div className="flex items-center gap-2">
         <button
           type="button"
@@ -167,6 +167,7 @@ export const AdminFlightGenerationPage = () => {
         </button>
         <button
           type="button"
+          data-testid="generate-flights-btn"
           onClick={() => dispatch({ type: "OPEN_DRAWER" })}
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-medium transition-colors"
         >
@@ -264,6 +265,7 @@ export const AdminFlightGenerationPage = () => {
         title="Generar Vuelos"
         isOpen={isDrawerOpen}
         onClose={() => dispatch({ type: "CLOSE_DRAWER" })}
+        testId="generate-flights-drawer"
       >
         <FlightGenerateForm
           onClose={() => dispatch({ type: "CLOSE_DRAWER" })}

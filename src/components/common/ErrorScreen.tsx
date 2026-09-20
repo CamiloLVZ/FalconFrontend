@@ -8,7 +8,10 @@ export const ErrorScreen = ({
   message = "No hay resultados",
 }: ErrorScreenProps) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-6 px-6">
+    <div
+      className="flex flex-col items-center justify-center min-h-[50vh] gap-6 px-6"
+      data-testid="error-screen"
+    >
       {/* Error icon */}
       <div className="relative">
         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center">

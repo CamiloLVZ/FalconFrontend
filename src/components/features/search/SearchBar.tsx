@@ -94,6 +94,7 @@ export const SearchBar = ({
         <input
           type="date"
           aria-label="Fecha"
+          data-testid="search-bar-date-input"
           min={todayLocal()}
           onClick={(e) => e.currentTarget.showPicker()}
           className="rounded-xl border border-gray-300 w-full px-4 py-3 cursor-pointer"
@@ -109,7 +110,7 @@ export const SearchBar = ({
 
       <button
         type="button"
-        data-testid="search-button"
+        data-testid="search-bar-button"
         onClick={onSearch}
         disabled={isSearchDisabled}
         className={`px-6 py-2 rounded-3xl font-semibold transition h-fit w-fit md:w-auto flex-1 text-[20px] ${

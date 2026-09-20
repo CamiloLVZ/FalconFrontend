@@ -1,5 +1,9 @@
 import { useState } from "react";
-import type { FlightSeatMap, FlightSeat, SeatClass } from "../../../types/seatMap";
+import type {
+  FlightSeatMap,
+  FlightSeat,
+  SeatClass,
+} from "../../../types/seatMap";
 import { SeatConfirmationModal } from "./SeatConfirmationModal";
 import "./AirplaneSeatMap.css";
 
@@ -75,18 +79,18 @@ export const AirplaneSeatMap = ({
   for (let c = 0; c < colCount; c++) {
     if (aislePositions.has(c)) {
       columnHeaderElements.push(
-        <div key={`aisle-h-${c}`} className="column-header-aisle" />
+        <div key={`aisle-h-${c}`} className="column-header-aisle" />,
       );
     }
     columnHeaderElements.push(
       <div key={`col-${c}`} className="column-header-letter">
         {seatColumns[c]}
-      </div>
+      </div>,
     );
   }
 
   return (
-    <div className="seat-selection-layout">
+    <div className="seat-selection-layout" data-testid="airplane-seat-map">
       <div className="seat-map-container">
         <div className="airplane-fuselage">
           {/* Cockpit */}
@@ -107,7 +111,10 @@ export const AirplaneSeatMap = ({
                 <span>Primera Clase</span>
               </div>
               {rows.slice(0, firstClassRows).map((rowSeats, rowIdx) => (
-                <div key={`fc-row-${rowIdx}`} className="seat-row first-class-row">
+                <div
+                  key={`fc-row-${rowIdx}`}
+                  className="seat-row first-class-row"
+                >
                   <div className="row-number">{rowIdx + 1}</div>
                   {rowSeats.map((seat, colIdx) => {
                     const state = getSeatState(seat);
@@ -128,7 +135,9 @@ export const AirplaneSeatMap = ({
           )}
 
           {/* Class separator */}
-          {firstClassRows > 0 && economyRows > 0 && <hr className="class-separator" />}
+          {firstClassRows > 0 && economyRows > 0 && (
+            <hr className="class-separator" />
+          )}
 
           {/* Economy section */}
           {economyRows > 0 && (
@@ -138,7 +147,9 @@ export const AirplaneSeatMap = ({
               </div>
               {rows.slice(firstClassRows).map((rowSeats, rowIdx) => (
                 <div key={`ec-row-${rowIdx}`} className="seat-row">
-                  <div className="row-number">{firstClassRows + rowIdx + 1}</div>
+                  <div className="row-number">
+                    {firstClassRows + rowIdx + 1}
+                  </div>
                   {rowSeats.map((seat, colIdx) => {
                     const state = getSeatState(seat);
                     return (
@@ -198,8 +209,18 @@ export const AirplaneSeatMap = ({
         <div className="panel-placeholder">
           <div className="panel-placeholder-inner">
             <div className="placeholder-icon flex items-center justify-center text-slate-300">
-              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+              <svg
+                className="w-12 h-12"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                />
               </svg>
             </div>
             <p>Selecciona un asiento para ver los detalles</p>
@@ -219,7 +240,13 @@ interface SeatButtonProps {
   onClick: () => void;
 }
 
-const SeatButton = ({ seat, state, colIdx, aislePositions, onClick }: SeatButtonProps) => {
+const SeatButton = ({
+  seat,
+  state,
+  colIdx,
+  aislePositions,
+  onClick,
+}: SeatButtonProps) => {
   const isFirstClass = seat.seatClass === "FIRST_CLASS";
   const classStyle = isFirstClass ? "first-class" : "economy";
   const isClickable = state === "available" || state === "selected";
@@ -230,6 +257,7 @@ const SeatButton = ({ seat, state, colIdx, aislePositions, onClick }: SeatButton
       <button
         type="button"
         className={`seat-btn ${state} ${classStyle}`}
+        data-testid="seat-button"
         onClick={onClick}
         disabled={!isClickable}
         title={

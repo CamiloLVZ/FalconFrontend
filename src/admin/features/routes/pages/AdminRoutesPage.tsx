@@ -194,9 +194,9 @@ export const AdminRoutesPage = () => {
   return (
     <section className="min-h-[calc(100vh-136px)]">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Rutas</h1>
+        <h1 className="text-2xl font-bold" data-testid="routes-page-heading">Rutas</h1>
         <div className="flex gap-2">
-          <button type="button" onClick={() => dispatch({ type: "OPEN_CREATE" })} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium">+ Crear Ruta</button>
+          <button type="button" data-testid="create-route-btn" onClick={() => dispatch({ type: "OPEN_CREATE" })} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium">+ Crear Ruta</button>
           <button type="button" onClick={() => loadRoutes(currentPage, pageSize, filterParams())} disabled={loading} title="Refrescar" className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
@@ -230,7 +230,7 @@ export const AdminRoutesPage = () => {
           )}
         </AdminDrawer>
 
-        <AdminDrawer title="Crear Ruta" isOpen={isCreateDrawerOpen} onClose={() => dispatch({ type: "CLOSE_CREATE" })}>
+        <AdminDrawer title="Crear Ruta" isOpen={isCreateDrawerOpen} onClose={() => dispatch({ type: "CLOSE_CREATE" })} testId="create-route-drawer">
           <RouteCreateForm airportsData={airportsData} aircraftsData={aircraftsData} onClose={() => dispatch({ type: "CLOSE_CREATE" })} onCreated={() => loadRoutes(currentPage, pageSize, filterParams())} />
         </AdminDrawer>
 

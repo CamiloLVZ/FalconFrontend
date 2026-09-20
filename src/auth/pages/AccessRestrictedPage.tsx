@@ -24,7 +24,10 @@ export const AccessRestrictedPage = () => {
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] max-w-3xl flex-col items-center justify-center text-center">
         <Logo />
         <div className="mt-10 rounded-2xl border border-white/10 bg-white/95 px-6 py-10 text-[#071c33] shadow-2xl sm:px-10">
-          <p className="text-sm font-bold uppercase tracking-[0.35em] text-yellow-500">
+          <p
+            data-testid="access-restricted-label"
+            className="text-sm font-bold uppercase tracking-[0.35em] text-yellow-500"
+          >
             Acceso restringido
           </p>
           <h1 className="mt-4 text-3xl font-bold">No tienes permisos</h1>
