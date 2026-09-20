@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Flight } from "../types/flight";
-import type { BookingPassenger, FlightQuote, PaymentResponse, SeatClass } from "../types/booking";
-import { getFlightById, getFlightQuote, processPayment } from "../services/bookingService";
+import type {
+  BookingPassenger,
+  FlightQuote,
+  PaymentResponse,
+  SeatClass,
+} from "../types/booking";
+import {
+  getFlightById,
+  getFlightQuote,
+  processPayment,
+} from "../services/bookingService";
 import { getAllCountries } from "../services/countryService";
 import { getMyProfile } from "../services/userProfileService";
 import { useAuth } from "../auth/hooks/useAuth";
@@ -33,7 +42,13 @@ const emptyPassenger = (seatClass: SeatClass): BookingPassenger => ({
   seatClass,
 });
 
-const BookingLoadErrorView = ({ error, onGoHome }: { error: string; onGoHome: () => void }) => (
+const BookingLoadErrorView = ({
+  error,
+  onGoHome,
+}: {
+  error: string;
+  onGoHome: () => void;
+}) => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4">
     <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-6 py-4 max-w-md">
       <span className="text-2xl flex-shrink-0">⚠️</span>
@@ -55,9 +70,7 @@ const BookingStepIndicator = ({ step }: { step: Step }) => (
       <div key={s} className="flex items-center">
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-            step >= s
-              ? "bg-yellow-400 text-black"
-              : "bg-gray-300 text-gray-500"
+            step >= s ? "bg-yellow-400 text-black" : "bg-gray-300 text-gray-500"
           }`}
         >
           {s}
@@ -84,9 +97,24 @@ interface ConfirmFlightStepProps {
   onContinue: () => void;
 }
 
-const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEmail, error, onSeatClassChange, onContactEmailChange, onContinue }: ConfirmFlightStepProps) => (
+const ConfirmFlightStep = ({
+  flight,
+  quote,
+  hasFirstClass,
+  seatClass,
+  contactEmail,
+  error,
+  onSeatClassChange,
+  onContactEmailChange,
+  onContinue,
+}: ConfirmFlightStepProps) => (
   <>
-    <h2 className="text-2xl font-bold mb-6">Confirmar vuelo</h2>
+    <h2
+      className="text-2xl font-bold mb-6"
+      data-testid="booking-confirm-flight-title"
+    >
+      Confirmar vuelo
+    </h2>
 
     {flight && (
       <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -99,15 +127,21 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
             <div className="flex justify-center mb-1 text-gray-400">
               <AirplaneDepartureIcon />
             </div>
-            <p className="text-xl font-semibold">{flight.localDepartureDateTime.slice(11, 16)}</p>
+            <p className="text-xl font-semibold">
+              {flight.localDepartureDateTime.slice(11, 16)}
+            </p>
             <p className="text-sm text-gray-800 font-medium">{flight.origin}</p>
           </div>
 
           <div className="flex-1 mx-4 text-center">
-            <p className="text-xs text-gray-500 mb-1">{formatDuration(flight.durationMinutes)}</p>
+            <p className="text-xs text-gray-500 mb-1">
+              {formatDuration(flight.durationMinutes)}
+            </p>
             <div className="flex items-center">
               <div className="h-[2px] bg-gray-300 flex-1" />
-              <span className="mx-2 rotate-45 text-gray-400"><AirplaneIcon /></span>
+              <span className="mx-2 rotate-45 text-gray-400">
+                <AirplaneIcon />
+              </span>
               <div className="h-[2px] bg-gray-300 flex-1" />
             </div>
             <p className="text-xs text-gray-500 mt-1">Directo</p>
@@ -117,22 +151,38 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
             <div className="flex justify-center mb-1 text-gray-400">
               <AirplaneArrivalIcon />
             </div>
-            <p className="text-xl font-semibold">{getArrivalTime(flight.localDepartureDateTime, flight.durationMinutes)}</p>
-            <p className="text-sm text-gray-800 font-medium">{flight.destination}</p>
+            <p className="text-xl font-semibold">
+              {getArrivalTime(
+                flight.localDepartureDateTime,
+                flight.durationMinutes,
+              )}
+            </p>
+            <p className="text-sm text-gray-800 font-medium">
+              {flight.destination}
+            </p>
           </div>
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-600">
-          <p><span className="font-medium">Fecha:</span> {flight.localDepartureDateTime.slice(0, 10)}</p>
-          <p><span className="font-medium">Aeronave:</span> {flight.airplaneType.producer} {flight.airplaneType.model}</p>
+          <p>
+            <span className="font-medium">Fecha:</span>{" "}
+            {flight.localDepartureDateTime.slice(0, 10)}
+          </p>
+          <p>
+            <span className="font-medium">Aeronave:</span>{" "}
+            {flight.airplaneType.producer} {flight.airplaneType.model}
+          </p>
         </div>
       </div>
     )}
 
     <fieldset className="mb-4 border-0 p-0 m-0">
-      <legend className="block text-sm font-medium text-gray-700 mb-1">Clase</legend>
+      <legend className="block text-sm font-medium text-gray-700 mb-1">
+        Clase
+      </legend>
       <div className="flex gap-3">
         <button
+          data-testid="booking-confirm-flight-economy-class-button"
           type="button"
           onClick={() => onSeatClassChange("ECONOMY")}
           className={`flex-1 p-3 rounded-xl border-2 text-center cursor-pointer transition ${
@@ -142,12 +192,13 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
           }`}
         >
           <p className="font-semibold">Económica</p>
-          <p className="text-lg font-bold text-yellow-600">
+          <p className="text-lg font-bold text-yellow-600" data-testid="price">
             ${quote?.priceEconomy?.toLocaleString() ?? "—"}
           </p>
         </button>
         {hasFirstClass && (
           <button
+            data-testid="booking-confirm-flight-first-class-button"
             type="button"
             onClick={() => onSeatClassChange("FIRST_CLASS")}
             className={`flex-1 p-3 rounded-xl border-2 text-center cursor-pointer transition ${
@@ -157,7 +208,10 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
             }`}
           >
             <p className="font-semibold">Primera clase</p>
-            <p className="text-lg font-bold text-yellow-600">
+            <p
+              className="text-lg font-bold text-yellow-600"
+              data-testid="price"
+            >
               ${quote?.priceFirstClass?.toLocaleString() ?? "—"}
             </p>
           </button>
@@ -166,10 +220,14 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
     </fieldset>
 
     <div className="mb-6">
-      <label htmlFor="booking-contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor="booking-contactEmail"
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
         Correo electrónico de contacto
       </label>
       <input
+        data-testid="booking-confirm-flight-email-input"
         type="email"
         id="booking-contactEmail"
         value={contactEmail}
@@ -180,13 +238,17 @@ const ConfirmFlightStep = ({ flight, quote, hasFirstClass, seatClass, contactEma
     </div>
 
     {error && (
-      <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4">
-        <span className="text-lg flex-shrink-0">⚠️</span>
+      <div
+        data-testid="booking-confirm-flight-error"
+        className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4"
+      >
+        <span className="text-lg shrink-0">⚠️</span>
         <p className="text-sm font-medium">{error}</p>
       </div>
     )}
 
     <button
+      data-testid="booking-confirm-flight-continue-button"
       type="button"
       onClick={onContinue}
       className="w-full py-3 bg-yellow-400 text-black rounded-xl font-semibold text-lg hover:bg-yellow-300 transition cursor-pointer"
@@ -200,18 +262,34 @@ interface PassengersStepProps {
   passengers: BookingPassenger[];
   countries: Country[];
   error: string | null;
-  onUpdatePassenger: (index: number, field: keyof BookingPassenger, value: string) => void;
+  onUpdatePassenger: (
+    index: number,
+    field: keyof BookingPassenger,
+    value: string,
+  ) => void;
   onAddPassenger: () => void;
   onRemovePassenger: (index: number) => void;
   onBack: () => void;
   onContinue: () => void;
 }
 
-const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAddPassenger, onRemovePassenger, onBack, onContinue }: PassengersStepProps) => (
+const PassengersStep = ({
+  passengers,
+  countries,
+  error,
+  onUpdatePassenger,
+  onAddPassenger,
+  onRemovePassenger,
+  onBack,
+  onContinue,
+}: PassengersStepProps) => (
   <>
     <div className="flex items-center justify-between mb-6">
-      <h2 className="text-2xl font-bold">Pasajeros</h2>
+      <h2 className="text-2xl font-bold" data-testid="booking-passengers-title">
+        Pasajeros
+      </h2>
       <button
+        data-testid="booking-passengers-add-passenger-button"
         type="button"
         onClick={onAddPassenger}
         disabled={passengers.length >= 9}
@@ -226,7 +304,11 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
     </div>
 
     {passengers.map((passenger, index) => (
-      <div key={passenger.clientId} className="bg-gray-50 rounded-xl p-4 mb-4">
+      <div
+        key={passenger.clientId}
+        className="bg-gray-50 rounded-xl p-4 mb-4"
+        data-testid="booking-passengers-passenger-form"
+      >
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-gray-700">Pasajero {index + 1}</h3>
           {passengers.length > 1 && (
@@ -243,33 +325,56 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor={`passenger-${index}-firstName`} className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
+            <label
+              htmlFor={`passenger-${index}-firstName`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Nombre *
+            </label>
             <input
+              data-testid="passenger-first-name-input"
               type="text"
               id={`passenger-${index}-firstName`}
               value={passenger.firstName}
-              onChange={(e) => onUpdatePassenger(index, "firstName", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "firstName", e.target.value)
+              }
               placeholder="Nombre"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
           </div>
           <div>
-            <label htmlFor={`passenger-${index}-lastName`} className="block text-xs font-medium text-gray-600 mb-1">Apellido *</label>
+            <label
+              htmlFor={`passenger-${index}-lastName`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Apellido *
+            </label>
             <input
+              data-testid="passenger-last-name-input"
               type="text"
               id={`passenger-${index}-lastName`}
               value={passenger.lastName}
-              onChange={(e) => onUpdatePassenger(index, "lastName", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "lastName", e.target.value)
+              }
               placeholder="Apellido"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
           </div>
           <div>
-            <label htmlFor={`passenger-${index}-gender`} className="block text-xs font-medium text-gray-600 mb-1">Género</label>
+            <label
+              htmlFor={`passenger-${index}-gender`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Género
+            </label>
             <select
               id={`passenger-${index}-gender`}
               value={passenger.gender}
-              onChange={(e) => onUpdatePassenger(index, "gender", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "gender", e.target.value)
+              }
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
             >
               <option value="">Seleccionar</option>
@@ -279,32 +384,56 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
             </select>
           </div>
           <div>
-            <label htmlFor={`passenger-${index}-dateOfBirth`} className="block text-xs font-medium text-gray-600 mb-1">Fecha de nacimiento *</label>
+            <label
+              htmlFor={`passenger-${index}-dateOfBirth`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Fecha de nacimiento *
+            </label>
             <input
               type="date"
+              data-testid="passenger-date-of-birth-input"
               id={`passenger-${index}-dateOfBirth`}
               value={passenger.dateOfBirth}
-              onChange={(e) => onUpdatePassenger(index, "dateOfBirth", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "dateOfBirth", e.target.value)
+              }
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
           </div>
           <div>
-            <label htmlFor={`passenger-${index}-identificationNumber`} className="block text-xs font-medium text-gray-600 mb-1">Identificación *</label>
+            <label
+              htmlFor={`passenger-${index}-identificationNumber`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Identificación *
+            </label>
             <input
+              data-testid="passenger-identification-number-input"
               type="text"
               id={`passenger-${index}-identificationNumber`}
               value={passenger.identificationNumber}
-              onChange={(e) => onUpdatePassenger(index, "identificationNumber", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "identificationNumber", e.target.value)
+              }
               placeholder="Número de identificación"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
           </div>
           <div>
-            <label htmlFor={`passenger-${index}-nationalityIsoCode`} className="block text-xs font-medium text-gray-600 mb-1">Nacionalidad *</label>
+            <label
+              htmlFor={`passenger-${index}-nationalityIsoCode`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Nacionalidad *
+            </label>
             <select
+              data-testid="passenger-nationality-select"
               id={`passenger-${index}-nationalityIsoCode`}
               value={passenger.nationalityIsoCode}
-              onChange={(e) => onUpdatePassenger(index, "nationalityIsoCode", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "nationalityIsoCode", e.target.value)
+              }
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
             >
               <option value="">Seleccionar</option>
@@ -316,12 +445,20 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
             </select>
           </div>
           <div className="col-span-2">
-            <label htmlFor={`passenger-${index}-passportNumber`} className="block text-xs font-medium text-gray-600 mb-1">Pasaporte</label>
+            <label
+              htmlFor={`passenger-${index}-passportNumber`}
+              className="block text-xs font-medium text-gray-600 mb-1"
+            >
+              Pasaporte
+            </label>
             <input
+              data-testid="passenger-passport-number-input"
               type="text"
               id={`passenger-${index}-passportNumber`}
               value={passenger.passportNumber}
-              onChange={(e) => onUpdatePassenger(index, "passportNumber", e.target.value)}
+              onChange={(e) =>
+                onUpdatePassenger(index, "passportNumber", e.target.value)
+              }
               placeholder="Número de pasaporte (opcional)"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
@@ -331,14 +468,18 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
     ))}
 
     {error && (
-      <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4">
-        <span className="text-lg flex-shrink-0">⚠️</span>
+      <div
+        className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4"
+        data-testid="booking-passengers-error"
+      >
+        <span className="text-lg shrink-0">⚠️</span>
         <p className="text-sm font-medium">{error}</p>
       </div>
     )}
 
     <div className="flex gap-3">
       <button
+        data-testid="booking-passengers-back-button"
         type="button"
         onClick={onBack}
         className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition cursor-pointer"
@@ -346,6 +487,7 @@ const PassengersStep = ({ passengers, countries, error, onUpdatePassenger, onAdd
         Atrás
       </button>
       <button
+        data-testid="booking-passengers-continue-button"
         type="button"
         onClick={onContinue}
         className="flex-1 py-3 bg-yellow-400 text-black rounded-xl font-semibold hover:bg-yellow-300 transition cursor-pointer"
@@ -367,9 +509,20 @@ interface PaymentSummaryStepProps {
   onPay: () => void;
 }
 
-const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error, submitting, onBack, onPay }: PaymentSummaryStepProps) => (
+const PaymentSummaryStep = ({
+  flight,
+  passengers,
+  unitPrice,
+  totalAmount,
+  error,
+  submitting,
+  onBack,
+  onPay,
+}: PaymentSummaryStepProps) => (
   <>
-    <h2 className="text-2xl font-bold mb-6">Resumen y pago</h2>
+    <h2 className="text-2xl font-bold mb-6" data-testid="booking-summary-title">
+      Resumen y pago
+    </h2>
 
     {flight && (
       <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -378,22 +531,30 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
           {flight.origin} → {flight.destination}
         </p>
         <p className="text-sm text-gray-600">
-          {flight.localDepartureDateTime.slice(0, 10)} - {flight.localDepartureDateTime.slice(11, 16)}
+          {flight.localDepartureDateTime.slice(0, 10)} -{" "}
+          {flight.localDepartureDateTime.slice(11, 16)}
         </p>
         <p className="text-sm text-gray-600">{flight.flightNumber}</p>
       </div>
     )}
 
     <div className="bg-gray-50 rounded-xl p-4 mb-4">
-      <h3 className="font-semibold text-gray-700 mb-2">
+      <h3
+        className="font-semibold text-gray-700 mb-2"
+        data-testid="booking-summary-passengers-title"
+      >
         Pasajeros ({passengers.length})
       </h3>
       {passengers.map((p) => (
-        <div key={p.clientId} className="text-sm flex justify-between py-1">
-          <span>
+        <div
+          key={p.clientId}
+          className="text-sm flex justify-between py-1"
+          data-testid="booking-summary-passenger-item"
+        >
+          <span data-testid="passenger-name">
             {p.firstName} {p.lastName}
           </span>
-          <span className="text-gray-500">
+          <span className="text-gray-500" data-testid="passenger-class">
             {p.seatClass === "ECONOMY" ? "Económica" : "Primera clase"}
           </span>
         </div>
@@ -403,7 +564,10 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
     <div className="bg-gray-50 rounded-xl p-4 mb-6">
       <div className="flex justify-between items-center">
         <span className="font-semibold text-gray-700">Total</span>
-        <span className="text-2xl font-bold text-yellow-600">
+        <span
+          className="text-2xl font-bold text-yellow-600"
+          data-testid="booking-summary-total-amount"
+        >
           ${totalAmount.toLocaleString()}
         </span>
       </div>
@@ -414,8 +578,10 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
 
     {error && (
       <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4">
-        <span className="text-lg flex-shrink-0">⚠️</span>
-        <p className="text-sm font-medium">{error}</p>
+        <span className="text-lg shrink-0">⚠️</span>
+        <p className="text-sm font-medium" data-testid="booking-summary-error">
+          {error}
+        </p>
       </div>
     )}
 
@@ -424,6 +590,7 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
         type="button"
         onClick={onBack}
         className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition cursor-pointer"
+        data-testid="booking-summary-back-button"
       >
         Atrás
       </button>
@@ -436,6 +603,7 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-yellow-400 text-black hover:bg-yellow-300"
         }`}
+        data-testid="booking-summary-continue-button"
       >
         {submitting ? "Procesando..." : "Pagar"}
       </button>
@@ -443,28 +611,63 @@ const PaymentSummaryStep = ({ flight, passengers, unitPrice, totalAmount, error,
   </>
 );
 
-const BookingSuccessStep = ({ paymentResult, onGoHome }: { paymentResult: PaymentResponse | null; onGoHome: () => void }) => (
+const BookingSuccessStep = ({
+  paymentResult,
+  onGoHome,
+}: {
+  paymentResult: PaymentResponse | null;
+  onGoHome: () => void;
+}) => (
   <div className="text-center py-6">
     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-      <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+      <svg
+        className="w-8 h-8 text-green-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M5 13l4 4L19 7"
+        />
       </svg>
     </div>
 
-    <h2 className="text-2xl font-bold mb-2">Reserva confirmada</h2>
+    <h2
+      className="text-2xl font-bold mb-2"
+      data-testid="booking-confirmation-title"
+    >
+      Reserva confirmada
+    </h2>
 
     {paymentResult && (
       <>
         <div className="bg-gray-50 rounded-xl p-6 my-6">
           <p className="text-sm text-gray-500 mb-1">Código de reserva</p>
-          <p className="text-3xl font-bold tracking-widest text-yellow-600">
+          <p
+            className="text-3xl font-bold tracking-widest text-yellow-600"
+            data-testid="booking-confirmation-reservation-number"
+          >
             {paymentResult.reservationNumber}
           </p>
         </div>
 
         <div className="text-sm text-gray-600 space-y-1">
-          <p>Total pagado: <span className="font-semibold">${paymentResult.totalAmount.toLocaleString()}</span></p>
-          <p>Estado: <span className="text-green-600 font-semibold">APROBADO</span></p>
+          <p>
+            Total pagado:{" "}
+            <span
+              className="font-semibold"
+              data-testid="booking-confirmation-total-amount"
+            >
+              ${paymentResult.totalAmount.toLocaleString()}
+            </span>
+          </p>
+          <p>
+            Estado:{" "}
+            <span className="text-green-600 font-semibold">APROBADO</span>
+          </p>
           <p className="text-xs text-gray-400">
             {new Date(paymentResult.processedAt).toLocaleString()}
           </p>
@@ -476,6 +679,7 @@ const BookingSuccessStep = ({ paymentResult, onGoHome }: { paymentResult: Paymen
       type="button"
       onClick={onGoHome}
       className="mt-8 px-8 py-3 bg-yellow-400 text-black rounded-xl font-semibold hover:bg-yellow-300 transition cursor-pointer"
+      data-testid="booking-confirmation-home-button"
     >
       Volver al inicio
     </button>
@@ -488,12 +692,21 @@ const PaymentProcessingOverlay = () => (
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 border-r-blue-600 animate-spin" />
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative w-24 h-24 overflow-hidden rounded-xl">
-          <img src={imgLogo} alt="Falcon logo" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-blue-600 opacity-30 animate-pulse" style={{ animation: "fillAnimation 2s ease-in-out infinite" }} />
+          <img
+            src={imgLogo}
+            alt="Falcon logo"
+            className="w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0 bg-blue-600 opacity-30 animate-pulse"
+            style={{ animation: "fillAnimation 2s ease-in-out infinite" }}
+          />
         </div>
       </div>
     </div>
-    <p className="text-lg font-semibold text-gray-700 mt-4">Procesando pago...</p>
+    <p className="text-lg font-semibold text-gray-700 mt-4">
+      Procesando pago...
+    </p>
     <style>{`@keyframes fillAnimation { 0%,100% { opacity: 0.1; } 50% { opacity: 0.4; } }`}</style>
   </div>
 );
@@ -510,11 +723,15 @@ export const BookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentResult, setPaymentResult] = useState<PaymentResponse | null>(null);
+  const [paymentResult, setPaymentResult] = useState<PaymentResponse | null>(
+    null,
+  );
 
   const [contactEmail, setContactEmail] = useState(user?.email || "");
   const [seatClass, setSeatClass] = useState<SeatClass>("ECONOMY");
-  const [passengers, setPassengers] = useState<BookingPassenger[]>([emptyPassenger("ECONOMY")]);
+  const [passengers, setPassengers] = useState<BookingPassenger[]>([
+    emptyPassenger("ECONOMY"),
+  ]);
 
   // react-doctor-disable-next-line no-set-state-after-await-in-effect – data setters are gated by `if (!ignore)`; the unconditional `setLoading(false)` in finally is the required loading-flag reset on every path
   useEffect(() => {
@@ -571,9 +788,12 @@ export const BookingPage = () => {
                 lastName: p1.lastName || profile.lastName || "",
                 gender: p1.gender || profile.gender || "",
                 dateOfBirth: p1.dateOfBirth || profile.dateOfBirth || "",
-                identificationNumber: p1.identificationNumber || profile.identificationNumber || "",
-                nationalityIsoCode: p1.nationalityIsoCode || profile.nationalityIsoCode || "",
-                passportNumber: p1.passportNumber || profile.passportNumber || "",
+                identificationNumber:
+                  p1.identificationNumber || profile.identificationNumber || "",
+                nationalityIsoCode:
+                  p1.nationalityIsoCode || profile.nationalityIsoCode || "",
+                passportNumber:
+                  p1.passportNumber || profile.passportNumber || "",
               };
               return updated;
             });
@@ -591,11 +811,17 @@ export const BookingPage = () => {
   useEffect(() => {
     if (!hasFirstClass && seatClass === "FIRST_CLASS") {
       setSeatClass("ECONOMY");
-      setPassengers((prev) => prev.map((p) => ({ ...p, seatClass: "ECONOMY" as SeatClass })));
+      setPassengers((prev) =>
+        prev.map((p) => ({ ...p, seatClass: "ECONOMY" as SeatClass })),
+      );
     }
   }, [hasFirstClass, seatClass]);
 
-  const updatePassenger = (index: number, field: keyof BookingPassenger, value: string) => {
+  const updatePassenger = (
+    index: number,
+    field: keyof BookingPassenger,
+    value: string,
+  ) => {
     setPassengers((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
@@ -694,7 +920,9 @@ export const BookingPage = () => {
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {
         const axiosErr = err as { response?: { data?: { message?: string } } };
-        setError(axiosErr.response?.data?.message ?? "Error al procesar el pago");
+        setError(
+          axiosErr.response?.data?.message ?? "Error al procesar el pago",
+        );
       } else {
         setError("Error al procesar el pago");
       }
@@ -703,13 +931,16 @@ export const BookingPage = () => {
     }
   };
 
-  const unitPrice = seatClass === "ECONOMY" ? quote?.priceEconomy : quote?.priceFirstClass;
+  const unitPrice =
+    seatClass === "ECONOMY" ? quote?.priceEconomy : quote?.priceFirstClass;
   const totalAmount = unitPrice ? unitPrice * passengers.length : 0;
 
   if (loading) return <LoadingScreen />;
 
   if (error && !flight) {
-    return <BookingLoadErrorView error={error} onGoHome={() => navigate("/")} />;
+    return (
+      <BookingLoadErrorView error={error} onGoHome={() => navigate("/")} />
+    );
   }
 
   return (

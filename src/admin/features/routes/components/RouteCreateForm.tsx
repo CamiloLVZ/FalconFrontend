@@ -37,6 +37,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
   return (
     <form
       className="space-y-4"
+      data-testid="route-create-form"
       onSubmit={async (e) => {
         e.preventDefault();
         try {
@@ -57,6 +58,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <input
           type="text"
           id="route-flightNumber"
+          data-testid="route-flight-number-input"
           aria-label="Número de vuelo"
           placeholder="Ej: AV5678"
           value={formData.flightNumber}
@@ -69,6 +71,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <label htmlFor="route-airportOriginIataCode" className="block text-sm font-medium text-gray-700">Aeropuerto de origen <span className="text-red-500">*</span></label>
         <select
           id="route-airportOriginIataCode"
+          data-testid="route-origin-select"
           value={formData.airportOriginIataCode}
           onChange={(e) => setFormData({ ...formData, airportOriginIataCode: e.target.value })}
           aria-label="Aeropuerto de origen"
@@ -85,6 +88,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <label htmlFor="route-airportDestinationIataCode" className="block text-sm font-medium text-gray-700">Aeropuerto de destino <span className="text-red-500">*</span></label>
         <select
           id="route-airportDestinationIataCode"
+          data-testid="route-destination-select"
           value={formData.airportDestinationIataCode}
           onChange={(e) => setFormData({ ...formData, airportDestinationIataCode: e.target.value })}
           aria-label="Aeropuerto de destino"
@@ -101,6 +105,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <label htmlFor="route-idDefaultAirplaneType" className="block text-sm font-medium text-gray-700">Tipo de aeronave <span className="text-red-500">*</span></label>
         <select
           id="route-idDefaultAirplaneType"
+          data-testid="route-airplane-type-select"
           value={formData.idDefaultAirplaneType}
           onChange={(e) => setFormData({ ...formData, idDefaultAirplaneType: parseInt(e.target.value) })}
           aria-label="Tipo de aeronave"
@@ -118,6 +123,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <input
           type="number"
           id="route-durationMinutes"
+          data-testid="route-duration-input"
           aria-label="Duración (minutos)"
           min={1}
           value={formData.durationMinutes}
@@ -131,6 +137,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <input
           type="number"
           id="route-basePriceEconomy"
+          data-testid="route-price-economy-input"
           aria-label="Precio base (Economy)"
           step="0.01"
           min={0}
@@ -145,6 +152,7 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
         <input
           type="number"
           id="route-basePriceFirstClass"
+          data-testid="route-price-firstclass-input"
           aria-label="Precio base (First Class)"
           step="0.01"
           min={0}
@@ -156,12 +164,13 @@ export const RouteCreateForm = ({ airportsData, aircraftsData, onClose, onCreate
       </div>
       <div className="pt-4 flex justify-end gap-3">
         <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50 font-medium">Cancelar</button>
-        <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Creando..." : "Crear"}</button>
+        <button type="submit" data-testid="route-create-submit-btn" disabled={submitting} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50">{submitting ? "Creando..." : "Crear"}</button>
       </div>
-      <div className="mt-3">
+      <div className="mt-3" data-testid="route-create-success-msg">
         <SuccessMessage message={success} onDismiss={() => setSuccess(null)} />
       </div>
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3">{error}</div>}
+      {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mt-3" data-testid="route-create-error-msg">{error}</div>}
+
     </form>
   );
 };

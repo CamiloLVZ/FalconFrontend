@@ -42,9 +42,9 @@ export const FlightGenerateForm = ({ onClose, onGenerated }: FlightGenerateFormP
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="flight-generate-form">
       {actionError && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm" data-testid="flight-generate-error-msg">
           {actionError}
         </div>
       )}
@@ -56,6 +56,7 @@ export const FlightGenerateForm = ({ onClose, onGenerated }: FlightGenerateFormP
         <input
           type="text"
           id="flightgen-route"
+          data-testid="flight-generate-route-input"
           value={routeFlightNumber}
           onChange={(e) => setRouteFlightNumber(e.target.value)}
           aria-label="Ruta"
@@ -77,6 +78,7 @@ export const FlightGenerateForm = ({ onClose, onGenerated }: FlightGenerateFormP
         </button>
         <button
           type="submit"
+          data-testid="flight-generate-submit-btn"
           disabled={isSubmitting}
           className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md font-medium disabled:opacity-50"
         >
@@ -86,3 +88,4 @@ export const FlightGenerateForm = ({ onClose, onGenerated }: FlightGenerateFormP
     </form>
   );
 };
+

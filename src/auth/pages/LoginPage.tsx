@@ -75,7 +75,10 @@ export const LoginPage = () => {
             <p className="text-sm font-bold uppercase tracking-[0.35em] text-yellow-500">
               Acceso seguro
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-[#071c33]">
+            <h2
+              className="mt-3 text-3xl font-bold text-[#071c33]"
+              data-testid="login-title"
+            >
               Bienvenido de nuevo
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-500">
