@@ -21,7 +21,10 @@ export const FlightCard = ({ flight, onBook }: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition">
+    <div
+      className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition"
+      data-testid="flight-card"
+    >
       <div className="flex items-center justify-between">
         {/* Departure */}
         <div className="text-center min-w-[60px]">
@@ -64,6 +67,7 @@ export const FlightCard = ({ flight, onBook }: Props) => {
       <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
         <button
           type="button"
+          data-testid="flight-card-book-button"
           onClick={handleBook}
           className="px-5 py-2 bg-yellow-400 text-black rounded-xl font-semibold text-sm hover:bg-yellow-300 transition cursor-pointer"
         >

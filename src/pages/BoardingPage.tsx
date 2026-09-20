@@ -1,6 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
-import { validateBoardingPass, boardPassengerViaQr } from "../admin/features/boarding/services/boardingService";
+import {
+  validateBoardingPass,
+  boardPassengerViaQr,
+} from "../admin/features/boarding/services/boardingService";
 import { QrScanner } from "../admin/features/boarding/components/QrScanner";
 import type { BoardingPassValidationResponse } from "../admin/features/boarding/types/boardingTypes";
 import type { ApiErrorResponse } from "../types/ApiError";
@@ -46,7 +49,12 @@ export const BoardingPage = () => {
       setData(result);
       setView("result");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Tarjeta de embarque no encontrada. Verifica el código QR."));
+      setError(
+        getApiErrorMessage(
+          err,
+          "Tarjeta de embarque no encontrada. Verifica el código QR.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -94,7 +102,9 @@ export const BoardingPage = () => {
             <div className="bg-gradient-to-r from-yellow-400 to-yellow-300 px-6 py-4">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-bold text-black">FALCON AIRWAYS</p>
-                <span className={`text-xs px-3 py-1 rounded-full font-medium bg-white ${statusColor[data.status]}`}>
+                <span
+                  className={`text-xs px-3 py-1 rounded-full font-medium bg-white ${statusColor[data.status]}`}
+                >
                   {statusLabel[data.status] || data.status}
                 </span>
               </div>
@@ -103,29 +113,43 @@ export const BoardingPage = () => {
 
             <div className="px-6 py-5">
               <div className="mb-4">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Pasajero</p>
-                <p className="text-xl font-bold text-gray-800">{data.passengerName}</p>
-                <p className="text-sm text-gray-500">ID: {data.identification}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide">
+                  Pasajero
+                </p>
+                <p className="text-xl font-bold text-gray-800">
+                  {data.passengerName}
+                </p>
+                <p className="text-sm text-gray-500">
+                  ID: {data.identification}
+                </p>
               </div>
 
               <div className="border-t border-dashed border-gray-200 pt-4 mb-4">
                 <div className="flex items-center justify-between">
                   <div className="text-center">
-                    <div className="flex justify-center mb-1 text-gray-400"><AirplaneDepartureIcon /></div>
+                    <div className="flex justify-center mb-1 text-gray-400">
+                      <AirplaneDepartureIcon />
+                    </div>
                     <p className="text-lg font-bold">{data.origin}</p>
                     <p className="text-xs text-gray-500">Origen</p>
                   </div>
                   <div className="flex-1 mx-3 text-center">
-                    <p className="text-xs text-gray-500 mb-1">{data.flightNumber}</p>
+                    <p className="text-xs text-gray-500 mb-1">
+                      {data.flightNumber}
+                    </p>
                     <div className="flex items-center">
                       <div className="h-[2px] bg-gray-300 flex-1" />
-                      <span className="mx-2 rotate-45 text-gray-400"><AirplaneIcon /></span>
+                      <span className="mx-2 rotate-45 text-gray-400">
+                        <AirplaneIcon />
+                      </span>
                       <div className="h-[2px] bg-gray-300 flex-1" />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Directo</p>
                   </div>
                   <div className="text-center">
-                    <div className="flex justify-center mb-1 text-gray-400"><AirplaneArrivalIcon /></div>
+                    <div className="flex justify-center mb-1 text-gray-400">
+                      <AirplaneArrivalIcon />
+                    </div>
                     <p className="text-lg font-bold">{data.destination}</p>
                     <p className="text-xs text-gray-500">Destino</p>
                   </div>
@@ -134,14 +158,27 @@ export const BoardingPage = () => {
 
               <div className="flex items-center justify-between border-t border-dashed border-gray-200 pt-4">
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Asiento</p>
-                  <p className="text-2xl font-bold text-yellow-600">{data.seatLabel}</p>
-                  <p className="text-xs text-gray-500">{data.seatClass === "FIRST_CLASS" ? "Primera clase" : "Económico"}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    Asiento
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {data.seatLabel}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {data.seatClass === "FIRST_CLASS"
+                      ? "Primera clase"
+                      : "Económico"}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Salida</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    Salida
+                  </p>
                   <p className="text-lg font-semibold">
-                    {new Date(data.departureTime).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(data.departureTime).toLocaleTimeString("es-CO", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(data.departureTime).toLocaleDateString("es-CO")}
@@ -183,8 +220,12 @@ export const BoardingPage = () => {
     <div className="flex flex-col items-center bg-blue-50 min-h-screen px-4 py-10">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Abordaje</h1>
-          <p className="text-gray-500 mt-2">Escanea el código QR de tu tarjeta de embarque</p>
+          <h1 className="text-3xl font-bold" data-testid="boarding-title">
+            Abordaje
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Escanea el código QR de tu tarjeta de embarque
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-6">

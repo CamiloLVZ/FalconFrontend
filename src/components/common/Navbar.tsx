@@ -22,7 +22,10 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="bg-[#0B1C2C] text-white sticky top-0 z-20 shadow-md">
+    <header
+      className="bg-[#0B1C2C] text-white sticky top-0 z-20 shadow-md"
+      data-testid="navbar"
+    >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <Logo />
 
@@ -33,6 +36,7 @@ export const Navbar = () => {
               key={tab.path}
               to={tab.path}
               end={tab.path === "/"}
+              data-testid={`navlink-${tab.label.toLowerCase()}`}
               className={({ isActive }) =>
                 isActive
                   ? "text-yellow-400 border-b-2 border-yellow-400 pb-1 text-lg transition-all duration-200"
@@ -52,6 +56,7 @@ export const Navbar = () => {
                 /* Admin badge — bordered with grid icon */
                 <NavLink
                   to="/admin"
+                  data-testid="navlink-admin"
                   className={({ isActive }) =>
                     `inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-semibold transition ${
                       isActive
@@ -60,7 +65,12 @@ export const Navbar = () => {
                     }`
                   }
                 >
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -74,6 +84,7 @@ export const Navbar = () => {
                 /* Profile pill — avatar initial + email */
                 <NavLink
                   to="/profile"
+                  data-testid="navlink-profile"
                   className={({ isActive }) =>
                     `inline-flex items-center gap-2.5 border px-3 py-1.5 rounded-xl text-sm font-medium transition ${
                       isActive
@@ -95,9 +106,15 @@ export const Navbar = () => {
                 onClick={handleLogout}
                 title="Cerrar sesión"
                 aria-label="Cerrar sesión"
+                data-testid="navlink-logout"
                 className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-600 text-slate-400 hover:border-rose-500 hover:text-rose-400 transition cursor-pointer"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -111,6 +128,7 @@ export const Navbar = () => {
             <NavLink
               to="/login"
               className="block rounded-lg bg-yellow-400 px-4 py-2 text-lg font-medium text-black transition hover:bg-yellow-300"
+              data-testid="navlink-login"
             >
               Login
             </NavLink>
