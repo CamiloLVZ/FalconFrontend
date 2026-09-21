@@ -43,7 +43,10 @@ const startHealthPolling = (callbacks: HealthPollCallbacks): (() => void) => {
         clearTimeout(abortTimer);
 
         if (res.ok) {
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ at: Date.now() }));
+          sessionStorage.setItem(
+            SESSION_KEY,
+            JSON.stringify({ at: Date.now() }),
+          );
           if (!cancelled) callbacks.onReady();
           return;
         }
@@ -143,7 +146,10 @@ export const ServerWakeupGate = ({ children }: ServerWakeupGateProps) => {
   return (
     <>
       {showLoader && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
+        <div
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white"
+          data-testid="server-wakeup-overlay"
+        >
           <div className="relative w-32 h-32 mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 border-r-blue-600 animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center">
